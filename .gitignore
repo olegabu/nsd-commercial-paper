@@ -12,3 +12,19 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+.idea
+artifacts/channel/mychannel.block
+fabric-rest-api.iml
+fabric-rest-api.ipr
+fabric-rest-api.iws
+.gradle
+build
+/artifacts/crypto-config/
+/artifacts/channel/
+/artifacts/cryptogen-*.yaml
+/artifacts/configtx.yaml
+/artifacts/*.block
+/artifacts/network-config.json
+/ledger/docker-compose.yaml
+
