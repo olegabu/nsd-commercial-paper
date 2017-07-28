@@ -32,10 +32,10 @@ function removeArtifacts() {
 }
 
 function removeDockers() {
-  if [ -f $COMPOSE_FILE ] && [ -s $COMPOSE_FILE ]; then
+  if [ -f ${COMPOSE_FILE} ] && [ -s ${COMPOSE_FILE} ]; then
     echo "Removing docker containers"
-    docker-compose -f $COMPOSE_FILE kill
-    docker-compose -f $COMPOSE_FILE rm -f
+    docker-compose -f ${COMPOSE_FILE} kill
+    docker-compose -f ${COMPOSE_FILE} rm -f
   else
     echo "No generated docker-compose.yaml and no docker instances to remove"
   fi;
@@ -51,21 +51,21 @@ function generateArtifacts() {
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG3/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG3.yaml"
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG4/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG4.yaml"
     # docker-compose.yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" -e "s/CHANNEL_NAME/$CHANNEL_NAME/g" $COMPOSE_TEMPLATE > $COMPOSE_FILE
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" -e "s/CHANNEL_NAME/$CHANNEL_NAME/g" $COMPOSE_TEMPLATE > ${COMPOSE_FILE}
     # network-config.json
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" -e "s/CHANNEL_NAME/$CHANNEL_NAME/g" artifacts/network-config-template.json > artifacts/network-config.json
 
     echo "Generating crypto material with cryptogen"
-    docker-compose --file $COMPOSE_FILE run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$DOMAIN.yaml"
-    docker-compose --file $COMPOSE_FILE run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG1.yaml"
-    docker-compose --file $COMPOSE_FILE run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG2.yaml"
-    docker-compose --file $COMPOSE_FILE run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG3.yaml"
-    docker-compose --file $COMPOSE_FILE run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG4.yaml"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$DOMAIN.yaml"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG1.yaml"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG2.yaml"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG3.yaml"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG4.yaml"
 
     echo "Generating orderer genesis block and channel config transaction with configtxgen"
     mkdir -p artifacts/channel
-    docker-compose --file $COMPOSE_FILE run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile FourOrgsOrdererGenesis -outputBlock ./channel/genesis.block
-    docker-compose --file $COMPOSE_FILE run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile ThreeOrgsChannel -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
+    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile FourOrgsOrdererGenesis -outputBlock ./channel/genesis.block
+    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile ThreeOrgsChannel -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
 
     echo "Adding generated CA private keys filenames to yaml"
     CA1_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG1.$DOMAIN"/ca/*_sk`)
@@ -76,7 +76,7 @@ function generateArtifacts() {
     [[ -z  $CA2_PRIVATE_KEY  ]] && echo "empty CA2 private key" && exit 1
     [[ -z  $CA3_PRIVATE_KEY  ]] && echo "empty CA3 private key" && exit 1
     [[ -z  $CA4_PRIVATE_KEY  ]] && echo "empty CA4 private key" && exit 1
-    sed -i -e "s/CA1_PRIVATE_KEY/${CA1_PRIVATE_KEY}/g" -e "s/CA2_PRIVATE_KEY/${CA2_PRIVATE_KEY}/g" -e "s/CA3_PRIVATE_KEY/${CA3_PRIVATE_KEY}/g" -e "s/CA4_PRIVATE_KEY/${CA4_PRIVATE_KEY}/g" $COMPOSE_FILE
+    sed -i -e "s/CA1_PRIVATE_KEY/${CA1_PRIVATE_KEY}/g" -e "s/CA2_PRIVATE_KEY/${CA2_PRIVATE_KEY}/g" -e "s/CA3_PRIVATE_KEY/${CA3_PRIVATE_KEY}/g" -e "s/CA4_PRIVATE_KEY/${CA4_PRIVATE_KEY}/g" ${COMPOSE_FILE}
 
     # docker generates files to mapped volumes as root, change ownership
     chown -R 1000:1000 artifacts/
@@ -87,7 +87,7 @@ function networkUp () {
 #  if [ ! -d "artifacts/crypto-config" ]; then
 #    generateArtifacts
 #  fi
-  TIMEOUT=$CLI_TIMEOUT docker-compose -f $COMPOSE_FILE up -d 2>&1
+  TIMEOUT=$CLI_TIMEOUT docker-compose -f ${COMPOSE_FILE} up -d 2>&1
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to start network"
     sleep 5
@@ -102,7 +102,7 @@ function logs () {
 }
 
 function networkDown () {
-  docker-compose -f $COMPOSE_FILE down
+  docker-compose -f ${COMPOSE_FILE} down
   # Don't remove containers, images, etc if restarting
   if [ "$MODE" != "restart" ]; then
     removeDockers
