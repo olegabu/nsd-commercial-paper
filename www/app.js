@@ -22,7 +22,7 @@ angular.module('nsd.app',[
    'ui.router',
    'ui.bootstrap',
    'ui.materialize',
-   'ui.router.title',
+   // 'ui.router.title',
 
    'LocalStorageModule',
    'jsonFormatter',
@@ -72,7 +72,7 @@ angular.module('nsd.app',[
       controller   : 'BookController',
       controllerAs : 'ctl',
       data:{
-        name: 'Book',
+        name: 'Books',
         roles:'*'
       }
     })
@@ -145,6 +145,11 @@ angular.module('nsd.app',[
         goLogin();
       }
     }
+  });
+
+  $rootScope.$on('$stateChangeSuccess',  function(event, toState, toParams, fromState, fromParams, options){
+    $rootScope.$state = toState;
+    $rootScope.$stateParams = toParams;
   });
 
   /**
