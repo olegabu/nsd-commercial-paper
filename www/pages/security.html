@@ -1,2 +1,50 @@
 
-<h2>Security Master</h2>
+<div class="row">
+  <div class="col s12">
+    <table class="table-bordered highlight responsive-table">
+      <thead>
+          <tr>
+              <th>Issuer</th>
+              <th>Book type</th>
+              <th>Asset</th>
+              <th>Total</th>
+              <th>Paid off</th>
+              <th>Action</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr ng-repeat="o in ctl.requests">
+              <td>{{::o.from}}</td>
+              <td>{{::o.to}}</td>
+              <td>{{::o.amount}}</td>
+              <td>{{::o.purpose}}</td>
+              <td>
+                  <input type="button" class="btn btn-default" ng-click="ctl.verify(o)" value="Verify" ng-hide="o.status"/>
+                  <input type="button" class="btn btn-danger" ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
+              </td>
+          </tr>
+
+          <tr ng-hide="ctl.requests.length">
+              <td colspan="99" align="center">
+                  <i>No items</i>
+              </td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col s12">
+    <div>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()">New Security</button>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry()">New Calendar Entry</button>
+    </div>
+    <div class="progress" ng-show="ctl.invokeInProgress">
+        <div class="indeterminate"></div>
+    </div>
+  </div>
+</div>
+
+
