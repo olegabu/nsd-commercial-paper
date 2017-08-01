@@ -54,4 +54,5 @@ services:
     image: maxxx1313/fabric-rest
     volumes:
      - ../artifacts:/usr/src/artifacts
+     - ../www:/usr/src/app/www
     command: npm start
