@@ -209,18 +209,6 @@ angular.module('nsd.app',[
         }
     };
 
-    /**
-     *
-     */
-    function globalErrorHandler(e){
-      e = e || {};
-      e.data = e.data || {};
-
-      var statusMsg = e.status ? 'Error' + (e.status != -1?' '+e.status:'') + ': ' + (e.statusText||(e.status==-1?"Connection refused":null)||"Unknown") : null;
-      var reason = e.data.message || e.reason || e.message || statusMsg || e || 'Unknown error';
-      Materialize.toast(reason, 4000, 'mytoast red') // 4000 is the duration of the toast
-    }
-
 })
 
 
@@ -315,3 +303,38 @@ angular.module('nsd.app',[
 })
 
 
+.factory('$exceptionHandler', function ($window) {
+    $window.onunhandledrejection = function(e) {
+        // console.warn('onunhandledrejection', e);
+        e = e || {};
+        onError(e.reason);
+    };
+
+
+    function _getText(reason){
+        return (reason||{}).message || 'Error';
+    }
+
+    function onError(exception){
+        // filter network 403 errors
+        if (exception.status !== 403 ){
+            globalErrorHandler(_getText(exception));
+        }
+    }
+
+    return onError;
+})
+
+
+
+/**
+ *
+ */
+function globalErrorHandler(e){
+  e = e || {};
+  e.data = e.data || {};
+
+  var statusMsg = e.status ? 'Error' + (e.status != -1?' '+e.status:'') + ': ' + (e.statusText||(e.status==-1?"Connection refused":null)||"Unknown") : null;
+  var reason = e.data.message || e.reason || e.message || statusMsg || e || 'Unknown error';
+  Materialize.toast(reason, 4000, 'mytoast red') // 4000 is the duration of the toast
+}

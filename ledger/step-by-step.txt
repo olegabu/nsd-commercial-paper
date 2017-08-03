@@ -1,0 +1,7 @@
+docker-compose up -d ca.nsd.nsd.ru ca.issuer.nsd.ru ca.a.nsd.ru ca.b.nsd.ru
+
+docker-compose up -d orderer.nsd.ru
+
+docker-compose up -d peer0.nsd.nsd.ru peer1.nsd.nsd.ru peer0.issuer.nsd.ru peer1.issuer.nsd.ru peer0.a.nsd.ru peer1.a.nsd.ru peer0.b.nsd.ru peer1.b.nsd.ru
+
+docker-compose up api.nsd.nsd.ru
