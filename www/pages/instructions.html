@@ -20,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in ctl.requests">
+            <tr ng-repeat="o in ctl.list">
                 <td>{{::o.from}}</td>
                 <td>{{::o.to}}</td>
                 <td>{{::o.amount}}</td>
@@ -32,7 +32,7 @@
                 </td>
             </tr>
 
-            <tr ng-hide="ctl.requests.length">
+            <tr ng-hide="ctl.list.length">
                 <td colspan="99" align="center">
                     <i>No items</i>
                 </td>

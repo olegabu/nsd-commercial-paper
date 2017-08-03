@@ -15,7 +15,8 @@ angular.module('nsd.service', [
   'nsd.service.api',
   'nsd.service.user',
   'nsd.service.channel',
-  'nsd.service.socket'
+  'nsd.service.socket',
+  'nsd.service.instructions'
 ]);
 
 angular.module('nsd.app',[

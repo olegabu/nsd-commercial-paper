@@ -3,9 +3,20 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController(ChannelService) {
+function InstructionsController(InstructionService) {
+
+  var ctrl = this;
+  ctrl.list = [];
+
+  ctrl.reload = function(){
+
+    return InstructionService.list()
+      .then(function(list){
+        ctrl.list = list
+      });
+  }
 
 }
 
-angular.module('nsd.controller.instructions', ['nsd.service.channel'])
+angular.module('nsd.controller.instructions', ['nsd.service.instructions'])
 .controller('InstructionsController', InstructionsController);
