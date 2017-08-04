@@ -5073,12 +5073,13 @@ a.waves-effect .waves-ripple {
     border-radius: 0 0 2px 2px;
     background-color: #fafafa;
     padding: 4px 6px;
-    height: 101px;
-    width: 100%
+    height: 56px;
+    width: 100%;
+    text-align: right;
 }
 
 .modal .modal-footer .btn,.modal .modal-footer .btn-large,.modal .modal-footer .btn-flat {
-    margin: 30px 0
+    margin: 6px 0
 }
 
 .lean-overlay {
@@ -5368,7 +5369,7 @@ input:not([type]).invalid+label:after,input:not([type]):focus.invalid+label:afte
 }
 
 input:not([type]).validate+label,input[type=text].validate+label,input[type=password].validate+label,input[type=email].validate+label,input[type=url].validate+label,input[type=time].validate+label,input[type=date].validate+label,input[type=datetime].validate+label,input[type=datetime-local].validate+label,input[type=tel].validate+label,input[type=number].validate+label,input[type=search].validate+label,textarea.materialize-textarea.validate+label {
-    width: 100%;
+    // width: 100%;
     pointer-events: none
 }
 

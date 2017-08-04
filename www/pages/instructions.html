@@ -1,11 +1,13 @@
 
 <div class="row">
+<!--
   <div class="col s12">
     <ul tabs class="tabs">
       <li class="tab col s3"><a href="#tab-balances">Instructions</a></li>
       <li class="tab col s3"><a href="#tab-history">History</a></li>
     </ul>
   </div>
+-->
   <!-- tab -->
   <div id="tab-balances" class="col s12">
       <table class="table-bordered highlight responsive-table">
@@ -49,17 +51,126 @@
       </table>
   </div>
   <!-- tab -->
+  <!--
   <div id="tab-history" class="col s12">
     <i>data will be here</i>
   </div>
+  -->
 </div>
-
 
 <div class="row">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newSellInstruction()">Sell</button>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newBuyInstruction()">Buy</button>
+      <!-- Modal Trigger -->
+      <button class="btn btn-primary" type="button" -ng-click="ctl.newInstructionTransfer()" href="#transferInstruction" modal>
+        Transfer Instruction
+      </button>
     </div>
+  </div>
+</div>
+
+
+
+<!-- Modal Structure -->
+<div id="transferInstruction" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h4>Transfer Instruction</h4>
+    <form id="pr_form" class="form-horizontal">
+
+        <div class="row">
+          <h5 class="col s12">From</h5>
+        </div>
+        <div class="row">
+          <div class="input-field col s5">
+            <input id="first_name" type="text" class="validate">
+            <label for="first_name">Deponent code</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Account</label>
+          </div>
+          <div class="input-field col s3">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Division</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <h5 class="col s12">To</h5>
+        </div>
+        <div class="row">
+          <div class="input-field col s5">
+            <input id="first_name" type="text" class="validate">
+            <label for="first_name">Deponent code</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Account</label>
+          </div>
+          <div class="input-field col s3">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Division</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <i class="material-icons prefix">account_balance_wallet</i>
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">ISIN</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Quantity</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Reference</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Trade Date</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Instruction Date</label>
+          </div>
+        </div>
+
+        <div class="row">
+            <h5 class="col s12">Reason</h5>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <textarea id="textarea1" class="materialize-textarea"></textarea>
+            <label for="textarea1">Description</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s8">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Document number</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="last_name" type="text" class="validate">
+            <label for="last_name">Document date</label>
+          </div>
+        </div>
+
+    </form>
+
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
+    <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat">Disagree</a>
   </div>
 </div>
