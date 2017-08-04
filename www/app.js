@@ -215,13 +215,11 @@ angular.module('nsd.app',[
             return config;
         },
 
-
+        // throws error, so '$exceptionHandler' service will caught it
         requestError:function(rejection){
-          globalErrorHandler(rejection);
           throw rejection;
         },
         responseError:function(rejection){
-          globalErrorHandler(rejection);
           throw rejection;
         }
     };
@@ -238,8 +236,6 @@ angular.module('nsd.app',[
  * @ngInject
  */
 .service('ConfigLoader', function(ApiService, $rootScope){
-
-    $rootScope
 
     /** @type {Promise<FabricConfig>} */
     var configPromise;
@@ -325,15 +321,10 @@ angular.module('nsd.app',[
         onError(e);
     };
 
-
-    function _getText(reason){
-        return (reason||{}).message || 'Error';
-    }
-
     function onError(exception){
         // filter network 403 errors
         if (exception.status !== 403 ){
-            globalErrorHandler(_getText(exception));
+            globalErrorHandler(exception);
         }
     }
 
