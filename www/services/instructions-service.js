@@ -31,15 +31,15 @@ angular.module('nsd.service.instructions', ['nsd.service.api'])
 function getSampleList(){
   return [
     {
-      transferer : "Org 1",
-      receiver   : "Org 2",
-      security   : "US0378331005",
-      quantity   : 100500,
-      reference  : "This is a first transaction",
-      tade_date  : Date.now(),
-      created    : Date.now(),
-      status     : 'approved',
-      side       : 'transferer'
+      transferer  : "Org 1",
+      receiver    : "Org 2",
+      security    : "US0378331005",
+      quantity    : 100500,
+      reference   : "This is a first transaction",
+      trade_date  : Date.now(),
+      created     : Date.now(),
+      status      : 'approved',
+      side        : 'transferer'
     }
 
   ];
