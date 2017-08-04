@@ -337,7 +337,7 @@ angular.module('nsd.app',[
  *
  */
 function globalErrorHandler(e){
-  console.log('globalErrorHandler', e);
+  console.warn('globalErrorHandler', e);
   e = e || {};
   if(typeof e == "string"){
     e = {message:e};
