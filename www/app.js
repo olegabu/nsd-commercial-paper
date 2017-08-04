@@ -119,8 +119,52 @@ angular.module('nsd.app',[
   }
 })
 
+// THIS method should be called BEFORE navigateDefault()
+.run(function(UserService, $rootScope, $state, $log){
+
+  //
+  var loginState = 'app.login';
+
+  // https://github.com/angular-ui/ui-router/wiki#state-change-events
+  $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams, options){
+    console.log('$stateChangeStart', event, toState, toParams);
+
+    // check access
+    var isAllowed = UserService.canAccess(toState);
+    var isLoginState = toState.name == loginState;
+
+    if ( isLoginState && !isAllowed){
+      $log.warn('login state cannot be forbidden');
+      isAllowed = true;
+    }
+
+    console.log('$stateChangeStart access: authorized - %s, allowed - %s, login - %s', UserService.isAuthorized(), isAllowed, isLoginState);
+    // prevent navigation to forbidden pages
+    if ( !UserService.isAuthorized() && !isAllowed && !isLoginState){
+      event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
+      if(fromState.name == ""){
+        // just enter the page - redirect to login page
+        goLogin();
+      }
+    }
+  });
+
+  // set state data to root scope
+  $rootScope.$on('$stateChangeSuccess',  function(event, toState, toParams, fromState, fromParams, options){
+    $rootScope.$state = toState;
+    $rootScope.$stateParams = toParams;
+  });
+
+  /**
+   *
+   */
+  function goLogin(){
+    $state.go(loginState);
+  }
+})
+
 // instead of: $urlRouterProvider.otherwise('/default');
-.run(function($state, $log, $rootScope){
+.run(function navigateDefault($state, $log, $rootScope){
 
   var defaultState = getDefaultState();
   if(!defaultState){
@@ -146,48 +190,6 @@ angular.module('nsd.app',[
     return null;
   }
 
-})
-
-.run(function(UserService, $rootScope, $state, $log){
-
-  //
-  var loginState = 'app.login';
-
-  // https://github.com/angular-ui/ui-router/wiki#state-change-events
-  $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams, options){
-    // console.log('$stateChangeStart', event, toState, toParams);
-
-    // check access
-    var isAllowed = UserService.canAccess(toState);
-    var isLoginState = toState.name == loginState;
-
-    if ( isLoginState && !isAllowed){
-      $log.warn('login state cannot be forbidden');
-      isAllowed = true;
-    }
-
-    // prevent navigation to forbidden pages
-    if ( !UserService.isAuthorized() && !isAllowed && !isLoginState){
-      event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
-      if(fromState.name == ""){
-        // just enter the page - redirect to login page
-        goLogin();
-      }
-    }
-  });
-
-  // set state data to root scope
-  $rootScope.$on('$stateChangeSuccess',  function(event, toState, toParams, fromState, fromParams, options){
-    $rootScope.$state = toState;
-    $rootScope.$stateParams = toParams;
-  });
-
-  /**
-   *
-   */
-  function goLogin(){
-    $state.go(loginState);
-  }
 })
 
 

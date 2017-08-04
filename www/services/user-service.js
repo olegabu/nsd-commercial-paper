@@ -41,7 +41,6 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
 
   UserService.restoreAuthorization = function(){
     var tokenInfo = localStorageService.get('user');
-    $log.info('UserService.restoreAuthorization', !!tokenInfo);
 
     if(tokenInfo){
       // {"exp":1500343472,"username":"test22","orgName":"org2","iat":1500307472}
@@ -53,6 +52,8 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
         tokenInfo = null;
       }
     }
+
+    $log.info('UserService.restoreAuthorization', !!tokenInfo);
     $rootScope._tokenInfo = tokenInfo;
   };
 
@@ -83,12 +84,15 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
       isAllowed = true;
     }
     // console.log('UserService.canAccess:', isAllowed, state.name);
-    return isAllowed;
+    return isAllowed && UserService.isAuthorized();
   };
 
   return UserService;
 }
 
+/**
+ * @ngModule
+ */
 angular.module('nsd.service.user', ['nsd.service.api','nsd.config.env', 'LocalStorageModule'])
   .service('UserService', UserService)
 
