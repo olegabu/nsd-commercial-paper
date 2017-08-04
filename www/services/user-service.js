@@ -89,9 +89,16 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
   return UserService;
 }
 
-angular.module('nsd.service.user', ['nsd.service.api', 'LocalStorageModule'])
+angular.module('nsd.service.user', ['nsd.service.api','nsd.config.env', 'LocalStorageModule'])
   .service('UserService', UserService)
 
-  .run(function(UserService){
+  .run(function(UserService, $log, env){
     UserService.restoreAuthorization();
+
+    if(!env.role){
+      $log.warn('Client role not set');
+      env.role = '*';
+    } else {
+      $log.info('Client role:' + env.role);
+    }
   });
