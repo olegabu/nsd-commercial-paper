@@ -18,6 +18,10 @@
       padding: 15px;
       word-break: break-word;
     }
+    /* prioritize ng-cloak */
+    [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+      display: none !important;
+    }
   </style>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
 
@@ -54,7 +58,7 @@
         <div class="title hide-on-med-and-down pull-left">{{::_config.org}}</div>
 
         <!-- main menu -->
-        <ul class="menu hide-on-med-and-down" ng-cloak ng-show="ctrl.authorized()">
+        <ul class="menu hide-on-med-and-down" ng-cloak>
           <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
             <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">{{::state.data.name||state.name}}</a>
           </li>
@@ -79,7 +83,7 @@
   <!-- main menu mobile -->
   <aside class="sidebar-left" side-bar="">
     <ul class="side-nav fixed clearfix left" id="nav-mobile">
-      <div ng-show="ctrl.authorized()">
+      <div>
         <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
           <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">{{::state.data.name||state.name}}</a>
         </li>

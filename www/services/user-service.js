@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function UserService($log, $rootScope, ApiService, localStorageService) {
+function UserService($log, $rootScope, ApiService, localStorageService, env) {
 
   /**
    * @param {{username:string, orgName:string}} user
@@ -11,7 +11,7 @@ function UserService($log, $rootScope, ApiService, localStorageService) {
   UserService.signUp = function(user) {
     return ApiService.user.signUp(user.username, user.orgName)
       .then(function(/** @type {TokenInfo} */tokenInfo){
-        $rootScope._tokenInfo = tokenInfo;
+        $rootScope._tokenInfo = tokenInfo; // used in http provider
         UserService.saveAuthorization(tokenInfo);
         return tokenInfo;
       });
@@ -71,6 +71,20 @@ function UserService($log, $rootScope, ApiService, localStorageService) {
       }
       return tokenData;
   }
+
+
+  UserService.canAccess = function(state){
+    // check access
+    var isAllowed = false;
+
+    var rolesAllowed = state.data ? state.data.roles || '*' : '*';
+    rolesAllowed = rolesAllowed || ['*'];
+    if(rolesAllowed == '*' || rolesAllowed.indexOf(env.role) >= 0 ) {
+      isAllowed = true;
+    }
+    // console.log('UserService.canAccess:', isAllowed, state.name);
+    return isAllowed;
+  };
 
   return UserService;
 }

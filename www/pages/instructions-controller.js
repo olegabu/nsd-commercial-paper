@@ -8,13 +8,19 @@ function InstructionsController(InstructionService) {
   var ctrl = this;
   ctrl.list = [];
 
+  /**
+   *
+   */
   ctrl.reload = function(){
-
     return InstructionService.list()
       .then(function(list){
-        ctrl.list = list
+        ctrl.list = list;
       });
   }
+
+
+  // INIT
+  ctrl.reload();
 
 }
 

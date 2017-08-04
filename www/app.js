@@ -112,52 +112,25 @@ angular.module('nsd.app',[
 
 })
 
+.run(function(env, $log){
+  if(!env.role){
+    $log.warn('Client role not set');
+    env.role = '*';
+  }
+})
 
-.run(function(UserService, ApiService, $rootScope, $state, $log){
+// instead of: $urlRouterProvider.otherwise('/default');
+.run(function($state, $log, $rootScope){
+
   var defaultState = getDefaultState();
   if(!defaultState){
     $log.warn('No default state set. Please, mark any state as default by setting "data:{ default:true }"');
   }
-  $rootScope.stateDefault = defaultState;
+  $rootScope.stateDefault = defaultState; // TODO: remove?
 
   // instead of: $urlRouterProvider.otherwise('/default');
   if($state.current.name == "" && defaultState){
     $state.go(defaultState.name);
-  }
-
-  var loginState = 'app.login';
-
-  // https://github.com/angular-ui/ui-router/wiki#state-change-events
-  $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams, options){
-    // console.log('$stateChangeStart', event, toState, toParams);
-    var isGuestAllowed = toState.data && toState.data.guest !== false;
-    var isLoginState = toState.name == loginState;
-
-
-    if ( isLoginState && !isGuestAllowed){
-      $log.warn('login state cannot be authorized-only');
-    }
-
-    // prevent navigation to forbidden pages
-    if ( !UserService.isAuthorized() && !isGuestAllowed && !isLoginState){
-      event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
-      if(fromState.name == ""){
-        // just enter the page - redirect to login page
-        goLogin();
-      }
-    }
-  });
-
-  $rootScope.$on('$stateChangeSuccess',  function(event, toState, toParams, fromState, fromParams, options){
-    $rootScope.$state = toState;
-    $rootScope.$stateParams = toParams;
-  });
-
-  /**
-   *
-   */
-  function goLogin(){
-    $state.go(loginState);
   }
 
   /**
@@ -173,6 +146,48 @@ angular.module('nsd.app',[
     return null;
   }
 
+})
+
+.run(function(UserService, $rootScope, $state, $log){
+
+  //
+  var loginState = 'app.login';
+
+  // https://github.com/angular-ui/ui-router/wiki#state-change-events
+  $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams, options){
+    // console.log('$stateChangeStart', event, toState, toParams);
+
+    // check access
+    var isAllowed = UserService.canAccess(toState);
+    var isLoginState = toState.name == loginState;
+
+    if ( isLoginState && !isAllowed){
+      $log.warn('login state cannot be forbidden');
+      isAllowed = true;
+    }
+
+    // prevent navigation to forbidden pages
+    if ( !UserService.isAuthorized() && !isAllowed && !isLoginState){
+      event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
+      if(fromState.name == ""){
+        // just enter the page - redirect to login page
+        goLogin();
+      }
+    }
+  });
+
+  // set state data to root scope
+  $rootScope.$on('$stateChangeSuccess',  function(event, toState, toParams, fromState, fromParams, options){
+    $rootScope.$state = toState;
+    $rootScope.$stateParams = toParams;
+  });
+
+  /**
+   *
+   */
+  function goLogin(){
+    $state.go(loginState);
+  }
 })
 
 
@@ -193,6 +208,7 @@ angular.module('nsd.app',[
             config.headers['X-Requested-With'] = 'XMLHttpRequest'; // make ajax request visible among the others
             config.withCredentials = true;
 
+            // $rootScope._tokenInfo is set in UserService
             if($rootScope._tokenInfo){
               config.headers['Authorization'] = 'Bearer '+$rootScope._tokenInfo.token;
             }
@@ -218,6 +234,7 @@ angular.module('nsd.app',[
 
 /**
  * load config from remote endpoint
+ * @deprecated: use environment service
  * @ngInject
  */
 .service('ConfigLoader', function(ApiService, $rootScope){
@@ -234,9 +251,6 @@ angular.module('nsd.app',[
           .then(function(config){
             $rootScope._config = config;
             _config = config;
-
-            config.role = 'nsd'; // nsd|issuer|investor
-
             _extendConfig();
             return config;
           });
@@ -308,7 +322,7 @@ angular.module('nsd.app',[
     $window.onunhandledrejection = function(e) {
         // console.warn('onunhandledrejection', e);
         e = e || {};
-        onError(e.reason);
+        onError(e);
     };
 
 
@@ -332,7 +346,11 @@ angular.module('nsd.app',[
  *
  */
 function globalErrorHandler(e){
+  console.log('globalErrorHandler', e);
   e = e || {};
+  if(typeof e == "string"){
+    e = {message:e};
+  }
   e.data = e.data || {};
 
   var statusMsg = e.status ? 'Error' + (e.status != -1?' '+e.status:'') + ': ' + (e.statusText||(e.status==-1?"Connection refused":null)||"Unknown") : null;

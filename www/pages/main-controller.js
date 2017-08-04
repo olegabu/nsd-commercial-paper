@@ -8,7 +8,7 @@ function MainController($scope, UserService, $state, ApiService) {
   ctrl.$state = $state;
 
   ctrl.visibleMenuItem = function(state){
-    return !(state.abstract || state.data && state.data.visible===false);
+    return !state.abstract && (!state.data || state.data.visible!==false) && UserService.canAccess(state);
   }
 
   ctrl.authorized = function(){
@@ -26,7 +26,6 @@ function MainController($scope, UserService, $state, ApiService) {
     // $state.go($state.current, $state.params, { notify: true });
     $state.go('app.login');
   }
-
 
   return ctrl;
 }
