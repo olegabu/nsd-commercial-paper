@@ -22,6 +22,7 @@ services:
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
       - ../artifacts/crypto-config/peerOrganizations/ORG1.DOMAIN/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-ORG1.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
 
   ca.ORG2.DOMAIN:
     container_name: ca.ORG2.DOMAIN
@@ -38,6 +39,7 @@ services:
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
       - ../artifacts/crypto-config/peerOrganizations/ORG2.DOMAIN/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-ORG2.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
 
   ca.ORG3.DOMAIN:
     container_name: ca.ORG3.DOMAIN
@@ -54,6 +56,7 @@ services:
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
       - ../artifacts/crypto-config/peerOrganizations/ORG3.DOMAIN/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-ORG3.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
 
   ca.ORG4.DOMAIN:
     container_name: ca.ORG4.DOMAIN
@@ -70,6 +73,7 @@ services:
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
       - ../artifacts/crypto-config/peerOrganizations/ORG4.DOMAIN/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-ORG4.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
 
   orderer.DOMAIN:
     container_name: orderer.DOMAIN
@@ -276,16 +280,6 @@ services:
       - CORE_PEER_LOCALMSPID=ORG1MSP
     volumes:
         - ../artifacts/crypto-config/peerOrganizations/ORG1.DOMAIN/users/Admin@ORG1.DOMAIN:/etc/hyperledger/crypto/peer
-    command: >
-      bash -c "peer channel create -o orderer.DOMAIN:7050 -c CHANNEL_NAME -f /etc/hyperledger/artifacts/channel/CHANNEL_NAME.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt
-      && sleep 5
-      && CORE_PEER_ADDRESS=peer0.ORG1.DOMAIN:7051 peer channel join -b CHANNEL_NAME.block
-      && CORE_PEER_ADDRESS=peer1.ORG1.DOMAIN:7051 peer channel join -b CHANNEL_NAME.block
-      && sleep 5
-      && CORE_PEER_ADDRESS=peer0.ORG1.DOMAIN:7051 peer chaincode install -n mycc -v 1.0 -p chaincode_example02
-      && CORE_PEER_ADDRESS=peer1.ORG1.DOMAIN:7051 peer chaincode install -n mycc -v 1.0 -p chaincode_example02
-      && sleep 5
-      && CORE_PEER_ADDRESS=peer0.ORG1.DOMAIN:7051 peer chaincode instantiate -n mycc -v 1.0 -c '{\"Args\":[\"init\",\"a\",\"100\",\"b\",\"200\"]}' -o orderer.DOMAIN:7050 -C CHANNEL_NAME --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
     depends_on:
       - peer0.ORG1.DOMAIN
       - peer1.ORG1.DOMAIN
@@ -298,15 +292,9 @@ services:
       - CORE_PEER_LOCALMSPID=ORG2MSP
     volumes:
         - ../artifacts/crypto-config/peerOrganizations/ORG2.DOMAIN/users/Admin@ORG2.DOMAIN:/etc/hyperledger/crypto/peer
-    command: >
-      bash -c "sleep 10
-      && CORE_PEER_ADDRESS=peer0.ORG2.DOMAIN:7051 peer channel join -b CHANNEL_NAME.block
-      && CORE_PEER_ADDRESS=peer1.ORG2.DOMAIN:7051 peer channel join -b CHANNEL_NAME.block
-      && sleep 5
-      && CORE_PEER_ADDRESS=peer0.ORG2.DOMAIN:7051 peer chaincode install -n mycc -v 1.0 -p chaincode_example02
-      && CORE_PEER_ADDRESS=peer1.ORG2.DOMAIN:7051 peer chaincode install -n mycc -v 1.0 -p chaincode_example02"
     depends_on:
-      - cli.ORG1.DOMAIN
+      - peer0.ORG2.DOMAIN
+      - peer1.ORG2.DOMAIN
 
   cli.ORG3.DOMAIN:
     container_name: cli.ORG3.DOMAIN
@@ -316,12 +304,6 @@ services:
       - CORE_PEER_LOCALMSPID=ORG3MSP
     volumes:
         - ../artifacts/crypto-config/peerOrganizations/ORG3.DOMAIN/users/Admin@ORG3.DOMAIN:/etc/hyperledger/crypto/peer
-    command: >
-      bash -c "sleep 10
-      && CORE_PEER_ADDRESS=peer0.ORG3.DOMAIN:7051 peer channel join -b CHANNEL_NAME.block
-      && CORE_PEER_ADDRESS=peer1.ORG3.DOMAIN:7051 peer channel join -b CHANNEL_NAME.block
-      && sleep 5
-      && CORE_PEER_ADDRESS=peer0.ORG3.DOMAIN:7051 peer chaincode install -n mycc -v 1.0 -p chaincode_example02
-      && CORE_PEER_ADDRESS=peer1.ORG3.DOMAIN:7051 peer chaincode install -n mycc -v 1.0 -p chaincode_example02"
     depends_on:
-      - cli.ORG1.DOMAIN
+      - peer0.ORG3.DOMAIN
+      - peer1.ORG3.DOMAIN
