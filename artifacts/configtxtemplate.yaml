@@ -1,7 +1,4 @@
-# Copyright IBM Corp. All Rights Reserved.
-#
-# SPDX-License-Identifier: Apache-2.0
-#
+# Copyright Altoros 2017 All Rights Reserved.
 
 ---
 ################################################################################
@@ -14,7 +11,7 @@
 ################################################################################
 Profiles:
 
-    FourOrgsOrdererGenesis:
+    OrdererGenesis:
         Orderer:
             <<: *OrdererDefaults
             Organizations:
@@ -22,11 +19,17 @@ Profiles:
         Consortiums:
             SampleConsortium:
                 Organizations:
-                    - *ORG1
-                    - *ORG2
-                    - *ORG3
-                    - *ORG4
-    ThreeOrgsChannel:
+                    - *ORG1 # NSD
+                    - *ORG2 # issuer
+                    - *ORG3 # investor a
+                    - *ORG4 # investor b
+    depository:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
+    ORG2-ORG3:
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults
@@ -34,6 +37,22 @@ Profiles:
                 - *ORG1
                 - *ORG2
                 - *ORG3
+    ORG3-ORG4:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
+                - *ORG3
+                - *ORG4
+    ORG2-ORG4:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
+                - *ORG2
+                - *ORG4
 
 ################################################################################
 #

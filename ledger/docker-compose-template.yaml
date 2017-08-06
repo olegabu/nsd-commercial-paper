@@ -335,3 +335,15 @@ services:
     depends_on:
       - peer0.ORG3.DOMAIN
       - peer1.ORG3.DOMAIN
+
+  cli.ORG4.DOMAIN:
+    container_name: cli.ORG4.DOMAIN
+    extends:
+      service: cli.DOMAIN
+    environment:
+      - CORE_PEER_LOCALMSPID=ORG4MSP
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/ORG4.DOMAIN/users/Admin@ORG4.DOMAIN:/etc/hyperledger/crypto/peer
+    depends_on:
+      - peer0.ORG4.DOMAIN
+      - peer1.ORG4.DOMAIN

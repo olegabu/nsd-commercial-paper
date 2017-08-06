@@ -5,11 +5,6 @@ ORG1=nsd
 ORG2=issuer
 ORG3=a
 ORG4=b
-CHANNEL_NAME="$ORG2-$ORG3"
-
-CHAINCODE_NAME=mycc
-CHAINCODE_PATH=chaincode_example02
-CHAINCODE_INIT='{"Args":["init","a","100","b","200"]}'
 
 CLI_TIMEOUT=10000
 COMPOSE_FILE=ledger/docker-compose.yaml
@@ -24,7 +19,7 @@ function removeUnwantedImages() {
     echo "No images available for deletion"
   else
     echo "Removing docker images: $DOCKER_IMAGE_IDS"
-    docker rmi -f $DOCKER_IMAGE_IDS
+    docker rmi -f ${DOCKER_IMAGE_IDS}
   fi
 }
 
@@ -59,18 +54,17 @@ function removeDockersWithDomain() {
 function generateArtifacts() {
     echo "Creating yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $ORG4"
     # configtx and cryptogen
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" -e "s/CHANNEL_NAME/$CHANNEL_NAME/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" artifacts/cryptogentemplate-orderer.yaml > artifacts/"cryptogen-$DOMAIN.yaml"
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG1/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG1.yaml"
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG2/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG2.yaml"
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG3/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG3.yaml"
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG4/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG4.yaml"
     # docker-compose.yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" -e "s/CHANNEL_NAME/$CHANNEL_NAME/g" $COMPOSE_TEMPLATE > ${COMPOSE_FILE}
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
     # network-config.json
-    #  fill environments                                                   |   remove comments
+    #  fill environments                                                                                            |   remove comments
     sed -e "s/\DOMAIN/$DOMAIN/g" -e "s/\ORG1/$ORG1/g" -e "s/\ORG2/$ORG2/g" -e "s/\ORG3/$ORG3/g" -e "s/\ORG4/$ORG4/g" -e "s/^\s*\/\/.*$//g" artifacts/network-config-template.json > artifacts/network-config.json
-#    sed -e "s/\DOMAIN/$DOMAIN/g" -e "s/\ORG1/$ORG1/g" -e "s/\ORG2/$ORG2/g" -e "s/^\s*\/\/.*$//g" artifacts-dev/network-config-template.json > artifacts-dev/network-config.json
     # fabric-ca-server-config.yaml
     sed -e "s/ORG/$ORG1/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG1.yaml"
     sed -e "s/ORG/$ORG2/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG2.yaml"
@@ -84,20 +78,29 @@ function generateArtifacts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG3.yaml"
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG4.yaml"
 
-    echo "Generating orderer genesis block and channel config transaction with configtxgen"
+    echo "Generating orderer genesis block with configtxgen"
     mkdir -p artifacts/channel
-    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile FourOrgsOrdererGenesis -outputBlock ./channel/genesis.block
-    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile ThreeOrgsChannel -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
+    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile OrdererGenesis -outputBlock ./channel/genesis.block
+
+    CHANNEL_NAME=depository
+    echo "Generating channel config transaction for $CHANNEL_NAME"
+    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$CHANNEL_NAME" -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
+
+    for CHANNEL_NAME in "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4"
+    do
+        echo "Generating channel config transaction for $CHANNEL_NAME"
+        docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$CHANNEL_NAME" -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
+    done
 
     echo "Adding generated CA private keys filenames to yaml"
     CA1_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG1.$DOMAIN"/ca/*_sk`)
     CA2_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG2.$DOMAIN"/ca/*_sk`)
     CA3_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG3.$DOMAIN"/ca/*_sk`)
     CA4_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG4.$DOMAIN"/ca/*_sk`)
-    [[ -z  $CA1_PRIVATE_KEY  ]] && echo "empty CA1 private key" && exit 1
-    [[ -z  $CA2_PRIVATE_KEY  ]] && echo "empty CA2 private key" && exit 1
-    [[ -z  $CA3_PRIVATE_KEY  ]] && echo "empty CA3 private key" && exit 1
-    [[ -z  $CA4_PRIVATE_KEY  ]] && echo "empty CA4 private key" && exit 1
+    [[ -z  ${CA1_PRIVATE_KEY}  ]] && echo "empty CA1 private key" && exit 1
+    [[ -z  ${CA2_PRIVATE_KEY}  ]] && echo "empty CA2 private key" && exit 1
+    [[ -z  ${CA3_PRIVATE_KEY}  ]] && echo "empty CA3 private key" && exit 1
+    [[ -z  ${CA4_PRIVATE_KEY}  ]] && echo "empty CA4 private key" && exit 1
     sed -i -e "s/CA1_PRIVATE_KEY/${CA1_PRIVATE_KEY}/g" -e "s/CA2_PRIVATE_KEY/${CA2_PRIVATE_KEY}/g" -e "s/CA3_PRIVATE_KEY/${CA3_PRIVATE_KEY}/g" -e "s/CA4_PRIVATE_KEY/${CA4_PRIVATE_KEY}/g" ${COMPOSE_FILE}
 
     # docker generates files to mapped volumes as root, change ownership
@@ -105,6 +108,7 @@ function generateArtifacts() {
 }
 
 function createChannel () {
+    CHANNEL_NAME=$1
     info "creating channel $CHANNEL_NAME by $ORG1"
 
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG1.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $CHANNEL_NAME -f /etc/hyperledger/artifacts/channel/$CHANNEL_NAME.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
@@ -112,6 +116,7 @@ function createChannel () {
 
 function joinChannel() {
     ORG=$1
+    CHANNEL_NAME=$2
     info "joining channel $CHANNEL_NAME by $ORG"
 
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer channel join -b $CHANNEL_NAME.block      && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer channel join -b $CHANNEL_NAME.block"
@@ -119,8 +124,9 @@ function joinChannel() {
 
 function instantiateChaincode () {
     ORG=$1
-    N=$2
-    I=$3
+    CHANNEL_NAME=$2
+    N=$3
+    I=$4
     info "instantiating chaincode $N on $CHANNEL_NAME by $ORG with $I"
 
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode instantiate -n $N -v 1.0 -c '$I' -o orderer.$DOMAIN:7050 -C $CHANNEL_NAME --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
@@ -148,18 +154,41 @@ function networkUp () {
     exit 1
   fi
 
-  #sleep 5
-  createChannel
-  #sleep 5
-  joinChannel ${ORG1}
-  joinChannel ${ORG2}
-  joinChannel ${ORG3}
+  createChannel depository
+  joinChannel ${ORG1} depository
+
+  installChaincode ${ORG1} book book
+  instantiateChaincode ${ORG1} depository book '{"Args":["init","a","100","b","200"]}'
+
+  createChannel "$ORG2-$ORG3"
+  joinChannel ${ORG1} "$ORG2-$ORG3"
+  joinChannel ${ORG2} "$ORG2-$ORG3"
+  joinChannel ${ORG3} "$ORG2-$ORG3"
+
+  createChannel "$ORG2-$ORG4"
+  joinChannel ${ORG1} "$ORG2-$ORG4"
+  joinChannel ${ORG2} "$ORG2-$ORG4"
+  joinChannel ${ORG4} "$ORG2-$ORG4"
+
+  createChannel "$ORG3-$ORG4"
+  joinChannel ${ORG1} "$ORG3-$ORG4"
+  joinChannel ${ORG3} "$ORG3-$ORG4"
+  joinChannel ${ORG4} "$ORG3-$ORG4"
+
+  CHAINCODE_NAME=mycc
+  CHAINCODE_PATH=chaincode_example02
+  CHAINCODE_INIT='{"Args":["init","a","100","b","200"]}'
+
   installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
   installChaincode ${ORG2} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
   installChaincode ${ORG3} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
-  #sleep 5
-  instantiateChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_INIT}
-  logs
+  installChaincode ${ORG4} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
+
+  instantiateChaincode ${ORG1} "$ORG2-$ORG3" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+  instantiateChaincode ${ORG1} "$ORG2-$ORG4" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+  instantiateChaincode ${ORG1} "$ORG3-$ORG4" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+
+  #logs
 }
 
 function info() {
@@ -205,6 +234,7 @@ function printHelp () {
   echo
   echo "	sudo network.sh -m generate"
   echo "	network.sh -m up"
+  echo "	network.sh -m logs"
   echo "	network.sh -m down"
 }
 
@@ -236,9 +266,11 @@ elif [ "${MODE}" == "restart" ]; then
 elif [ "${MODE}" == "logs" ]; then
   logs
 elif [ "${MODE}" == "channel" ]; then
-  createChannel
+  createChannel "$ORG2-$ORG3"
 elif [ "${MODE}" == "join" ]; then
-  joinChannel ${ORG1}
+  joinChannel ${ORG1} "$ORG2-$ORG3"
+  joinChannel ${ORG2} "$ORG2-$ORG3"
+  joinChannel ${ORG3} "$ORG2-$ORG3"
 elif [ "${MODE}" == "install" ]; then
   installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
 elif [ "${MODE}" == "instantiate" ]; then
