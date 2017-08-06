@@ -9,6 +9,7 @@ ORG4=b
 CLI_TIMEOUT=10000
 COMPOSE_FILE=ledger/docker-compose.yaml
 COMPOSE_TEMPLATE=ledger/docker-compose-template.yaml
+COMPOSE_FILE_DEV=ledger/docker-compose-dev.yaml
 
 # Delete any images that were generated as a part of this setup
 # specifically the following images are often left behind:
@@ -191,16 +192,41 @@ function networkUp () {
   #logs
 }
 
+function devNetworkUp () {
+  docker-compose -f ${COMPOSE_FILE_DEV} up -d 2>&1
+  if [ $? -ne 0 ]; then
+    echo "ERROR !!!! Unable to start network"
+    logs
+    exit 1
+  fi
+}
+
+function devNetworkDown () {
+  docker-compose -f ${COMPOSE_FILE_DEV} down
+}
+
+function devInstallInstantiate () {
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"a\",\"100\",\"b\",\"200\"]}'"
+}
+
+function devInvoke () {
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"a\",\"b\",\"100\"]}'"
+}
+
 function info() {
     #figlet $1
-    echo "**************************************************************************************"
+    echo "*************************************************************************************************************"
     echo "$1"
-    echo "**************************************************************************************"
+    echo "*************************************************************************************************************"
     sleep 2
 }
 
 function logs () {
     TIMEOUT=${CLI_TIMEOUT} COMPOSE_HTTP_TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE} logs -f
+}
+
+function devLogs () {
+    TIMEOUT=${CLI_TIMEOUT} COMPOSE_HTTP_TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE_DEV} logs -f
 }
 
 function networkDown () {
@@ -275,6 +301,16 @@ elif [ "${MODE}" == "install" ]; then
   installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
 elif [ "${MODE}" == "instantiate" ]; then
   instantiateChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+elif [ "${MODE}" == "devup" ]; then
+  devNetworkUp
+elif [ "${MODE}" == "devinit" ]; then
+  devInstallInstantiate
+elif [ "${MODE}" == "devinvoke" ]; then
+  devInvoke
+elif [ "${MODE}" == "devlogs" ]; then
+  devLogs
+elif [ "${MODE}" == "devdown" ]; then
+  devNetworkDown
 else
   printHelp
   exit 1
