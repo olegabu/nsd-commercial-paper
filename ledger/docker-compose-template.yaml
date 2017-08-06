@@ -272,6 +272,34 @@ services:
       - peer0.ORG2.DOMAIN
       - peer1.ORG2.DOMAIN
 
+  api.ORG3.DOMAIN:
+    extends:
+      file: base.yaml
+      service: api-base
+    container_name: api.ORG3.DOMAIN
+    ports:
+      - "4002:4000"
+    environment:
+      - ORG=ORG3
+      - PORT=4000
+    depends_on:
+      - peer0.ORG3.DOMAIN
+      - peer1.ORG3.DOMAIN
+
+  api.ORG4.DOMAIN:
+    extends:
+      file: base.yaml
+      service: api-base
+    container_name: api.ORG4.DOMAIN
+    ports:
+      - "4003:4000"
+    environment:
+      - ORG=ORG4
+      - PORT=4000
+    depends_on:
+      - peer0.ORG4.DOMAIN
+      - peer1.ORG4.DOMAIN
+
   cli.ORG1.DOMAIN:
     container_name: cli.ORG1.DOMAIN
     extends:
