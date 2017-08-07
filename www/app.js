@@ -73,7 +73,7 @@ angular.module('nsd.app',[
       controller   : 'BookController',
       controllerAs : 'ctl',
       data:{
-        name: 'Books',
+        name: 'Book',
         roles:'*'
       }
     })

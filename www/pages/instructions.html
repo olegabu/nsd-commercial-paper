@@ -8,6 +8,25 @@
     </ul>
   </div>
 -->
+
+
+  <div class="row">
+    <div class="col s12">
+      <div>
+        <!-- Modal Trigger -->
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer')" href="#transferInstruction" modal>
+          Transfer Instruction
+        </button>
+
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal>
+          Receive Instruction
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
   <!-- tab -->
   <div id="tab-balances" class="col s12">
       <table class="table-bordered highlight responsive-table">
@@ -58,27 +77,12 @@
   -->
 </div>
 
-<div class="row">
-  <div class="col s12">
-    <div>
-      <!-- Modal Trigger -->
-      <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer')" href="#transferInstruction" modal>
-        Send Instruction
-      </button>
-
-      <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal>
-        Receive Instruction
-      </button>
-    </div>
-  </div>
-</div>
-
 
 
 <!-- Modal Structure -->
 <div id="transferInstruction" class="modal modal-fixed-footer">
   <div class="modal-content">
-    <h4>{{inst.side=='transferer'?'Send':'Receive'}} Instruction</h4>
+    <h4>{{inst.side=='transferer'?'Transfer':'Receive'}} Instruction</h4>
     <form name="form" class="form-horizontal">
 
         <div class="row">
@@ -145,7 +149,6 @@
 
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">account_balance_wallet</i>
             <input name="security" type="text" class="validate" ng-model="inst.security" required>
             <label for="security">ISIN</label>
           </div>
@@ -153,7 +156,7 @@
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="quantity" type="text" class="validate" ng-model="inst.quantity" required>
+            <input name="quantity" type="number" min="0" class="validate" ng-model="inst.quantity" required>
             <label for="quantity">Quantity</label>
           </div>
         </div>
@@ -205,7 +208,7 @@
 
   </div>
   <div class="modal-footer">
-    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendTransfer()">Agree</a>
-    <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelTransfer()">Disagree</a>
+    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendTransfer()">Ok</a>
+    <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelTransfer()">Cancel</a>
   </div>
 </div>
