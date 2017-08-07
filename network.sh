@@ -79,6 +79,10 @@ function generateArtifacts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG3.yaml"
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG4.yaml"
 
+    echo "Change cryptomaterial ownership"
+    GID=$(id -g)
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+
     echo "Generating orderer genesis block with configtxgen"
     mkdir -p artifacts/channel
     docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile OrdererGenesis -outputBlock ./channel/genesis.block
@@ -103,9 +107,6 @@ function generateArtifacts() {
     [[ -z  ${CA3_PRIVATE_KEY}  ]] && echo "empty CA3 private key" && exit 1
     [[ -z  ${CA4_PRIVATE_KEY}  ]] && echo "empty CA4 private key" && exit 1
     sed -i -e "s/CA1_PRIVATE_KEY/${CA1_PRIVATE_KEY}/g" -e "s/CA2_PRIVATE_KEY/${CA2_PRIVATE_KEY}/g" -e "s/CA3_PRIVATE_KEY/${CA3_PRIVATE_KEY}/g" -e "s/CA4_PRIVATE_KEY/${CA4_PRIVATE_KEY}/g" ${COMPOSE_FILE}
-
-    # docker generates files to mapped volumes as root, change ownership
-    chown -R 1000:1000 artifacts/
 }
 
 function createChannel () {

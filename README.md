@@ -67,14 +67,12 @@ Following channels are created, peers join them and chaincodes are installed and
 
 Generate artifacts for the network and network-config file for the API server:
 
-`sudo ./network.sh -m generate`
+`./network.sh -m generate`
 
-Note `sudo` is needed temporarily until the issue of generating files as root is resolved.
-
-Note you'll need to wait about 6 minutes until the timing of the generated certs lines up. 
+**Note** you'll need to wait about 6 minutes until the timing of the generated certs lines up. 
 Needed temporarily until the issue is resolved. This may come handy if you need to regenerate frequently:
 
-`sudo ./network.sh -m generate && sleep 6m && beep && ./network.sh -m up`
+`beep && ./network.sh -m generate && sleep 6m && beep && ./network.sh -m up`
 
 Start the network, watch the logs, shutdown.
 
