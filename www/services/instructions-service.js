@@ -20,6 +20,21 @@ function InstructionService(ApiService, $q) {
     // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
   };
 
+  /**
+   */
+  InstructionService.send = function() {
+    return $q.resolve();
+    // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
+  };
+
+
+  /**
+   */
+  InstructionService.receive = function() {
+    return $q.resolve();
+    // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
+  };
+
 }
 
 angular.module('nsd.service.instructions', ['nsd.service.api'])

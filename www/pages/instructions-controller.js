@@ -3,10 +3,12 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController(InstructionService) {
+function InstructionsController($scope, InstructionService) {
 
   var ctrl = this;
   ctrl.list = [];
+
+  var DATE_INPUT_FORMAT = 'dd/mm/yyyy';
 
   /**
    *
@@ -18,6 +20,28 @@ function InstructionsController(InstructionService) {
       });
   }
 
+  ctrl.newInstructionTransfer = function(){
+    if(!$scope.inst){
+        $scope.inst = {
+          trade_date  : new Date().format(DATE_INPUT_FORMAT),
+          created     : new Date().format(DATE_INPUT_FORMAT),
+          authority:{
+            created   : new Date().format(DATE_INPUT_FORMAT)
+          }
+        };
+    }
+  };
+
+  ctrl.sendTransfer = function(){
+    var instruction = $scope.inst;
+    // InstructionService.send();
+    // InstructionService.receive();
+
+    $scope.inst = null;
+  };
+  ctrl.cancelTransfer = function(){
+    $scope.inst = null;
+  };
 
   // INIT
   ctrl.reload();

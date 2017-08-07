@@ -62,8 +62,12 @@
   <div class="col s12">
     <div>
       <!-- Modal Trigger -->
-      <button class="btn btn-primary" type="button" -ng-click="ctl.newInstructionTransfer()" href="#transferInstruction" modal>
-        Transfer Instruction
+      <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer()" href="#transferInstruction" modal>
+        Send Instruction
+      </button>
+
+      <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer()" href="#transferInstruction" modal>
+        Receive Instruction
       </button>
     </div>
   </div>
@@ -75,74 +79,73 @@
 <div id="transferInstruction" class="modal modal-fixed-footer">
   <div class="modal-content">
     <h4>Transfer Instruction</h4>
-    <form id="pr_form" class="form-horizontal">
+    <form name="form" class="form-horizontal">
 
         <div class="row">
-          <h5 class="col s12">From</h5>
-        </div>
-        <div class="row">
           <div class="input-field col s5">
-            <input id="first_name" type="text" class="validate">
-            <label for="first_name">Deponent code</label>
+            <i class="material-icons prefix">call_made</i>
+            <input name="t_dep" type="text" class="validate" ng-model="inst.transferer.dep" required>
+            <label for="t_dep">Deponent code</label>
           </div>
           <div class="input-field col s4">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Account</label>
+            <input name="t_acc" type="text" class="validate" ng-model="inst.transferer.acc" required>
+            <label for="t_acc">Account</label>
           </div>
           <div class="input-field col s3">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Division</label>
+            <input name="t_sub" type="text" class="validate" ng-model="inst.transferer.sub" required>
+            <label for="t_sub">Division</label>
           </div>
         </div>
 
         <div class="row">
-          <h5 class="col s12">To</h5>
-        </div>
-        <div class="row">
           <div class="input-field col s5">
-            <input id="first_name" type="text" class="validate">
-            <label for="first_name">Deponent code</label>
+            <i class="material-icons prefix">call_received</i>
+            <input name="r_dep" type="text" class="validate" ng-model="inst.receiver.dep" required>
+            <label for="r_dep">Deponent code</label>
           </div>
           <div class="input-field col s4">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Account</label>
+            <input name="r_acc" type="text" class="validate" ng-model="inst.receiver.acc" required>
+            <label for="r_acc">Account</label>
           </div>
           <div class="input-field col s3">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Division</label>
+            <input name="r_dub" type="text" class="validate" ng-model="inst.receiver.sub" required>
+            <label for="r_dub">Division</label>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">account_balance_wallet</i>
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">ISIN</label>
+            <input name="security" type="text" class="validate" ng-model="inst.security" required>
+            <label for="security">ISIN</label>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Quantity</label>
+            <input name="quantity" type="text" class="validate" ng-model="inst.quantity" required>
+            <label for="quantity">Quantity</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Reference</label>
+            <i class="material-icons prefix">textsms</i>
+            <input name="reference" type="text" class="validate" ng-model="inst.reference" required>
+            <label for="reference">Reference</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Trade Date</label>
+            <i class="material-icons prefix">schedule</i>
+            <input name="trade_date" type="text" class="validate datepicker" ng-model="inst.trade_date" input-date>
+            <label for="trade_date">Trade Date</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Instruction Date</label>
+            <i class="material-icons prefix">schedule</i>
+            <input name="created" type="text" class="validate datepicker" ng-model="inst.created" input-date>
+            <label for="created">Instruction Date</label>
           </div>
         </div>
 
@@ -151,18 +154,20 @@
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <textarea id="textarea1" class="materialize-textarea"></textarea>
-            <label for="textarea1">Description</label>
+            <i class="material-icons prefix">textsms</i>
+            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.authority.description"></textarea>
+            <label for="a_description">Description</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s8">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Document number</label>
+            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.authority.document">
+            <label for="a_document">Document number</label>
           </div>
           <div class="input-field col s4">
-            <input id="last_name" type="text" class="validate">
-            <label for="last_name">Document date</label>
+            <i class="material-icons prefix">schedule</i>
+            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.authority.created" input-date>
+            <label for="a_created">Document date</label>
           </div>
         </div>
 
@@ -170,7 +175,7 @@
 
   </div>
   <div class="modal-footer">
-    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
-    <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat">Disagree</a>
+    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendTransfer()">Agree</a>
+    <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelTransfer()">Disagree</a>
   </div>
 </div>
