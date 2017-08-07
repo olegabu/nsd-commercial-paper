@@ -100,11 +100,12 @@ angular.module('nsd.app',[
       }
     })
     .state('app.explorer', {
-      url: 'explorer',
+      url: '/admin',
       templateUrl  : 'pages/explorer.html',
       controller   : 'ExplorerController',
       controllerAs : 'ctl',
       data:{
+        absolute: true,
         name: 'Explorer',
         roles:'*'
       }
@@ -120,7 +121,7 @@ angular.module('nsd.app',[
 })
 
 // THIS method should be called BEFORE navigateDefault()
-.run(function(UserService, $rootScope, $state, $log){
+.run(function(UserService, $rootScope, $state, $log, $window){
 
   //
   var loginState = 'app.login';
@@ -128,6 +129,7 @@ angular.module('nsd.app',[
   // https://github.com/angular-ui/ui-router/wiki#state-change-events
   $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams, options){
     // console.log('$stateChangeStart', event, toState, toParams);
+    toState.data = toState.data || {};
 
     // check access
     var isAllowed = UserService.canAccess(toState);
@@ -145,8 +147,16 @@ angular.module('nsd.app',[
       if(fromState.name == ""){
         // just enter the page - redirect to login page
         goLogin();
+        return
       }
     }
+
+    if(toState.data.absolute){
+      event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
+      $window.location = toState.url;
+      return;
+    }
+
   });
 
   // set state data to root scope
