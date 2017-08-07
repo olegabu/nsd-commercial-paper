@@ -1,7 +1,5 @@
 # Copyright Altoros. All Rights Reserved.
 #
-# SPDX-License-Identifier: Apache-2.0
-#
 
 version: '2'
 services:

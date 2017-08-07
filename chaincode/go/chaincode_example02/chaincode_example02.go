@@ -1,199 +1,305 @@
-/*
-Copyright IBM Corp. 2016 All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package main
 
-//WARNING - this chaincode's ID is hard-coded in chaincode_example04 to illustrate one way of
-//calling chaincode from a chaincode. If this example is modified, chaincode_example04.go has
-//to be modified as well with the new ID of chaincode_example02.
-//chaincode_example05 show's how chaincode ID can be passed in as a parameter instead of
-//hard-coding.
 
 import (
 	"fmt"
-	"strconv"
+	//"strconv"
+	"encoding/json"
+	"crypto/x509"
+	"encoding/pem"
+	"strings"
+	"time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
+var logger = shim.NewLogger("instruction_sc")
+const indexName = `from-to-security-quantity-reference-instructionDate-tradeDate`
+
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
-func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Init")
-	_, args := stub.GetFunctionAndParameters()
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var err error
-
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
-	}
-
-	// Initialize the chaincode
-	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
-	if err != nil {
-		return shim.Error("Expecting integer value for asset holding")
-	}
-	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
-	if err != nil {
-		return shim.Error("Expecting integer value for asset holding")
-	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-
-	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success(nil)
+type InstructionValue struct {
+	Status      string 	`json:"status"`
+	InitiatorID string 	`json:"initiatorID"`
 }
 
-func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Invoke")
-	function, args := stub.GetFunctionAndParameters()
-	if function == "move" {
-		// Make payment of X units from A to B
-		return t.move(stub, args)
-	} else if function == "delete" {
-		// Deletes an entity from its state
-		return t.delete(stub, args)
-	} else if function == "query" {
-		// the old "Query" is now implemtned in invoke
-		return t.query(stub, args)
-	}
+type Instruction struct {
+	Transferer 	string 	`json:"transferer"`
+	Receiver   	string 	`json:"receiver"`
+	Security   	string 	`json:"security"`
+	Quantity   	string 	`json:"quantity"`
+	Reference  	string 	`json:"reference"`
+	InstructionDate string 	`json:"instruction_date"`
+	TradeDate  	string 	`json:"trade_date"`
+	Status     	string 	`json:"status"`
+	InitiatorID string 	`json:"initiatorID"`
+}
 
-	return shim.Error("Invalid invoke function name. Expecting \"move\" \"delete\" \"query\"")
+type KeyModificationValue struct {
+	TxId      string 			`json:"tx_id"`
+	Value     InstructionValue  `json:"value"`
+	Timestamp string 			`json:"timestamp`
+	IsDelete  bool   			`json:"is_delete`
+}
+
+func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
+	logger.Info("########### Instruction Smart Contract Init ###########")
+
+	return shim.Success(nil)
 }
 
 // Transaction makes payment of X units from A to B
-func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var X int          // Transaction value
-	var err error
+func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+	logger.Info("########### Instruction Smart Contract Invoke ###########")
 
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+	function, args := stub.GetFunctionAndParameters()
+
+	if function == "receive" {
+		return t.receive(stub, args)
+	}
+	if function == "transfer" {
+		return t.transfer(stub, args)
+	}
+	if function == "status" {
+		return t.status(stub, args)
+	}
+	if function == "query" {
+		return t.query(stub, args)
+	}
+	if function == "history" {
+		return t.history(stub, args)
 	}
 
-	A = args[0]
-	B = args[1]
+	logger.Errorf("Unknown action, check the first argument, must be one of 'receive', 'transfer', 'query','history', or " +
+		"'status'. But got: %v", args[0])
+	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'from', 'to', 'query'," +
+		"'history', or 'status'. But got: %v", args[0]))
+}
 
-	// Get the state from the ledger
-	// TODO: will be nice to have a GetAllState call to ledger
-	Avalbytes, err := stub.GetState(A)
-	if err != nil {
-		return shim.Error("Failed to get state")
-	}
-	if Avalbytes == nil {
-		return shim.Error("Entity not found")
-	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
+func (t *SimpleChaincode) GetOrganization(stub shim.ChaincodeStubInterface) string {
+	certificate, _ := stub.GetCreator()
+	data := certificate[strings.Index(string(certificate), "-----"):strings.LastIndex(string(certificate), "-----")+5]
+	block, _ := pem.Decode([]byte(data))
+	cert, _ := x509.ParseCertificate(block.Bytes)
+	organization := cert.Issuer.Organization[0]
 
-	Bvalbytes, err := stub.GetState(B)
-	if err != nil {
-		return shim.Error("Failed to get state")
-	}
-	if Bvalbytes == nil {
-		return shim.Error("Entity not found")
-	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
+	return organization
+}
 
-	// Perform the execution
-	X, err = strconv.Atoi(args[2])
-	if err != nil {
-		return shim.Error("Invalid transaction amount, expecting a integer value")
+// receive(from, security, quantity, reference, instructionDate, tradeDate, reason) returns instruction id
+// to is taken from transaction creator’s cert
+func (t *SimpleChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 7.")
 	}
-	Aval = Aval - X
-	Bval = Bval + X
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
 
-	// Write the state back to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	to := t.GetOrganization(stub)
+	from := args[0]
+	security := args[1]
+	quantity := args[2] //quantity, _ := strconv.Atoi(args[2])
+	reference := args[3]
+	instructionDate := args[4] // := time.Now().UTC().Unix()
+	tradeDate := args[5]
+	//reason := args[6]
+
+	//from-to-security-quantity-reference-instructionDate-tradeDate
+	key, err := stub.CreateCompositeKey(indexName, []string{from, to, security, quantity, reference, instructionDate, tradeDate})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	value, err := json.Marshal(InstructionValue{Status: "initiated", InitiatorID: to})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success(nil)
-}
-
-// Deletes an entity from state
-func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	A := args[0]
-
-	// Delete the key from the state in ledger
-	err := stub.DelState(A)
+	err = stub.PutState(key, value)
 	if err != nil {
-		return shim.Error("Failed to delete state")
+		return shim.Error(err.Error())
 	}
 
-	return shim.Success(nil)
+	return shim.Success([]byte(key));
 }
 
-// query callback representing the query of a chaincode
+func (t *SimpleChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 7.")
+	}
+
+	from := t.GetOrganization(stub)
+	to := args[0]
+	security := args[1]
+	quantity := args[2] //quantity, _ := strconv.Atoi(args[2])
+	reference := args[3]
+	instructionDate := args[4] // := time.Now().UTC().Unix()
+	tradeDate := args[5]
+	//reason := args[6]
+
+	//from-to-security-quantity-reference-instructionDate-tradeDate
+	key, err := stub.CreateCompositeKey(indexName, []string{from, to, security, quantity, reference, instructionDate, tradeDate})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	value, err := json.Marshal(InstructionValue{Status: "initiated", InitiatorID: from})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	err = stub.PutState(key, value)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success([]byte(key));
+}
+
+func (t *SimpleChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 8 {
+		return shim.Error("Incorrect number of arguments. Expecting 8.")
+	}
+
+	status := args[7]
+
+	//from, to, security, quantity, reference, instructionDate, tradeDate
+	key, err := stub.CreateCompositeKey(indexName, []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	bytes, err := stub.GetState(key)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	var value InstructionValue
+	err = json.Unmarshal(bytes, &value)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	value.Status = status
+
+	newBytes, err := json.Marshal(value)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	err = stub.PutState(key, newBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(nil);
+}
+
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var A string // Entities
-	var err error
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	A = args[0]
-
-	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
+	it, err := stub.GetStateByPartialCompositeKey(indexName, []string{})
 	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return shim.Error(jsonResp)
+		return shim.Error(err.Error())
+	}
+	defer it.Close()
+
+	instructions := []Instruction{}
+	for it.HasNext() {
+		responseRange, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		_, compositeKeyParts, err := stub.SplitCompositeKey(responseRange.Key)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		var value InstructionValue
+		err = json.Unmarshal(responseRange.Value, &value)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		instruction := Instruction{
+			Transferer: compositeKeyParts[0],
+			Receiver: compositeKeyParts[1],
+			Security: compositeKeyParts[2],
+			Quantity: compositeKeyParts[3],
+			Reference: compositeKeyParts[4],
+			InstructionDate: compositeKeyParts[5],
+			TradeDate: compositeKeyParts[6],
+			Status: value.Status,
+			InitiatorID: value.InitiatorID,
+		}
+
+		instructions = append(instructions, instruction)
+
 	}
 
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return shim.Error(jsonResp)
+	result, err := json.Marshal(instructions)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(result)
+}
+
+func (t *SimpleChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 7.")
 	}
 
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return shim.Success(Avalbytes)
+	//from, to, security, quantity, reference, instructionDate, tradeDate
+	key, err := stub.CreateCompositeKey(indexName, []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	//organization := t.GetOrganization(stub)
+
+	it, err := stub.GetHistoryForKey(key)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer it.Close()
+
+	modifications := []KeyModificationValue{}
+
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		var entry KeyModificationValue
+
+		entry.TxId = response.GetTxId()
+		entry.IsDelete = response.GetIsDelete()
+		ts := response.GetTimestamp()
+
+		if ts != nil {
+			entry.Timestamp = time.Unix(ts.Seconds, int64(ts.Nanos)).String()
+		}
+
+		err = json.Unmarshal(response.GetValue(), &entry.Value)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		modifications = append(modifications, entry)
+
+	}
+
+	result, err := json.Marshal(modifications)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(result)
 }
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
-		fmt.Printf("Error starting Simple chaincode: %s", err)
+		logger.Errorf("Error starting Instruction chaincode: %s", err)
 	}
 }
+
