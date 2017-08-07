@@ -17,7 +17,7 @@ type Book struct {
 }
 
 func (t *Book) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("book Init")
+	fmt.Println("Book Init")
 	_, args := stub.GetFunctionAndParameters()
 	var A, B string    // Entities
 	var Aval, Bval int // Asset holdings
@@ -55,7 +55,7 @@ func (t *Book) Init(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func (t *Book) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("book Invoke")
+	fmt.Println("Book Invoke")
 	function, args := stub.GetFunctionAndParameters()
 	if function == "move" {
 		// Make payment of X units from A to B

@@ -51,7 +51,7 @@ Generate crypto material, genesis block, config transactions and start a network
 1. investor a
 1. investor b
 
-Each organization starts several docker docker instances:
+Each organization starts several docker instances:
 
 - certificate authority [fabric-ca](https://github.com/hyperledger/fabric-ca)
 - peer 0
@@ -60,10 +60,12 @@ Each organization starts several docker docker instances:
 
 Following channels are created, peers join them and chaincodes are installed and instantiated:
 
-1. depository (members: nsd, chaincodes: [book](chaincode/go/book))
-1. issuer-a (members: nsd, issuer, investor a, chaincode: instruction)
-1. issuer-b (members: nsd, issuer, investor b, chaincode: instruction)
-1. a-b (members: nsd, investor b, investor a, chaincode: instruction)
+1. depository (*members*: nsd, chaincodes: [book](chaincode/go/book))
+1. issuer-a (*members*: nsd, issuer, investor a, chaincode: instruction)
+1. issuer-b (*members*: nsd, issuer, investor b, chaincode: instruction)
+1. a-b (*members*: nsd, investor b, investor a, chaincode: instruction)
+
+Generate artifacts for the network and network-config file for the API server:
 
 `sudo ./network.sh -m generate`
 
@@ -82,7 +84,7 @@ Start the network, watch the logs, shutdown.
 ./network.sh -m down
 ```
 
-Navigate to web interfaces of respective organizations at http://localhost:[4000-4003]
+Navigate to web interfaces of respective organizations at ports 4000-4003:
 
 1. [nsd](http://localhost:4000)
 1. [issuer](http://localhost:4001)
