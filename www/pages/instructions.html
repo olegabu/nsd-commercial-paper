@@ -85,7 +85,8 @@
           <!-- transferer/From -->
           <div class="input-field col s5">
             <i class="material-icons prefix">call_made</i>
-            <input name="t_dep" type="text" class="validate" ng-model="inst.transferer.dep" required ng-disabled="inst.side=='transferer'">
+            <i class="material-icons postfix" ng-show="inst.side=='transferer'">lock</i>
+            <input name="t_dep" type="text" class="validate locked" ng-model="inst.transferer.dep" required ng-disabled="inst.side=='transferer'">
             <label for="t_dep">Deponent code</label>
           </div>
 
@@ -115,7 +116,8 @@
           <!-- receiver/To -->
            <div class="input-field col s5">
             <i class="material-icons prefix">call_received</i>
-            <input name="t_dep" type="text" class="validate" ng-model="inst.receiver.dep" required ng-disabled="inst.side=='receiver'">
+            <i class="material-icons postfix" ng-show="inst.side=='receiver'">lock</i>
+            <input name="t_dep" type="text" class="validate locked" ng-model="inst.receiver.dep" required ng-disabled="inst.side=='receiver'">
             <label for="t_dep">Deponent code</label>
           </div>
 

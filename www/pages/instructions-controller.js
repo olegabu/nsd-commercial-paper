@@ -51,7 +51,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
    *
    */
   ctrl.newInstructionTransfer = function(transferSide){
-    if(!$scope.inst || $scope.side != transferSide){
+    if(!$scope.inst || $scope.inst.side != transferSide){
         // preset values
         $scope.inst = ctrl._getDefaultinstruction(transferSide);
     }
