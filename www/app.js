@@ -74,7 +74,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'Book',
-        roles:'*'
+        roles:'nsd'
       }
     })
 
@@ -85,7 +85,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'Security Master',
-        roles:'*'
+        roles:'nsd'
       }
     })
     .state('app.instructions', {
@@ -257,6 +257,7 @@ angular.module('nsd.app',[
       if( !configPromise ){
         configPromise = ApiService.getConfig()
           .then(function(config){
+            console.log('ConfigLoader - got config');
             $rootScope._config = config;
             _config = config;
             _extendConfig();
@@ -313,7 +314,8 @@ angular.module('nsd.app',[
     }
 
     return {
-      load:_resolveConfig,
+      load :_resolveConfig,
+      ready:_resolveConfig,
       get:function(){ return _config; }
     };
 })

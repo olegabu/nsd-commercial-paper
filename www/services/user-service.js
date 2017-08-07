@@ -3,7 +3,21 @@
  * @classdesc
  * @ngInject
  */
-function UserService($log, $rootScope, ApiService, localStorageService, env) {
+function UserService($log, $rootScope, ApiService, localStorageService, ConfigLoader) {
+
+  var config;
+
+  ConfigLoader.ready().then(function(){
+
+    config = ConfigLoader.get();
+
+    if(UserService.getOrgRole() == '*'){
+      $log.warn('Client role not set');
+    } else {
+      $log.info('Client role: ' + UserService.getOrgRole() );
+    }
+
+  });
 
   /**
    * @param {{username:string, orgName:string}} user
@@ -29,6 +43,10 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
 
   UserService.getUser = function(){
     return $rootScope._tokenInfo;
+  }
+
+  UserService.getOrgRole = function(){
+    return config ? config.account.role || '*' : null;
   }
 
 
@@ -79,11 +97,12 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
     var isAllowed = false;
 
     var rolesAllowed = state.data ? state.data.roles || '*' : '*';
+    var role = UserService.getOrgRole();
     rolesAllowed = rolesAllowed || ['*'];
-    if(rolesAllowed == '*' || rolesAllowed.indexOf(env.role) >= 0 ) {
+    if(rolesAllowed == '*' || rolesAllowed.indexOf(role) >= 0 ) {
       isAllowed = true;
     }
-    // console.log('UserService.canAccess:', isAllowed, state.name);
+    console.log('UserService.canAccess:', isAllowed, state.name);
     return isAllowed && UserService.isAuthorized();
   };
 
@@ -96,13 +115,6 @@ function UserService($log, $rootScope, ApiService, localStorageService, env) {
 angular.module('nsd.service.user', ['nsd.service.api','nsd.config.env', 'LocalStorageModule'])
   .service('UserService', UserService)
 
-  .run(function(UserService, $log, env){
+  .run(function(UserService, $log){
     UserService.restoreAuthorization();
-
-    if(!env.role){
-      $log.warn('Client role not set');
-      env.role = '*';
-    } else {
-      $log.info('Client role:' + env.role);
-    }
   });
