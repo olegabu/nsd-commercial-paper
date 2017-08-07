@@ -3,12 +3,18 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, InstructionService) {
+function InstructionsController($scope, InstructionService, ConfigLoader) {
 
   var ctrl = this;
   ctrl.list = [];
 
   var DATE_INPUT_FORMAT = 'dd/mm/yyyy';
+  var TRANSFER_SIDE_TRANSFERER = 'transferer';
+  var TRANSFER_SIDE_RECEIVER = 'receiver';
+
+
+  ctrl.org = ConfigLoader.get().org;
+  ctrl.account = ConfigLoader.get().account;
 
   /**
    *
@@ -20,28 +26,68 @@ function InstructionsController($scope, InstructionService) {
       });
   }
 
-  ctrl.newInstructionTransfer = function(){
-    if(!$scope.inst){
-        $scope.inst = {
-          trade_date  : new Date().format(DATE_INPUT_FORMAT),
-          created     : new Date().format(DATE_INPUT_FORMAT),
-          authority:{
-            created   : new Date().format(DATE_INPUT_FORMAT)
-          }
-        };
+
+  /**
+   * @return {Instruction}
+   */
+  ctrl._getDefaultinstruction = function(transferSide){
+    return {
+      transferer:{
+        dep: transferSide == TRANSFER_SIDE_TRANSFERER ? ctrl.account.dep : null
+      },
+      receiver:{
+        dep: transferSide == TRANSFER_SIDE_RECEIVER ? ctrl.account.dep : null
+      },
+      side: transferSide,
+      trade_date  : new Date().format(DATE_INPUT_FORMAT),
+      created     : new Date().format(DATE_INPUT_FORMAT),
+      authority:{
+        created   : new Date().format(DATE_INPUT_FORMAT)
+      }
+    };
+  }
+
+  /**
+   *
+   */
+  ctrl.newInstructionTransfer = function(transferSide){
+    if(!$scope.inst || $scope.side != transferSide){
+        // preset values
+        $scope.inst = ctrl._getDefaultinstruction(transferSide);
     }
   };
 
+  /**
+   *
+   */
   ctrl.sendTransfer = function(){
     var instruction = $scope.inst;
-    // InstructionService.send();
-    // InstructionService.receive();
+    var p;
+    switch(instruction.side){
+      case TRANSFER_SIDE_TRANSFERER:
+        p = InstructionService.send(instruction);
+        break;
+      case TRANSFER_SIDE_RECEIVER:
+        p = InstructionService.receive(instruction);
+        break;
+      default:
+        throw new Error('Unknpown transfer side: ' + instruction.side);
+    }
 
-    $scope.inst = null;
+    return p.then(function(){
+      $scope.inst = null;
+    });
+
   };
+
+  /**
+   *
+   */
   ctrl.cancelTransfer = function(){
     $scope.inst = null;
   };
+
+  //////////////
 
   // INIT
   ctrl.reload();

@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionService(ApiService, $q) {
+function InstructionService(ApiService, $q, $log) {
 
   // jshint shadow: true
   var InstructionService = this;
@@ -22,7 +22,8 @@ function InstructionService(ApiService, $q) {
 
   /**
    */
-  InstructionService.send = function() {
+  InstructionService.send = function(instruction) {
+    $log.info('InstructionService.send', instruction);
     return $q.resolve();
     // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
   };
@@ -30,7 +31,8 @@ function InstructionService(ApiService, $q) {
 
   /**
    */
-  InstructionService.receive = function() {
+  InstructionService.receive = function(instruction) {
+    $log.info('InstructionService.receive', instruction);
     return $q.resolve();
     // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
   };
