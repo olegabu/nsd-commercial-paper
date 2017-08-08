@@ -8,49 +8,90 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   // jshint shadow: true
   var InstructionService = this;
 
-  // TODO: moce to config/settings
-  var chaincodeID = 'mycc';
+  /**
+   *
+   */
+  InstructionService._getChaincodeID = function() {
+    var chaincodeID = ConfigLoader.get()['contracts'].instruction;
+    if(!chaincodeID){
+      // must be specified in network-config.json
+      throw new Error("No chaincode name for 'instruction' contract");
+    }
+    return chaincodeID;
+  };
 
-  var ROOT_ENDORSER = 'nsd';
 
   /**
+   *
    */
   InstructionService.list = function() {
-    // return $q.resolve(getSampleList());
-    return ApiService.channels.list().then(function(list){
-      var peer = InstructionService._getQueryPeer();
 
-      return $q.all(
-        list.map(function(channel){
-          return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query');
-        })
-      );
+    var chaincodeID = InstructionService._getChaincodeID();
+    var peer = InstructionService._getQueryPeer();
+
+    return ApiService.channels.list().then(function(list){
+      return $q.all( list.map(function(channel){
+        // promise for each channel:
+        return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query')
+            .then(function(data){ return parseJson(data.result); });
+
+      }));
     }).then(function(results){
-      console.log('results', results);
+      // join array of array into one array (flatten)
       return results.reduce(function(result, singleResult){
-        try{
-          var items = JSON.parse(singleResult.result);
-          result.push.apply(result, items);
-        }catch(e){
-          $log.warn(e);
-        }
+        result.push.apply(result, singleResult);
         return result;
       }, []);
     });
   };
 
   /**
+   *
+   */
+  function parseJson(data){
+    var parsed = null;
+    try{
+      parsed = JSON.parse(data);
+    }catch(e){
+      $log.warn(e);
+    }
+    return parsed;
+  }
+
+
+
+  /**
+   *
    */
   InstructionService.transfer = function(instruction) {
     $log.info('InstructionService.transfer', instruction);
 
-    var channelID = InstructionService._getChannelForInstruction(instruction);
-    var peers     = InstructionService._getPeersForInstruction(instruction);
-    var args      = InstructionService._instructionToArguments(instruction);
+    var chaincodeID = InstructionService._getChaincodeID();
+    var opponent    = InstructionService._getOpponentID(instruction);
+    var channelID   = InstructionService._getOpponentChannel(opponent);
+    var peers       = InstructionService._getEndorsePeers(opponent);
+    var args        = InstructionService._instructionToArguments(instruction);
 
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
   };
+
+  /**
+   *
+   */
+  InstructionService.receive = function(instruction) {
+    $log.info('InstructionService.receive', instruction);
+
+    var chaincodeID = InstructionService._getChaincodeID();
+    var opponent    = InstructionService._getOpponentID(instruction);
+    var channelID   = InstructionService._getOpponentChannel(opponent);
+    var peers       = InstructionService._getEndorsePeers(opponent);
+    var args        = InstructionService._instructionFromArguments(instruction);
+
+
+    return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
+  };
+
 
   /**
    *
@@ -73,6 +114,29 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       JSON.stringify(instruction.reason)              // 10: reason (TODO: complex field)
     ];
   }
+  /**
+   *
+   */
+  InstructionService._instructionFromArguments = function(instruction) {
+    return [
+      // no deponentFrom here
+      instruction.transferer.dep,     // 0: deponentFrom
+      instruction.transferer.acc,     // 1: accountFrom
+      instruction.transferer.div,     // 2: divisionFrom
+
+      instruction.receiver.acc,       // 3: accountTo
+      instruction.receiver.div,       // 4: divisionTo
+
+      instruction.security,           // 5: security
+      ''+instruction.quantity,           // 6: quantity // TODO: fix: string parameters
+      instruction.reference,          // 7: reference
+      instruction.instruction_date,   // 8: instructionDate  (date format?)
+      instruction.trade_date,         // 9: tradeDate  (date format?)
+      JSON.stringify(instruction.reason)              // 10: reason (TODO: complex field)
+    ];
+  }
+
+
 
   /**
    * get instruction opponent ID.
@@ -93,21 +157,24 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   }
 
   /**
-   * get name of bi-lateral channel for instruction.transfer and instruction.receiver
+   * get name of bi-lateral channel for opponent and the organisation
    */
-  InstructionService._getChannelForInstruction = function(instruction) {
-    var opponent = InstructionService._getOpponentID(instruction);
+  InstructionService._getOpponentChannel = function(opponent) {
+    // make channel name as '<org1_ID>-<org2_ID>'.
+    // Please, pay attention to the orgs order - ot should be sorted
     return [ConfigLoader.getOrg(), opponent].sort().join('-');
   };
 
   /**
-   *
+   * get orgPeerIDs of endorsers, which should endose the transaction
    */
-  InstructionService._getPeersForInstruction = function(instruction) {
+  InstructionService._getEndorsePeers = function(opponent) {
     var config = ConfigLoader.get();
 
-    var opponent = InstructionService._getOpponentID(instruction);
-    var endorsersOrg = [config.org, opponent, ROOT_ENDORSER];
+    var endorsersOrg = [config.org, opponent];
+
+    var rootEndorsers = config.endorsers || [];
+    endorsersOrg.push.apply(endorsersOrg, rootEndorsers);
 
     //
     var peers = endorsersOrg.reduce(function(result, org){
@@ -117,7 +184,6 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     }, []);
 
     return peers;
-
   };
 
 
@@ -143,36 +209,3 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
 angular.module('nsd.service.instructions', ['nsd.service.api'])
   .service('InstructionService', InstructionService);
-
-
-
-
-function getSampleList(){
-  return [
-    {
-      transferer  : {
-          dep: "ASDASDASD",
-          acc: "123123213",
-          div: "35"
-      },
-      receiver    : {
-          dep: "zxczxczxc",
-          acc: "798798798",
-          div: "78"
-      },
-      security    : "US0378331005", // ISIN
-      quantity    : 100500,
-      reference   : "This is a first transaction",
-      instruction_date     : Date.now(),
-      trade_date  : Date.now(),
-      status      : 'initiated',
-      side        : 'transferer',
-
-      authority : {
-          document: "a-b/07",
-          description: "authority description",
-          created: Date.now()
-      }
-    }
-  ];
-}

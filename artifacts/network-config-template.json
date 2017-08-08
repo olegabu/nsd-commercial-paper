@@ -128,5 +128,15 @@
         "908" :["15", "16"]
       }
     }
-  }
+  },
+
+  "contracts":{
+    "instruction":"mycc",
+    "book":"book",
+    "securityMaster":"securityMaster"
+  },
+
+  "endorsers": [
+    "ORG1"
+  ]
 }
