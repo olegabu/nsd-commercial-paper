@@ -5,6 +5,7 @@ angular.module('nsd.controller', [
   'nsd.controller.main',
   'nsd.controller.login',
   'nsd.controller.book',
+  'nsd.controller.balance',
   'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
@@ -77,7 +78,16 @@ angular.module('nsd.app',[
         roles:'nsd'
       }
     })
-
+    .state('app.balance', {
+      url: 'balance',
+      templateUrl  : 'pages/balance.html',
+      controller   : 'BalanceController',
+      controllerAs : 'ctl',
+      data:{
+        name: 'Balance',
+        roles: ['issuer', 'investor']
+      }
+    })
     .state('app.security', {
       url: 'security',
       templateUrl  : 'pages/security.html',
