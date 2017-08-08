@@ -177,9 +177,9 @@ function networkUp () {
   joinChannel ${ORG3} "$ORG3-$ORG4"
   joinChannel ${ORG4} "$ORG3-$ORG4"
 
-  CHAINCODE_NAME=mycc
-  CHAINCODE_PATH=chaincode_example02
-  CHAINCODE_INIT='{"Args":["init","a","100","b","200"]}'
+  CHAINCODE_NAME=instruction
+  CHAINCODE_PATH=instruction
+  CHAINCODE_INIT='{"Args":[]}'
 
   installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
   installChaincode ${ORG2} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
@@ -207,11 +207,15 @@ function devNetworkDown () {
 }
 
 function devInstallInstantiate () {
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"a\",\"100\",\"b\",\"200\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"a\",\"100\",\"b\",\"200\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[]}'"
 }
 
 function devInvoke () {
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"a\",\"b\",\"100\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"a\",\"b\",\"100\"]}'"
+
+ #deponentFrom, accountFrom, divisionFrom, *, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate, reason
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"issuerDeponent\",\"issuerEmissionAccount\",\"issuerActiveDivision\",\"aDeponent\",\"aInvestmentAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
 }
 
 function info() {
