@@ -10,63 +10,69 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/timestamp"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-var logger = shim.NewLogger("instruction_sc")
-const indexName = `depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate`
+var logger = shim.NewLogger("InstructionChaincode")
 
-// SimpleChaincode example simple Chaincode implementation
-type SimpleChaincode struct {
+// 9 fields we're matching on
+const indexName = `accountFrom-divisionFrom-accountTo-divisionTo-security-quantity-reference-instructionDate-tradeDate`
+
+// InstructionChaincode
+type InstructionChaincode struct {
 }
 
 type InstructionValue struct {
-	Status      		string 	`json:"status"`
-	Initiator 			string 	`json:"initiator"`
+	DeponentFrom 	string 	`json:"deponentFrom"`
+	DeponentTo		string 	`json:"deponentTo"`
+	Status      	string 	`json:"status"`
+	Initiator 		string 	`json:"initiator"`
 }
 
-type UserId struct {
-	Deponent 	string 	`json:"dep"`
-	Account 	string 	`json:"acc"`
-	Division 	string 	`json:"div"`
+type Source struct {
+	Account 	string 	`json:"account"`
+	Division 	string 	`json:"division"`
 }
 
 type Reason struct {
 	Document 	string 	`json:"document"`
 	Description string 	`json:"description"`
-	Created 	string 	`json:"created"`
+	DocumentDate 	string 	`json:"documentDate"`
 }
 
 type Instruction struct {
-	Transferer 		UserId 	`json:"transferer"`
-	Receiver   		UserId 	`json:"receiver"`
+	Transferer 		Source 	`json:"transferer"`
+	Receiver   		Source 	`json:"receiver"`
 	Security   		string 	`json:"security"`
 	Quantity   		string 	`json:"quantity"`
 	Reference  		string 	`json:"reference"`
-	InstructionDate string 	`json:"instruction_date"`
-	TradeDate  		string 	`json:"trade_date"`
+	InstructionDate string 	`json:"instructionDate"`
+	TradeDate  		string 	`json:"tradeDate"`
+	DeponentFrom	string  `json:"deponentFrom"`
+	DeponentTo		string  `json:"deponentTo"`
 	Status     		string 	`json:"status"`
 	Initiator 		string 	`json:"initiator"`
 	Reason 			Reason 	`json:"reason"`
 }
 
 type KeyModificationValue struct {
-	TxId      string 			`json:"tx_id"`
+	TxId      string 			`json:"txId"`
 	Value     InstructionValue  `json:"value"`
-	Timestamp string 			`json:"timestamp`
-	IsDelete  bool   			`json:"is_delete`
+	Timestamp string 			`json:"timestamp"`
+	IsDelete  bool   			`json:"isDelete"`
 }
 
-func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
-	logger.Info("########### Instruction Smart Contract Init ###########")
+func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
+	logger.Info("########### InstructionChaincode Init ###########")
 
 	return shim.Success(nil)
 }
 
-// Transaction makes payment of X units from A to B
-func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Info("########### Instruction Smart Contract Invoke ###########")
+func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+	logger.Info("########### InstructionChaincode Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
 
@@ -86,13 +92,13 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.history(stub, args)
 	}
 
-	logger.Errorf("Unknown action, check the first argument, must be one of 'receive', 'transfer', 'query','history', or " +
-		"'status'. But got: %v", args[0])
-	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'from', 'to', 'query'," +
-		"'history', or 'status'. But got: %v", args[0]))
+	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
+		"receive, transfer, query, history, status. But got: %v", args[0])
+	logger.Error(err)
+	return shim.Error(err)
 }
 
-func (t *SimpleChaincode) GetOrganization(stub shim.ChaincodeStubInterface) string {
+func (t *InstructionChaincode) GetOrganization(stub shim.ChaincodeStubInterface) string {
 	certificate, _ := stub.GetCreator()
 	data := certificate[strings.Index(string(certificate), "-----"):strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
@@ -102,11 +108,13 @@ func (t *SimpleChaincode) GetOrganization(stub shim.ChaincodeStubInterface) stri
 	return organization
 }
 
-func (t *SimpleChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// deponentFrom, accountFrom, divisionFrom, *, accountTo, divisionTo,
 	// security, quantity, reference, instructionDate, tradeDate, reason
-	if len(args) != 11 {
-		return shim.Error("Incorrect number of arguments. Expecting 11.")
+	if len(args) != 10 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting deponentFrom, accountFrom, divisionFrom, accountTo, divisionTo, security, quantity, reference, " +
+			"instructionDate, tradeDate, reason")
 	}
 
 	deponentFrom := args[0]
@@ -122,14 +130,15 @@ func (t *SimpleChaincode) receive(stub shim.ChaincodeStubInterface, args []strin
 	tradeDate := args[9] // := time.Now().UTC().Unix()
 	//reason := args[10]
 
-	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
-	key, err := stub.CreateCompositeKey(indexName, []string{deponentFrom, accountFrom, divisionFrom,
-		deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate})
+	//accountFrom-divisionFrom-accountTo-divisionTo-security-quantity-reference-instructionDate-tradeDate
+	key, err := stub.CreateCompositeKey(indexName, []string{accountFrom, divisionFrom,
+		accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(InstructionValue{Status: "initiated", Initiator: "receiver"})
+	value, err := json.Marshal(InstructionValue{DeponentFrom: deponentFrom, DeponentTo: deponentTo,
+		Status: "initiated", Initiator: "receiver"})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -139,14 +148,16 @@ func (t *SimpleChaincode) receive(stub shim.ChaincodeStubInterface, args []strin
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success([]byte(key));
+	return shim.Success([]byte(key))
 }
 
-func (t *SimpleChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// *, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo,
 	// security, quantity, reference, instructionDate, tradeDate, reason
-	if len(args) != 11 {
-		return shim.Error("Incorrect number of arguments. Expecting 11.")
+	if len(args) != 10 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, security, quantity, reference, " +
+			"instructionDate, tradeDate, reason.")
 	}
 
 	deponentFrom := t.GetOrganization(stub)
@@ -162,14 +173,15 @@ func (t *SimpleChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 	tradeDate := args[9] // := time.Now().UTC().Unix()
 	//reason := args[10]
 
-	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
-	key, err := stub.CreateCompositeKey(indexName, []string{deponentFrom, accountFrom, divisionFrom,
-		deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate})
+	//accountFrom-divisionFrom-accountTo-divisionTo-security-quantity-reference-instructionDate-tradeDate
+	key, err := stub.CreateCompositeKey(indexName, []string{accountFrom, divisionFrom,
+		accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(InstructionValue{Status: "initiated", Initiator: "transferer"})
+	value, err := json.Marshal(InstructionValue{DeponentFrom: deponentFrom, DeponentTo: deponentTo,
+		Status: "initiated", Initiator: "transferer"})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -182,14 +194,16 @@ func (t *SimpleChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 	return shim.Success([]byte(key));
 }
 
-func (t *SimpleChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 12 {
-		return shim.Error("Incorrect number of arguments. Expecting 12.")
+func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 10 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting accountFrom, divisionFrom, accountTo, divisionTo, security, quantity, reference, " +
+			"instructionDate, tradeDate, status")
 	}
 
-	status := args[11]
+	status := args[9]
 
-	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
+	//accountFrom-divisionFrom-accountTo-divisionTo-security-quantity-reference-instructionDate-tradeDate
 	key, err := stub.CreateCompositeKey(indexName, args[0:len(args)-1])
 	if err != nil {
 		return shim.Error(err.Error())
@@ -220,7 +234,7 @@ func (t *SimpleChaincode) status(stub shim.ChaincodeStubInterface, args []string
 	return shim.Success(nil);
 }
 
-func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	it, err := stub.GetStateByPartialCompositeKey(indexName, []string{})
 	if err != nil {
 		return shim.Error(err.Error())
@@ -246,27 +260,26 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 			return shim.Error(err.Error())
 		}
 
-		instruction := Instruction{
-			Transferer: UserId{
-				Deponent: compositeKeyParts[0],
-				Account: compositeKeyParts[1],
-				Division: compositeKeyParts[2]},
-			Receiver: UserId{
-				Deponent: compositeKeyParts[3],
-				Account: compositeKeyParts[4],
-				Division: compositeKeyParts[5]},
-			Security: compositeKeyParts[6],
-			Quantity: compositeKeyParts[7],
-			Reference: compositeKeyParts[8],
-			InstructionDate: compositeKeyParts[9],
-			TradeDate: compositeKeyParts[10],
+		instruction := Instruction {
+			Transferer: Source {
+				Account: compositeKeyParts[0],
+				Division: compositeKeyParts[1]},
+			Receiver: Source {
+				Account: compositeKeyParts[2],
+				Division: compositeKeyParts[3]},
+			Security: compositeKeyParts[4],
+			Quantity: compositeKeyParts[5],
+			Reference: compositeKeyParts[6],
+			InstructionDate: compositeKeyParts[7],
+			TradeDate: compositeKeyParts[8],
+			DeponentFrom: value.DeponentFrom,
+			DeponentTo: value.DeponentTo,
 			Status: value.Status,
 			Initiator: value.Initiator,
-			Reason: Reason{Document: "", Description: "", Created: ""},
+			Reason: Reason{Document: "", Description: "", DocumentDate: ""},
 		}
 
 		instructions = append(instructions, instruction)
-
 	}
 
 	result, err := json.Marshal(instructions)
@@ -276,18 +289,18 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(result)
 }
 
-func (t *SimpleChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 11 {
-		return shim.Error("Incorrect number of arguments. Expecting 11.")
+func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 9 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting accountFrom, divisionFrom, accountTo, divisionTo, security, quantity, reference, " +
+			"instructionDate, tradeDate")
 	}
 
-	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
+	//accountFrom-divisionFrom-accountTo-divisionTo-security-quantity-reference-instructionDate-tradeDate
 	key, err := stub.CreateCompositeKey(indexName, args)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-
-	//organization := t.GetOrganization(stub)
 
 	it, err := stub.GetHistoryForKey(key)
 	if err != nil {
@@ -319,7 +332,6 @@ func (t *SimpleChaincode) history(stub shim.ChaincodeStubInterface, args []strin
 		}
 
 		modifications = append(modifications, entry)
-
 	}
 
 	result, err := json.Marshal(modifications)
@@ -330,7 +342,7 @@ func (t *SimpleChaincode) history(stub shim.ChaincodeStubInterface, args []strin
 }
 
 func main() {
-	err := shim.Start(new(SimpleChaincode))
+	err := shim.Start(new(InstructionChaincode))
 	if err != nil {
 		logger.Errorf("Error starting Instruction chaincode: %s", err)
 	}

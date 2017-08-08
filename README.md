@@ -72,7 +72,7 @@ Generate artifacts for the network and network-config file for the API server:
 **Note** you'll need to wait about 6 minutes until the timing of the generated certs lines up. 
 Needed temporarily until the issue is resolved. This may come handy if you need to regenerate frequently:
 
-`beep && ./network.sh -m generate && sleep 6m && beep && ./network.sh -m up`
+`./network.sh -m generate && sleep 6m && beep && ./network.sh -m up`
 
 Start the network, watch the logs, shutdown.
 

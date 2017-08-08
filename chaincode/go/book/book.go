@@ -7,12 +7,13 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"bytes"
+	x509 "crypto/x509"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-// Book example simple Chaincode implementation
 type Book struct {
 }
 
@@ -56,6 +57,25 @@ func (t *Book) Init(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (t *Book) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("Book Invoke")
+
+	creator, err := stub.GetCreator()
+	if err != nil {
+		return shim.Error("cannot GetCreator")
+	}
+	fmt.Printf("bytes %c", creator)
+
+	bs := bytes.SplitAfter(creator, []byte("\a"))
+	bs2 := bytes.SplitAfter(bs[2], []byte("]"))
+
+	fmt.Printf("%s", bs2[0])
+	fmt.Printf("%s", bs2[1])
+
+	cert, err := x509.ParseCertificate(bs2[1])
+	if err != nil {
+		return shim.Error("cannot ParseCertificate")
+	}
+	fmt.Printf("cert %c", cert)
+
 	function, args := stub.GetFunctionAndParameters()
 	if function == "move" {
 		// Make payment of X units from A to B
