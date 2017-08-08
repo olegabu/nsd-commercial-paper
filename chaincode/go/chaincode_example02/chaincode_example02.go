@@ -15,27 +15,40 @@ import (
 )
 
 var logger = shim.NewLogger("instruction_sc")
-const indexName = `from-to-security-quantity-reference-instructionDate-tradeDate`
+const indexName = `depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate`
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
 type InstructionValue struct {
-	Status      string 	`json:"status"`
-	InitiatorID string 	`json:"initiatorID"`
+	Status      		string 	`json:"status"`
+	Initiator 			string 	`json:"initiator"`
+}
+
+type UserId struct {
+	Deponent 	string 	`json:"dep"`
+	Account 	string 	`json:"acc"`
+	Division 	string 	`json:"div"`
+}
+
+type Reason struct {
+	Document 	string 	`json:"document"`
+	Description string 	`json:"description"`
+	Created 	string 	`json:"created"`
 }
 
 type Instruction struct {
-	Transferer 	string 	`json:"transferer"`
-	Receiver   	string 	`json:"receiver"`
-	Security   	string 	`json:"security"`
-	Quantity   	string 	`json:"quantity"`
-	Reference  	string 	`json:"reference"`
+	Transferer 		UserId 	`json:"transferer"`
+	Receiver   		UserId 	`json:"receiver"`
+	Security   		string 	`json:"security"`
+	Quantity   		string 	`json:"quantity"`
+	Reference  		string 	`json:"reference"`
 	InstructionDate string 	`json:"instruction_date"`
-	TradeDate  	string 	`json:"trade_date"`
-	Status     	string 	`json:"status"`
-	InitiatorID string 	`json:"initiatorID"`
+	TradeDate  		string 	`json:"trade_date"`
+	Status     		string 	`json:"status"`
+	Initiator 		string 	`json:"initiator"`
+	Reason 			Reason 	`json:"reason"`
 }
 
 type KeyModificationValue struct {
@@ -89,29 +102,34 @@ func (t *SimpleChaincode) GetOrganization(stub shim.ChaincodeStubInterface) stri
 	return organization
 }
 
-// receive(from, security, quantity, reference, instructionDate, tradeDate, reason) returns instruction id
-// to is taken from transaction creator’s cert
 func (t *SimpleChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 7 {
-		return shim.Error("Incorrect number of arguments. Expecting 7.")
+	// deponentFrom, accountFrom, divisionFrom, *, accountTo, divisionTo,
+	// security, quantity, reference, instructionDate, tradeDate, reason
+	if len(args) != 11 {
+		return shim.Error("Incorrect number of arguments. Expecting 11.")
 	}
 
-	to := t.GetOrganization(stub)
-	from := args[0]
-	security := args[1]
-	quantity := args[2] //quantity, _ := strconv.Atoi(args[2])
-	reference := args[3]
-	instructionDate := args[4] // := time.Now().UTC().Unix()
-	tradeDate := args[5]
-	//reason := args[6]
+	deponentFrom := args[0]
+	accountFrom := args[1]
+	divisionFrom := args[2]
+	deponentTo := t.GetOrganization(stub)
+	accountTo := args[3]
+	divisionTo := args[4]
+	security := args[5]
+	quantity := args[6] //quantity, _ := strconv.Atoi(args[2])
+	reference := args[7]
+	instructionDate := args[8]
+	tradeDate := args[9] // := time.Now().UTC().Unix()
+	//reason := args[10]
 
-	//from-to-security-quantity-reference-instructionDate-tradeDate
-	key, err := stub.CreateCompositeKey(indexName, []string{from, to, security, quantity, reference, instructionDate, tradeDate})
+	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
+	key, err := stub.CreateCompositeKey(indexName, []string{deponentFrom, accountFrom, divisionFrom,
+		deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(InstructionValue{Status: "initiated", InitiatorID: to})
+	value, err := json.Marshal(InstructionValue{Status: "initiated", Initiator: "receiver"})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -125,26 +143,33 @@ func (t *SimpleChaincode) receive(stub shim.ChaincodeStubInterface, args []strin
 }
 
 func (t *SimpleChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 7 {
-		return shim.Error("Incorrect number of arguments. Expecting 7.")
+	// *, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo,
+	// security, quantity, reference, instructionDate, tradeDate, reason
+	if len(args) != 11 {
+		return shim.Error("Incorrect number of arguments. Expecting 11.")
 	}
 
-	from := t.GetOrganization(stub)
-	to := args[0]
-	security := args[1]
-	quantity := args[2] //quantity, _ := strconv.Atoi(args[2])
-	reference := args[3]
-	instructionDate := args[4] // := time.Now().UTC().Unix()
-	tradeDate := args[5]
-	//reason := args[6]
+	deponentFrom := t.GetOrganization(stub)
+	accountFrom := args[0]
+	divisionFrom := args[1]
+	deponentTo := args[2]
+	accountTo := args[3]
+	divisionTo := args[4]
+	security := args[5]
+	quantity := args[6] //quantity, _ := strconv.Atoi(args[2])
+	reference := args[7]
+	instructionDate := args[8]
+	tradeDate := args[9] // := time.Now().UTC().Unix()
+	//reason := args[10]
 
-	//from-to-security-quantity-reference-instructionDate-tradeDate
-	key, err := stub.CreateCompositeKey(indexName, []string{from, to, security, quantity, reference, instructionDate, tradeDate})
+	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
+	key, err := stub.CreateCompositeKey(indexName, []string{deponentFrom, accountFrom, divisionFrom,
+		deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(InstructionValue{Status: "initiated", InitiatorID: from})
+	value, err := json.Marshal(InstructionValue{Status: "initiated", Initiator: "transferer"})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -158,14 +183,14 @@ func (t *SimpleChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 }
 
 func (t *SimpleChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 8 {
-		return shim.Error("Incorrect number of arguments. Expecting 8.")
+	if len(args) != 12 {
+		return shim.Error("Incorrect number of arguments. Expecting 12.")
 	}
 
-	status := args[7]
+	status := args[11]
 
-	//from, to, security, quantity, reference, instructionDate, tradeDate
-	key, err := stub.CreateCompositeKey(indexName, []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6]})
+	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
+	key, err := stub.CreateCompositeKey(indexName, args[0:len(args)-1])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -209,6 +234,7 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 			return shim.Error(err.Error())
 		}
 
+		//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
 		_, compositeKeyParts, err := stub.SplitCompositeKey(responseRange.Key)
 		if err != nil {
 			return shim.Error(err.Error())
@@ -221,15 +247,22 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 		}
 
 		instruction := Instruction{
-			Transferer: compositeKeyParts[0],
-			Receiver: compositeKeyParts[1],
-			Security: compositeKeyParts[2],
-			Quantity: compositeKeyParts[3],
-			Reference: compositeKeyParts[4],
-			InstructionDate: compositeKeyParts[5],
-			TradeDate: compositeKeyParts[6],
+			Transferer: UserId{
+				Deponent: compositeKeyParts[0],
+				Account: compositeKeyParts[1],
+				Division: compositeKeyParts[2]},
+			Receiver: UserId{
+				Deponent: compositeKeyParts[3],
+				Account: compositeKeyParts[4],
+				Division: compositeKeyParts[5]},
+			Security: compositeKeyParts[6],
+			Quantity: compositeKeyParts[7],
+			Reference: compositeKeyParts[8],
+			InstructionDate: compositeKeyParts[9],
+			TradeDate: compositeKeyParts[10],
 			Status: value.Status,
-			InitiatorID: value.InitiatorID,
+			Initiator: value.Initiator,
+			Reason: Reason{Document: "", Description: "", Created: ""},
 		}
 
 		instructions = append(instructions, instruction)
@@ -244,12 +277,12 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 }
 
 func (t *SimpleChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 7 {
-		return shim.Error("Incorrect number of arguments. Expecting 7.")
+	if len(args) != 11 {
+		return shim.Error("Incorrect number of arguments. Expecting 11.")
 	}
 
-	//from, to, security, quantity, reference, instructionDate, tradeDate
-	key, err := stub.CreateCompositeKey(indexName, []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6]})
+	//depF-accF-divF-depT-accT-divT-sec-qua-ref-insDate-traDate
+	key, err := stub.CreateCompositeKey(indexName, args)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
