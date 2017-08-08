@@ -1,0 +1,142 @@
+{
+	"network-config": {
+		"orderer": {
+			"url": "grpcs://localhost:7050",
+			"server-hostname": "orderer.nsd.ru",
+			"tls_cacerts": "crypto-config/ordererOrganizations/nsd.ru/orderers/orderer.nsd.ru/tls/ca.crt"
+		},
+
+		"nsd": {
+			"name":  "peernsd",
+			"mspid": "nsdMSP",
+			"ca": "https://localhost:7054",
+			"peer0": {
+				"requests": "grpcs://localhost:7051",
+				"events": 	"grpcs://localhost:7053",
+				"server-hostname": "peer0.nsd.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt"
+			},
+			"peer1": {
+				"requests": "grpcs://localhost:7056",
+				"events":   "grpcs://localhost:7058",
+				"server-hostname": "peer1.nsd.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer1.nsd.nsd.ru/tls/ca.crt"
+			},
+			"admin": {
+				"key":  "crypto-config/peerOrganizations/nsd.nsd.ru/users/Admin@nsd.nsd.ru/msp/keystore",
+				"cert": "crypto-config/peerOrganizations/nsd.nsd.ru/users/Admin@nsd.nsd.ru/msp/signcerts"
+			}
+		},
+
+		"issuer": {
+			"name":  "peerissuer",
+			"mspid": "issuerMSP",
+			"ca": "https://localhost:8054",
+			"peer0": {
+				"requests": "grpcs://localhost:8051",
+				"events":   "grpcs://localhost:8053",
+				"server-hostname": "peer0.issuer.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/issuer.nsd.ru/peers/peer0.issuer.nsd.ru/tls/ca.crt"
+			},
+			"peer1": {
+				"requests": "grpcs://localhost:8056",
+				"events":   "grpcs://localhost:8058",
+				"server-hostname": "peer1.issuer.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/issuer.nsd.ru/peers/peer1.issuer.nsd.ru/tls/ca.crt"
+			},
+			"admin": {
+				"key":  "crypto-config/peerOrganizations/issuer.nsd.ru/users/Admin@issuer.nsd.ru/msp/keystore",
+				"cert": "crypto-config/peerOrganizations/issuer.nsd.ru/users/Admin@issuer.nsd.ru/msp/signcerts"
+			}
+		},
+
+		"a": {
+			"name":  "peera",
+			"mspid": "aMSP",
+			"ca": "https://localhost:9054",
+			"peer0": {
+				"requests": "grpcs://localhost:8061",
+				"events":   "grpcs://localhost:8063",
+				"server-hostname": "peer0.a.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/a.nsd.ru/peers/peer0.a.nsd.ru/tls/ca.crt"
+			},
+			"peer1": {
+				"requests": "grpcs://localhost:8066",
+				"events":   "grpcs://localhost:8068",
+				"server-hostname": "peer1.a.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/a.nsd.ru/peers/peer1.a.nsd.ru/tls/ca.crt"
+			},
+			"admin": {
+				"key":  "crypto-config/peerOrganizations/a.nsd.ru/users/Admin@a.nsd.ru/msp/keystore",
+				"cert": "crypto-config/peerOrganizations/a.nsd.ru/users/Admin@a.nsd.ru/msp/signcerts"
+			}
+		},
+
+		"b": {
+			"name":  "peerb",
+			"mspid": "bMSP",
+			"ca": "https://localhost:10054",
+			"peer0": {
+				"requests": "grpcs://localhost:8071",
+				"events":   "grpcs://localhost:8073",
+				"server-hostname": "peer0.b.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/b.nsd.ru/peers/peer0.b.nsd.ru/tls/ca.crt"
+			},
+			"peer1": {
+				"requests": "grpcs://localhost:8076",
+				"events":   "grpcs://localhost:8078",
+				"server-hostname": "peer1.b.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/b.nsd.ru/peers/peer1.b.nsd.ru/tls/ca.crt"
+			},
+			"admin": {
+				"key":  "crypto-config/peerOrganizations/b.nsd.ru/users/Admin@b.nsd.ru/msp/keystore",
+				"cert": "crypto-config/peerOrganizations/b.nsd.ru/users/Admin@b.nsd.ru/msp/signcerts"
+			}
+		}
+	},
+
+  "account-config":{
+    "nsd":{
+      "dep":"JP3946600008",
+      "role":"nsd",
+      "acc":{
+        "901" :["01", "02"],
+        "903" :["03", "04"]
+      }
+    },
+    "issuer":{
+      "dep":"CA9861913023",
+      "role":"issuer",
+      "acc":{
+        "902" :["05", "06"],
+        "904" :["07", "08"]
+      }
+    },
+    "a":{
+      "dep":"DE000DB7HWY7",
+      "role":"investor",
+      "acc":{
+        "903" :["09", "10"],
+        "905" :["11", "12"]
+      }
+    },
+    "b":{
+      "dep":"NL0000729408",
+      "role":"investor",
+      "acc":{
+        "906" :["13", "14"],
+        "908" :["15", "16"]
+      }
+    }
+  },
+
+  "contracts":{
+    "instruction":"mycc",
+    "book":"book",
+    "securityMaster":"securityMaster"
+  },
+
+  "endorsers": [
+    "nsd"
+  ]
+}
