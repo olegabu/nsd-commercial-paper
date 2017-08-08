@@ -46,8 +46,8 @@
         </thead>
         <tbody>
             <tr ng-repeat="o in ctl.list">
-                <td>{{::o.transferer}}</td>
-                <td>{{::o.receiver}}</td>
+                <td>{{::o.transferer.dep}} / {{::o.transferer.acc}} / {{::o.transferer.div}}</td>
+                <td>{{::o.receiver.dep}} / {{::o.receiver.acc}} / {{::o.receiver.div}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
                 <td>{{::o.reference}}</td>
@@ -177,8 +177,8 @@
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">schedule</i>
-            <input name="created" type="text" class="validate datepicker" ng-model="inst.created" input-date>
-            <label for="created">Instruction Date</label>
+            <input name="instruction_date" type="text" class="validate datepicker" ng-model="inst.instruction_date" input-date>
+            <label for="instruction_date">Instruction Date</label>
           </div>
         </div>
 
@@ -188,18 +188,18 @@
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">textsms</i>
-            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.authority.description"></textarea>
+            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
             <label for="a_description">Description</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s8">
-            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.authority.document">
+            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.reason.document">
             <label for="a_document">Document number</label>
           </div>
           <div class="input-field col s4">
             <i class="material-icons prefix">schedule</i>
-            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.authority.created" input-date>
+            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.reason.created" input-date>
             <label for="a_created">Document date</label>
           </div>
         </div>

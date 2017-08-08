@@ -46,7 +46,7 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
   }
 
   UserService.getOrgRole = function(){
-    return config ? config.account.role || '*' : null;
+    return config ? config['account-config'][config.org].role || '*' : null;
   }
 
 
@@ -102,7 +102,7 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
     if(rolesAllowed == '*' || rolesAllowed.indexOf(role) >= 0 ) {
       isAllowed = true;
     }
-    console.log('UserService.canAccess:', isAllowed, state.name);
+    // console.log('UserService.canAccess:', isAllowed, state.name);
     return isAllowed && UserService.isAuthorized();
   };
 

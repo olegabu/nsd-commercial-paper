@@ -140,18 +140,19 @@ function ApiService($log, $http, env) {
 
   /**
    * @param {string} channelID
-   * @param {string} contractId
+   * @param {string} contractID
    * @param {Array<string>} peers - peersId
    * @param {string} fcn
    * @param {Array} [args]
    */
-  ApiService.sc.invoke = function(channelID, contractId, peers, fcn, args){
+  ApiService.sc.invoke = function(channelID, contractID, peers, fcn, args){
+    $log.debug('ApiService.sc.invoke channel - %s, contract - %s', peers, fcn, args);
     var payload = {
       peers:peers,
       fcn:fcn,
       args:args||[]
     };
-    return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, payload)
+    return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractID, payload)
       .then(function(response){ return response.data; });
   };
 
@@ -159,18 +160,19 @@ function ApiService($log, $http, env) {
 
   /**
    * @param {string} channelID
-   * @param {string} contractId
+   * @param {string} contractID
    * @param {string} peer - peerId
    * @param {string} fcn
    * @param {Array} [args]
    */
-  ApiService.sc.query = function(channelID, contractId, peer, fcn, args){
+  ApiService.sc.query = function(channelID, contractID, peer, fcn, args){
+    $log.debug('ApiService.sc.query channel - %s, contract - %s', channelID, contractID, peer, fcn, args);
     var params = {
       peer : peer,
       fcn  : fcn,
       args : JSON.stringify(args||null)
     };
-    return $http.get(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, {params:params})
+    return $http.get(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractID, {params:params})
       .then(function(response){ return response.data; });
   };
 
