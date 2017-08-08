@@ -10,16 +10,13 @@ import (
 	"strings"
 	"time"
 
-//	"github.com/golang/protobuf/ptypes/timestamp"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
 
-// 9 fields we're matching on
-const indexName = `accountFrom-divisionFrom-accountTo-divisionTo-security-quantity-reference-instructionDate-tradeDate`
+const indexName = `Instruction`
 
 // InstructionChaincode
 type InstructionChaincode struct {
@@ -32,30 +29,30 @@ type InstructionValue struct {
 	Initiator 		string 	`json:"initiator"`
 }
 
-type Source struct {
-	Account 	string 	`json:"account"`
-	Division 	string 	`json:"division"`
+type Balance struct {
+	Account 		string 	`json:"account"`
+	Division 		string 	`json:"division"`
 }
 
 type Reason struct {
-	Document 	string 	`json:"document"`
-	Description string 	`json:"description"`
+	Document 		string 	`json:"document"`
+	Description 	string 	`json:"description"`
 	DocumentDate 	string 	`json:"documentDate"`
 }
 
 type Instruction struct {
-	Transferer 		Source 	`json:"transferer"`
-	Receiver   		Source 	`json:"receiver"`
-	Security   		string 	`json:"security"`
-	Quantity   		string 	`json:"quantity"`
-	Reference  		string 	`json:"reference"`
+	Transferer      Balance `json:"transferer"`
+	Receiver        Balance `json:"receiver"`
+	Security        string 	`json:"security"`
+	Quantity        string 	`json:"quantity"`
+	Reference       string 	`json:"reference"`
 	InstructionDate string 	`json:"instructionDate"`
-	TradeDate  		string 	`json:"tradeDate"`
-	DeponentFrom	string  `json:"deponentFrom"`
-	DeponentTo		string  `json:"deponentTo"`
-	Status     		string 	`json:"status"`
-	Initiator 		string 	`json:"initiator"`
-	Reason 			Reason 	`json:"reason"`
+	TradeDate       string 	`json:"tradeDate"`
+	DeponentFrom    string  `json:"deponentFrom"`
+	DeponentTo      string  `json:"deponentTo"`
+	Status          string 	`json:"status"`
+	Initiator       string 	`json:"initiator"`
+	Reason          Reason 	`json:"reason"`
 }
 
 type KeyModificationValue struct {
@@ -191,7 +188,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success([]byte(key));
+	return shim.Success([]byte(key))
 }
 
 func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -261,10 +258,10 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		}
 
 		instruction := Instruction {
-			Transferer: Source {
+			Transferer: Balance {
 				Account: compositeKeyParts[0],
 				Division: compositeKeyParts[1]},
-			Receiver: Source {
+			Receiver: Balance {
 				Account: compositeKeyParts[2],
 				Division: compositeKeyParts[3]},
 			Security: compositeKeyParts[4],

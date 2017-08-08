@@ -2,9 +2,9 @@
 
 DOMAIN=nsd.ru
 ORG1=nsd
-ORG2=issuer
-ORG3=a
-ORG4=b
+ORG2=a
+ORG3=b
+ORG4=c
 
 CLI_TIMEOUT=10000
 COMPOSE_FILE=ledger/docker-compose.yaml
@@ -160,7 +160,7 @@ function networkUp () {
   joinChannel ${ORG1} depository
 
   installChaincode ${ORG1} book book
-  instantiateChaincode ${ORG1} depository book '{"Args":["init","a","100","b","200"]}'
+  instantiateChaincode ${ORG1} depository book '{"Args":["init","aDeponent","aEmissionAccount","aActiveDivision","RU000ABC0001","1000"]}'
 
   createChannel "$ORG2-$ORG3"
   joinChannel ${ORG1} "$ORG2-$ORG3"
@@ -207,16 +207,23 @@ function devNetworkDown () {
 }
 
 function devInstallInstantiate () {
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"a\",\"100\",\"b\",\"200\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"1000\"]}'"
+
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[]}'"
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[]}'"
 }
 
 function devInvoke () {
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"a\",\"b\",\"100\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
 
- #deponentFrom, accountFrom, divisionFrom, *, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate, reason
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"issuerDeponent\",\"issuerEmissionAccount\",\"issuerActiveDivision\",\"aInvestmentAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
+}
+
+function devQuery () {
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n book -v 0 -C myc -c '{\"Args\":[\"query\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n book -v 0 -C myc -c '{\"Args\":[\"history\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\"]}'"
+
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n instruction -v 0 -C myc -c '{\"Args\":[\"query\"]}'"
 }
 
 function info() {
@@ -313,6 +320,8 @@ elif [ "${MODE}" == "devinit" ]; then
   devInstallInstantiate
 elif [ "${MODE}" == "devinvoke" ]; then
   devInvoke
+elif [ "${MODE}" == "devquery" ]; then
+  devQuery
 elif [ "${MODE}" == "devlogs" ]; then
   devLogs
 elif [ "${MODE}" == "devdown" ]; then
