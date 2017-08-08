@@ -146,6 +146,7 @@ function ApiService($log, $http, env) {
    * @param {Array} [args]
    */
   ApiService.sc.invoke = function(channelID, contractID, peers, fcn, args){
+    args = args || [];
     $log.debug('ApiService.sc.invoke channel - %s, contract - %s', peers, fcn, args);
     var payload = {
       peers:peers,
@@ -166,6 +167,7 @@ function ApiService($log, $http, env) {
    * @param {Array} [args]
    */
   ApiService.sc.query = function(channelID, contractID, peer, fcn, args){
+    args = args || [];
     $log.debug('ApiService.sc.query channel - %s, contract - %s', channelID, contractID, peer, fcn, args);
     var params = {
       peer : peer,

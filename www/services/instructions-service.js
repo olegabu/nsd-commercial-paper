@@ -9,21 +9,34 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   var InstructionService = this;
 
   // TODO: moce to config/settings
-  var channelID = 'mychannel';
   var chaincodeID = 'mycc';
-  var peers = ['org1/peer0'];
 
   var ROOT_ENDORSER = 'nsd';
 
   /**
    */
   InstructionService.list = function() {
-    return $q.resolve(getSampleList());
-    // ApiService.channels.list().then(function(){
-    //   console.log();
-    //   // return ApiService.sc.query(channelID, chaincodeID, peers, 'list');
+    // return $q.resolve(getSampleList());
+    return ApiService.channels.list().then(function(list){
+      var peer = InstructionService._getQueryPeer();
 
-    // });
+      return $q.all(
+        list.map(function(channel){
+          return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query');
+        })
+      );
+    }).then(function(results){
+      console.log('results', results);
+      return results.reduce(function(result, singleResult){
+        try{
+          var items = JSON.parse(singleResult.result);
+          result.push.apply(result, items);
+        }catch(e){
+          $log.warn(e);
+        }
+        return result;
+      }, []);
+    });
   };
 
   /**
@@ -105,6 +118,16 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
     return peers;
 
+  };
+
+
+  /**
+   *
+   */
+  InstructionService._getQueryPeer = function() {
+    var config = ConfigLoader.get();
+    var peers = ConfigLoader.getOrgPeerIds(config.org);
+    return config.org+'/'+peers[0];
   };
 
 
