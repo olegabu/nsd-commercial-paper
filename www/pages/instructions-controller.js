@@ -14,7 +14,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
 
 
   ctrl.org = ConfigLoader.get().org;
-  ctrl.account = ConfigLoader.get().account;
+  ctrl.account = ConfigLoader.getAccount();
 
   /**
    *
@@ -38,10 +38,11 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
       receiver:{
         dep: transferSide == TRANSFER_SIDE_RECEIVER ? ctrl.account.dep : null
       },
-      side: transferSide,
-      trade_date  : new Date().format(DATE_INPUT_FORMAT),
-      created     : new Date().format(DATE_INPUT_FORMAT),
-      authority:{
+      side: transferSide, // deprecate?
+      initiator: transferSide,
+      trade_date    : new Date().format(DATE_INPUT_FORMAT),
+      instruction_date : new Date().format(DATE_INPUT_FORMAT),
+      reason:{
         created   : new Date().format(DATE_INPUT_FORMAT)
       }
     };
@@ -65,7 +66,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
     var p;
     switch(instruction.side){
       case TRANSFER_SIDE_TRANSFERER:
-        p = InstructionService.send(instruction);
+        p = InstructionService.transfer(instruction);
         break;
       case TRANSFER_SIDE_RECEIVER:
         p = InstructionService.receive(instruction);

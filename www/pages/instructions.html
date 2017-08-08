@@ -46,8 +46,8 @@
         </thead>
         <tbody>
             <tr ng-repeat="o in ctl.list">
-                <td>{{::o.transferer}}</td>
-                <td>{{::o.receiver}}</td>
+                <td>{{::o.transferer.dep}} / {{::o.transferer.acc}} / {{::o.transferer.div}}</td>
+                <td>{{::o.receiver.dep}} / {{::o.receiver.acc}} / {{::o.receiver.div}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
                 <td>{{::o.reference}}</td>
@@ -96,7 +96,7 @@
 
           <div class="input-field col s4" ng-show="inst.side=='transferer'">
             <select ng-model="inst.transferer.acc" name="t_acc" material-select watch class="validate"
-                    ng-options="n as n for (n, sub) in ctl.account.acc" placeholder="Account" required></select>
+                    ng-options="n as n for (n, o) in ctl.account.acc" placeholder="Account" required></select>
             <label for="t_acc">Account</label>
           </div>
           <div class="input-field col s4" ng-hide="inst.side=='transferer'">
@@ -106,13 +106,13 @@
 
 
           <div class="input-field col s3" ng-show="inst.side=='transferer'">
-            <select ng-model="inst.transferer.sub" name="t_acc" material-select watch class="validate"
-                    ng-options="sub for sub in ctl.account.acc[inst.transferer.acc]" placeholder="Division" required></select>
-            <label for="t_sub">Division</label>
+            <select ng-model="inst.transferer.div" name="t_acc" material-select watch class="validate"
+                    ng-options="o for o in ctl.account.acc[inst.transferer.acc]" placeholder="Division" required></select>
+            <label for="t_div">Division</label>
           </div>
           <div class="input-field col s3" ng-hide="inst.side=='transferer'">
-            <input name="t_sub" type="text" class="validate" ng-model="inst.transferer.sub" required>
-            <label for="t_sub">Division</label>
+            <input name="t_div" type="text" class="validate" ng-model="inst.transferer.div" required>
+            <label for="t_div">Division</label>
           </div>
         </div>
 
@@ -126,8 +126,8 @@
           </div>
 
           <div class="input-field col s4" ng-show="inst.side=='receiver'">
-            <select ng-model="inst.receiver.acc" name="t_acc" material-select watch class="validate"
-                    ng-options="n as n for (n, sub) in ctl.account.acc" placeholder="Account" required></select>
+            <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.acc"
+                    ng-options="n as n for (n, o) in ctl.account.acc" placeholder="Account" required></select>
             <label for="t_acc">Account</label>
           </div>
           <div class="input-field col s4" ng-hide="inst.side=='receiver'">
@@ -137,13 +137,13 @@
 
 
           <div class="input-field col s3" ng-show="inst.side=='receiver'">
-            <select ng-model="inst.receiver.sub" name="t_acc" material-select watch class="validate"
-                    ng-options="sub for sub in ctl.account.acc[inst.receiver.acc]" placeholder="Division" required></select>
-            <label for="t_sub">Division</label>
+            <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.div"
+                    ng-options="o for o in ctl.account.acc[inst.receiver.acc]" placeholder="Division" required></select>
+            <label for="t_div">Division</label>
           </div>
           <div class="input-field col s3" ng-hide="inst.side=='receiver'">
-            <input name="t_sub" type="text" class="validate" ng-model="inst.receiver.sub" required>
-            <label for="t_sub">Division</label>
+            <input name="t_div" type="text" class="validate" ng-model="inst.receiver.div" required>
+            <label for="t_div">Division</label>
           </div>
         </div>
 
@@ -177,8 +177,8 @@
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">schedule</i>
-            <input name="created" type="text" class="validate datepicker" ng-model="inst.created" input-date>
-            <label for="created">Instruction Date</label>
+            <input name="instruction_date" type="text" class="validate datepicker" ng-model="inst.instruction_date" input-date>
+            <label for="instruction_date">Instruction Date</label>
           </div>
         </div>
 
@@ -188,18 +188,18 @@
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">textsms</i>
-            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.authority.description"></textarea>
+            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
             <label for="a_description">Description</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s8">
-            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.authority.document">
+            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.reason.document">
             <label for="a_document">Document number</label>
           </div>
           <div class="input-field col s4">
             <i class="material-icons prefix">schedule</i>
-            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.authority.created" input-date>
+            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.reason.created" input-date>
             <label for="a_created">Document date</label>
           </div>
         </div>

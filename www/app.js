@@ -5,6 +5,7 @@ angular.module('nsd.controller', [
   'nsd.controller.main',
   'nsd.controller.login',
   'nsd.controller.book',
+  'nsd.controller.balance',
   'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
@@ -77,7 +78,16 @@ angular.module('nsd.app',[
         roles:'nsd'
       }
     })
-
+    .state('app.balance', {
+      url: 'balance',
+      templateUrl  : 'pages/balance.html',
+      controller   : 'BalanceController',
+      controllerAs : 'ctl',
+      data:{
+        name: 'Balance',
+        roles: ['issuer', 'investor']
+      }
+    })
     .state('app.security', {
       url: 'security',
       templateUrl  : 'pages/security.html',
@@ -279,29 +289,44 @@ angular.module('nsd.app',[
      * add host to peer info
      */
     function _extendConfig(){
-      var netConfig = _config.network;
-      netConfig.getOrgs = function(){
-        var keys = Object.keys(netConfig).filter(function(key){ return key != 'orderer'});
+      var netConfig = _config['network-config'];
 
-        keys.forEach(function(key){
-          netConfig[key].id = key;
+      Object.keys(netConfig)
+        .filter(function(key){ return key != 'orderer' })
+        .forEach(function(orgId){
+
+          // add org.id
+          netConfig[orgId].id = orgId;
+
+          var orgConfig = netConfig[orgId] || {};
+
+          // add peers stuff
+          Object.keys(orgConfig)
+            .filter(function(key){ return key.startsWith('peer') })
+            .forEach(function(peerId){
+              orgConfig[peerId].id   = peerId;
+              orgConfig[peerId].host = getHost(orgConfig[peerId].requests);
+              orgConfig[peerId].org  = orgId;
+            });
+
         });
+    }
 
-        return keys.map(function(key){ return netConfig[key]; });
-      };
+    function getPeers(orgId){
+        var netConfig = _config['network-config'];
+        var orgConfig = netConfig[orgId]||{};
 
-      netConfig.getPeers = function(orgId){
-        var orgConfig = _config.network[orgId]||{};
-        var keys = Object.keys(orgConfig).filter(function(key){ return key.startsWith('peer')});
+        return Object.keys(orgConfig)
+          .filter(function(key){ return key.startsWith('peer')})
+          .map(function(key){ return orgConfig[key]; });
+    }
 
-        keys.forEach(function(key){
-          orgConfig[key].id = key;
-          orgConfig[key].host = getHost(orgConfig[key].requests);
-          orgConfig[key].org = orgId;
-        });
+    function getOrgs(){
+      var netConfig = _config['network-config'];
 
-        return keys.map(function(key){ return orgConfig[key]; });
-      };
+      return Object.keys(netConfig)
+        .filter(function(key){ return key != 'orderer'})
+        .map(function(key){ return netConfig[key]; });
     }
 
     /**
@@ -313,9 +338,57 @@ angular.module('nsd.app',[
       return m[2];
     }
 
+
+    function getAccount(){
+      var accountConfig = _config['account-config'] || {};
+      return accountConfig[_config.org];
+    }
+
+    function getOrg(){
+      return _config.org;
+    }
+
+
+    /**
+     * get organosation ID by deponent code (1 to 1 matching)
+     * @param  {srting} depCode
+     * @return {srting} orgID
+     */
+    function getOrgByDepcode(depCode){
+      var accountConfig = _config['account-config'];
+      // looking for second participant
+      for(var org in accountConfig){
+        if(accountConfig.hasOwnProperty(org)){
+          if(accountConfig[org].dep == depCode){
+            return org;
+            // break;
+          }
+        }
+      }
+      return null;
+    }
+
+    /**
+     *
+     */
+    function getOrgPeerIds(org){
+      var netConfig = _config['network-config'];
+      return Object.keys(netConfig[org])
+        .filter(function(key){ return key.startsWith('peer'); });
+    }
+
+
+    /////////
     return {
-      load :_resolveConfig,
-      ready:_resolveConfig,
+      load  :   _resolveConfig,
+      ready :   _resolveConfig,
+      getOrg     : getOrg,
+      getAccount : getAccount,
+      getPeers   : getPeers,
+      getOrgs    : getOrgs,
+
+      getOrgByDepcode:getOrgByDepcode,
+      getOrgPeerIds:getOrgPeerIds,
       get:function(){ return _config; }
     };
 })
