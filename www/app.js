@@ -344,6 +344,10 @@ angular.module('nsd.app',[
       return accountConfig[_config.org];
     }
 
+    function getOrg(){
+      return _config.org;
+    }
+
 
     /**
      * get organosation ID by deponent code (1 to 1 matching)
@@ -353,7 +357,7 @@ angular.module('nsd.app',[
     function getOrgByDepcode(depCode){
       var accountConfig = _config['account-config'];
       // looking for second participant
-      for(var org in _config.account){
+      for(var org in accountConfig){
         if(accountConfig.hasOwnProperty(org)){
           if(accountConfig[org].dep == depCode){
             return org;
@@ -378,6 +382,7 @@ angular.module('nsd.app',[
     return {
       load  :   _resolveConfig,
       ready :   _resolveConfig,
+      getOrg     : getOrg,
       getAccount : getAccount,
       getPeers   : getPeers,
       getOrgs    : getOrgs,

@@ -19,7 +19,11 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    */
   InstructionService.list = function() {
     return $q.resolve(getSampleList());
-    // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
+    // ApiService.channels.list().then(function(){
+    //   console.log();
+    //   // return ApiService.sc.query(channelID, chaincodeID, peers, 'list');
+
+    // });
   };
 
   /**
@@ -28,32 +32,43 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     $log.info('InstructionService.transfer', instruction);
 
     var channelID = InstructionService._getChannelForInstruction(instruction);
-    var peers = InstructionService._getPeersForInstruction(instruction);
-
-    var args = [
-      // no deponentFrom here
-      instruction.transferer.acc,     // 0: accountFrom
-      instruction.transferer.div,     // 1: divisionFrom
-
-      instruction.receiver.dep,     // 2: deponentTo
-      instruction.receiver.acc,     // 3: accountTo
-      instruction.receiver.div,     // 4: divisionTo
-
-      instruction.security,           // 5: security
-      instruction.quantity,           // 6: quantity
-      instruction.reference,          // 7: reference
-      instruction.instruction_date,   // 8: instructionDate  (date format?)
-      instruction.trade_date,         // 9: tradeDate  (date format?)
-      instruction.reason              // 10: reason (TODO: complex field)
-    ];
+    var peers     = InstructionService._getPeersForInstruction(instruction);
+    var args      = InstructionService._instructionToArguments(instruction);
 
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
   };
 
+  /**
+   *
+   */
+  InstructionService._instructionToArguments = function(instruction) {
+    return [
+      // no deponentFrom here
+      instruction.transferer.acc,     // 0: accountFrom
+      instruction.transferer.div,     // 1: divisionFrom
 
+      instruction.receiver.dep,       // 2: deponentTo
+      instruction.receiver.acc,       // 3: accountTo
+      instruction.receiver.div,       // 4: divisionTo
+
+      instruction.security,           // 5: security
+      ''+instruction.quantity,           // 6: quantity // TODO: fix: string parameters
+      instruction.reference,          // 7: reference
+      instruction.instruction_date,   // 8: instructionDate  (date format?)
+      instruction.trade_date,         // 9: tradeDate  (date format?)
+      JSON.stringify(instruction.reason)              // 10: reason (TODO: complex field)
+    ];
+  }
+
+  /**
+   * get instruction opponent ID.
+   * It would be transfererID when you are receiver and vise a versa
+   * @param {Instruction} instruction
+   * @return {string} orgID
+   */
   InstructionService._getOpponentID = function(instruction) {
-    var opponentDep = instruction.transferer.dep || instruction.receiver.dep;
+    var opponentDep = instruction.side == 'transferer' ? instruction.receiver.dep : instruction.transferer.dep;
     if(!opponentDep){
       throw new Error("Deponent not set");
     }
@@ -69,7 +84,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    */
   InstructionService._getChannelForInstruction = function(instruction) {
     var opponent = InstructionService._getOpponentID(instruction);
-    return [config.org, opponent].sort().join('-');
+    return [ConfigLoader.getOrg(), opponent].sort().join('-');
   };
 
   /**
@@ -81,9 +96,11 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var opponent = InstructionService._getOpponentID(instruction);
     var endorsersOrg = [config.org, opponent, ROOT_ENDORSER];
 
+    //
     var peers = endorsersOrg.reduce(function(result, org){
       var peers = ConfigLoader.getOrgPeerIds(org);
       result.push( org+'/'+peers[0] ); // orgPeerID  // endorse by the first peer
+      return result;
     }, []);
 
     return peers;
