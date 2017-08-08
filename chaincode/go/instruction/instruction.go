@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
+//	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -111,7 +111,7 @@ func (t *InstructionChaincode) GetOrganization(stub shim.ChaincodeStubInterface)
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// deponentFrom, accountFrom, divisionFrom, *, accountTo, divisionTo,
 	// security, quantity, reference, instructionDate, tradeDate, reason
-	if len(args) != 10 {
+	if len(args) != 11 {
 		return shim.Error("Incorrect number of arguments. " +
 			"Expecting deponentFrom, accountFrom, divisionFrom, accountTo, divisionTo, security, quantity, reference, " +
 			"instructionDate, tradeDate, reason")
