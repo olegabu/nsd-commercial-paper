@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, InstructionService, ConfigLoader) {
+function InstructionsController($scope, InstructionService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -18,6 +18,20 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
   // ConfigLoader.getAccount(orgID)
   ctrl.accountFrom = null;
   ctrl.accountTo   = null;
+
+
+  /**
+   *
+   */
+  ctrl.init = function(){
+      // var socket = SocketService.getSocket();
+      // socket.on('chainblock', ctrl.reload);
+      // $scope.$on("$destroy", function handler() {
+      //     // destruction code here
+      //     socket.off('chainblock', ctrl.reload);
+      // });
+      ctrl.reload();
+  }
 
   /**
    *
@@ -112,6 +126,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
     ctrl.invokeInProgress = true;
     return p.then(function(){
       $scope.inst = null;
+      return ctrl.reload();
     })
     .finally(function(){
       ctrl.invokeInProgress = false;
@@ -129,7 +144,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
   //////////////
 
   // INIT
-  ctrl.reload();
+  ctrl.init();
 
 }
 
