@@ -14,7 +14,10 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
 
 
   ctrl.org = ConfigLoader.get().org;
-  ctrl.account = ConfigLoader.getAccount();
+
+  // ConfigLoader.getAccount(orgID)
+  ctrl.accountFrom = null;
+  ctrl.accountTo   = null;
 
   /**
    *
@@ -30,13 +33,14 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
   /**
    * @return {Instruction}
    */
-  ctrl._getDefaultinstruction = function(transferSide){
+  ctrl._getDefaultinstruction = function(transferSide, opponentID){
+    var orgID = ctrl.org;
     return {
       transferer:{
-        dep: transferSide == TRANSFER_SIDE_TRANSFERER ? ctrl.account.dep : null
+        dep: ConfigLoader.getAccount( transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID).dep
       },
       receiver:{
-        dep: transferSide == TRANSFER_SIDE_RECEIVER ? ctrl.account.dep : null
+        dep: ConfigLoader.getAccount( transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID).dep
       },
       side: transferSide, // deprecate?
       initiator: transferSide,
@@ -48,15 +52,39 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
     };
   }
 
+  ctrl._fillAccount = function(transferSide, opponentID){
+      if(transferSide == TRANSFER_SIDE_TRANSFERER){
+        ctrl.accountFrom = ConfigLoader.getAccount();
+        ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
+      } else {
+        ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
+        ctrl.accountTo = ConfigLoader.getAccount();
+      }
+  };
+
+
   /**
    *
    */
-  ctrl.newInstructionTransfer = function(transferSide){
+  ctrl.newInstructionTransfer = function(transferSide, _channel){
     if(!$scope.inst || $scope.inst.side != transferSide){
         // preset values
-        $scope.inst = ctrl._getDefaultinstruction(transferSide);
+
+        var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
+        $scope.inst = ctrl._getDefaultinstruction(transferSide, opponentOrgID);
+
+        // preset
+        ctrl._fillAccount(transferSide, opponentOrgID);
     }
   };
+
+
+  /**
+   *
+   */
+  ctrl._getOrgIDByChannel = function(channelID){
+    return channelID.split('-').filter(function(org){ return org != ctrl.org; })[0];
+  }
 
   /**
    *

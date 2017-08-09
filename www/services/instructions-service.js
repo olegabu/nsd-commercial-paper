@@ -33,15 +33,19 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       return $q.all( list.map(function(channel){
         // promise for each channel:
         return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query')
-            .then(function(data){ return parseJson(data.result); });
+            .then(function(data){ return {
+                channel: channel.channel_id,
+                result: parseJson(data.result)
+              };
+            });
 
       }));
     }).then(function(results){
       // join array of array into one array (flatten)
       return results.reduce(function(result, singleResult){
-        result.push.apply(result, singleResult);
+        result[singleResult.channel] = singleResult.result;
         return result;
-      }, []);
+      }, {});
     });
   };
 
@@ -53,7 +57,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     try{
       parsed = JSON.parse(data);
     }catch(e){
-      $log.warn(e);
+      $log.warn(e, data);
     }
     return parsed;
   }

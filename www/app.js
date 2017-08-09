@@ -338,10 +338,12 @@ angular.module('nsd.app',[
       return m[2];
     }
 
-
-    function getAccount(){
+    /**
+     * @param {string} [orgID]
+     */
+    function getAccount(orgID){
       var accountConfig = _config['account-config'] || {};
-      return accountConfig[_config.org];
+      return accountConfig[orgID||_config.org];
     }
 
     function getOrg(){
