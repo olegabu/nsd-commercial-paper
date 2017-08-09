@@ -23,9 +23,13 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
    *
    */
   ctrl.reload = function(){
+    ctrl.invokeInProgress = true;
     return InstructionService.list()
       .then(function(list){
         ctrl.list = list;
+      })
+      .finally(function(){
+        ctrl.invokeInProgress = false;
       });
   }
 
@@ -44,6 +48,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
       },
       side: transferSide, // deprecate?
       initiator: transferSide,
+      quantity: 0,
       trade_date    : new Date().format(DATE_INPUT_FORMAT),
       instruction_date : new Date().format(DATE_INPUT_FORMAT),
       reason:{
@@ -103,8 +108,13 @@ function InstructionsController($scope, InstructionService, ConfigLoader) {
         throw new Error('Unknpown transfer side: ' + instruction.side);
     }
 
+
+    ctrl.invokeInProgress = true;
     return p.then(function(){
       $scope.inst = null;
+    })
+    .finally(function(){
+      ctrl.invokeInProgress = false;
     });
 
   };

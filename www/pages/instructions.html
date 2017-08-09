@@ -1,9 +1,14 @@
 
 
+<div class="progress" ng-show="ctl.invokeInProgress">
+    <div class="indeterminate"></div>
+</div>
+
+
 <div ng-repeat="(channel, instructions) in ctl.list">
 
 
-  <h5>{{::channel}}</h5>
+  <h4>{{::channel}}</h4>
 
   <div class="row">
     <div class="col s12">
@@ -31,24 +36,24 @@
                 <th>Security</th>
                 <th>Quantity</th>
                 <th>Reference</th>
-                <th>Trade Date</th>
                 <th>Instruction Date</th>
+                <th>Trade Date</th>
                 <th>Status</th>
-                <th>Side</th>
+                <th>Initialor</th>
                 <!-- <th></th> -->
             </tr>
         </thead>
         <tbody>
             <tr ng-repeat="o in instructions">
-                <td>{{::o.transferer.dep}} / {{::o.transferer.acc}} / {{::o.transferer.div}}</td>
-                <td>{{::o.receiver.dep}} / {{::o.receiver.acc}} / {{::o.receiver.div}}</td>
+                <td>{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
+                <td>{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
                 <td>{{::o.reference}}</td>
-                <td>{{::o.trade_date|date}}</td>
-                <td>{{::o.created|date}}</td>
+                <td>{{::o.instructionDate|date}}</td>
+                <td>{{::o.tradeDate|date}}</td>
                 <td>{{::o.status}}</td>
-                <td>{{::o.side}}</td>
+                <td>{{::o.initiator}}</td>
                 <td hidden>
                     <input type="button" class="btn btn-default" ng-click="ctl.verify(o)"  value="Verify"  ng-hide="o.status"/>
                     <input type="button" class="btn btn-danger"  ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
@@ -63,6 +68,8 @@
         </tbody>
       </table>
   </div>
+
+
 </div>
 <!-- <div ng-hide="ctl.list.length">
   <i>No channels</i>
