@@ -3,7 +3,7 @@ package main
 
 import (
 	"fmt"
-	//"strconv"
+	"strconv"
 	"encoding/json"
 	"crypto/x509"
 	"encoding/pem"
@@ -65,6 +65,14 @@ type KeyModificationValue struct {
 func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### InstructionChaincode Init ###########")
 
+	args := stub.GetArgs()
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting bookChannel")
+	}
+
+	stub.PutState ("bookChannel", args[1])
+
 	return shim.Success(nil)
 }
 
@@ -87,6 +95,21 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	}
 	if function == "history" {
 		return t.history(stub, args)
+	}
+
+	// for debugging only
+	if function == "check" {
+		if len(args) != 4 {
+			return shim.Error("Incorrect number of arguments. " +
+				"Expecting account, division, security, quantity")
+		}
+		quantity, _ := strconv.Atoi(args[3])
+
+		if t.check(stub, args[0], args[1], args[2], quantity) {
+			return shim.Success(nil)
+		} else {
+			return shim.Error("book returned false")
+		}
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
@@ -228,7 +251,30 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success(nil);
+	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
+	quantity int) bool {
+
+	bookChannelBytes, err := stub.GetState("bookChannel")
+	if err != nil {
+		logger.Error("cannot find bookChannel")
+		return false
+	}
+
+	byteArgs := [][]byte{}
+	byteArgs = append(byteArgs, []byte("check"))
+	byteArgs = append(byteArgs, []byte(account))
+	byteArgs = append(byteArgs, []byte(division))
+	byteArgs = append(byteArgs, []byte(security))
+	byteArgs = append(byteArgs, []byte(strconv.Itoa(quantity)))
+
+	res := stub.InvokeChaincode("book", byteArgs, string(bookChannelBytes))
+
+	logger.Debug(res)
+
+	return res.Status == 200
 }
 
 func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {

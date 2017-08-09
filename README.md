@@ -19,7 +19,7 @@ Start chaincode in your IDE's debugger with env variables
 
 ```
 CORE_CHAINCODE_ID_NAME=book:0
-CORE_CHAINCODE_LOGLEVEL=debug
+CORE_CHAINCODE_LOGGING_LEVEL=debug
 CORE_PEER_ADDRESS=0.0.0.0:7051
 ```
 
@@ -29,7 +29,7 @@ Now install and instantiate the chaincode on your dev peer:
 
 `./network.sh -m devinit`
 
-Invoke the chaincode with payload hardcoded in [network.sh](network.sh):
+Invoke and query the chaincode with payload hardcoded in [network.sh](network.sh):
 
 `./network.sh -m devinvoke`
 

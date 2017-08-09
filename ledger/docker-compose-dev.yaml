@@ -31,6 +31,7 @@ services:
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
     volumes:
       - /var/run/:/host/var/run/

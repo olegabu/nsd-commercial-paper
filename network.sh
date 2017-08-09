@@ -207,23 +207,31 @@ function devNetworkDown () {
 }
 
 function devInstallInstantiate () {
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"1000\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"1000\"]}'"
 
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[]}'"
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"myc\",\"myc\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"myc\"]}'"
+ 
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p security -n security -v 0 && peer chaincode instantiate -n security -v 0 -C myc -c '{\"Args\":[\"init\",\"RU000ABC0001\",\"active\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n security -v 0 -C myc -c '{\"Args\":[\"init\",\"RU000ABC0001\",\"active\"]}'"
 }
 
 function devInvoke () {
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"check\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
+
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n security -v 0 -C myc -c '{\"Args\":[\"put\",\"RU000ABC0001\",\"redeemed\"]}'"
 }
 
 function devQuery () {
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n book -v 0 -C myc -c '{\"Args\":[\"query\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n book -v 0 -C myc -c '{\"Args\":[\"query\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n book -v 0 -C myc -c '{\"Args\":[\"history\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n instruction -v 0 -C myc -c '{\"Args\":[\"query\"]}'"
+
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode query -n security -v 0 -C myc -c '{\"Args\":[\"query\"]}'"
 }
 
 function info() {

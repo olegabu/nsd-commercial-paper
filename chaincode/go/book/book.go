@@ -21,7 +21,6 @@ type BookChaincode struct {
 
 type BookValue struct {
 	Quantity   		int 	`json:"quantity"`
-	Deponent 		string 	`json:"deponent"`
 }
 
 type Balance struct {
@@ -33,7 +32,6 @@ type Book struct {
 	Balance 		Balance `json:"balance"`
 	Security        string 	`json:"security"`
 	Quantity   		int 	`json:"quantity"`
-	Deponent	 	string  `json:"deponent"`
 }
 
 type KeyModificationValue struct {
@@ -48,7 +46,7 @@ func (t *BookChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 
 	_, args := stub.GetFunctionAndParameters()
 
-	return t.init(stub, args)
+	return t.put(stub, args)
 }
 
 func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
@@ -56,11 +54,14 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 	function, args := stub.GetFunctionAndParameters()
 
-	if function == "init" {
-		return t.init(stub, args)
+	if function == "put" {
+		return t.put(stub, args)
 	}
 	if function == "move" {
 		return t.move(stub, args)
+	}
+	if function == "check" {
+		return t.check(stub, args)
 	}
 	if function == "query" {
 		return t.query(stub, args)
@@ -75,18 +76,17 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error(err)
 }
 
-func (t *BookChaincode) init(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// deponent, account, division, security, quantity
-	if len(args) != 5 {
+func (t *BookChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// account, division, security, quantity
+	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. " +
-			"Expecting deponent, account, division, security, quantity")
+			"Expecting account, division, security, quantity")
 	}
 
-	deponent := args[0]
-	account := args[1]
-	division := args[2]
-	security := args[3]
-	quantity, err := strconv.Atoi(args[4])
+	account := args[0]
+	division := args[1]
+	security := args[2]
+	quantity, err := strconv.Atoi(args[3])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -97,7 +97,7 @@ func (t *BookChaincode) init(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(BookValue{Deponent: deponent, Quantity: quantity})
+	value, err := json.Marshal(BookValue{Quantity: quantity})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -105,6 +105,48 @@ func (t *BookChaincode) init(stub shim.ChaincodeStubInterface, args []string) pb
 	err = stub.PutState(key, value)
 	if err != nil {
 		return shim.Error(err.Error())
+	}
+
+	return shim.Success(nil)
+}
+
+func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// account, division, security, quantity
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting account, division, security, quantity")
+	}
+
+	account := args[0]
+	division := args[1]
+	security := args[2]
+	quantity, err := strconv.Atoi(args[3])
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	keyFrom, err := stub.CreateCompositeKey(indexName, []string{account, division, security})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	bytes, err := stub.GetState(keyFrom)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if bytes == nil {
+		return shim.Error("cannot find balance")
+	}
+
+	var value BookValue
+	err = json.Unmarshal(bytes, &value)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if value.Quantity < quantity {
+		return shim.Error("quantity less than current balance")
 	}
 
 	return shim.Success(nil)
@@ -234,7 +276,6 @@ func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) p
 			},
 			Security: compositeKeyParts[2],
 			Quantity: value.Quantity,
-			Deponent: value.Deponent,
 		}
 
 		books = append(books, book)
