@@ -31,7 +31,9 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var peer = InstructionService._getQueryPeer();
 
     return ApiService.channels.list().then(function(list){
-      return $q.all( list.map(function(channel){
+      return $q.all( list
+        .filter(function(channel){ return _isBilateralChannel(channel.channel_id); })
+        .map(function(channel){
         // promise for each channel:
         return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query')
             .then(function(data){ return {
@@ -61,6 +63,10 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       $log.warn(e, data);
     }
     return parsed;
+  }
+
+  function _isBilateralChannel(channelID){
+    return channelID.indexOf('-') > 0;
   }
 
 
