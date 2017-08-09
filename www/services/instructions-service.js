@@ -25,6 +25,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.list = function() {
+    $log.debug('InstructionService.list');
 
     var chaincodeID = InstructionService._getChaincodeID();
     var peer = InstructionService._getQueryPeer();
@@ -68,7 +69,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.transfer = function(instruction) {
-    $log.info('InstructionService.transfer', instruction);
+    $log.debug('InstructionService.transfer', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
     var opponent    = InstructionService._getOpponentID(instruction);
@@ -84,7 +85,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.receive = function(instruction) {
-    $log.info('InstructionService.receive', instruction);
+    $log.debug('InstructionService.receive', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
     var opponent    = InstructionService._getOpponentID(instruction);
