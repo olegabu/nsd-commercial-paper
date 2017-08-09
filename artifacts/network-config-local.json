@@ -131,7 +131,7 @@
   },
 
   "contracts":{
-    "instruction":"mycc",
+    "instruction":"instruction",
     "book":"book",
     "securityMaster":"securityMaster"
   },
