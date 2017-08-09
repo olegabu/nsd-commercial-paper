@@ -63,6 +63,7 @@ angular.module('nsd.app',[
       controller: 'LoginController',
       controllerAs: 'ctl',
       data:{
+        name: false,
         visible: false,
         roles:'*'
       }
