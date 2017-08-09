@@ -22,34 +22,6 @@ const indexName = `Instruction`
 type InstructionChaincode struct {
 }
 
-type InstructionKey struct {
-	Transferer 		Balance
-	Receiver		Balance
-	Security 		string
-	Quantity 		string
-	Reference 		string
-	InstructionDate string
-	TradeDate 		string
-}
-
-func (this *InstructionKey) ToStringArray() ([]string) {
-	return []string{
-		this.Transferer.Account,
-		this.Transferer.Division,
-		this.Receiver.Account,
-		this.Receiver.Division,
-		this.Security,
-		this.Quantity,
-		this.Reference,
-		this.InstructionDate,
-		this.TradeDate,
-	}
-}
-
-func (this *InstructionKey) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
-	return stub.CreateCompositeKey(indexName, this.ToStringArray())
-}
-
 type InstructionValue struct {
 	DeponentFrom 	string 	`json:"deponentFrom"`
 	DeponentTo		string 	`json:"deponentTo"`
@@ -111,6 +83,24 @@ type Instruction struct {
 	Reason          Reason 	`json:"reason"`
 }
 
+func (this *Instruction) ToStringArray() ([]string) {
+	return []string{
+		this.Transferer.Account,
+		this.Transferer.Division,
+		this.Receiver.Account,
+		this.Receiver.Division,
+		this.Security,
+		this.Quantity,
+		this.Reference,
+		this.InstructionDate,
+		this.TradeDate,
+	}
+}
+
+func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
+	return stub.CreateCompositeKey(indexName, this.ToStringArray())
+}
+
 type KeyModificationValue struct {
 	TxId      string 			`json:"txId"`
 	Value     InstructionValue  `json:"value"`
@@ -120,7 +110,7 @@ type KeyModificationValue struct {
 
 func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### InstructionChaincode Init ###########")
-/*
+
 	args := stub.GetArgs()
 	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. " +
@@ -128,7 +118,7 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 	}
 
 	stub.PutState ("bookChannel", args[1])
-*/
+
 	return shim.Success(nil)
 }
 
@@ -191,7 +181,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		return shim.Error("Incorrect number of arguments. Expecting 12.")
 	}
 
-	key := InstructionKey{
+	instruction := Instruction{
 		Transferer: Balance{
 			Account:		args[ArgIndexTransfererAccount],
 			Division: 		args[ArgIndexTransfererDivision]},
@@ -205,7 +195,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		TradeDate: 			args[ArgIndexTradeDate],
 	}
 
-	compositeKey, err := key.ToCompositeKey(stub)
+	compositeKey, err := instruction.ToCompositeKey(stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -213,7 +203,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 	bytes, _ := stub.GetState(compositeKey)
 	if bytes == nil {
 		// Instruction does not exist
-		return t.initiate(stub, key, InstructionValue{
+		return t.initiate(stub, instruction, InstructionValue{
 			DeponentFrom: 	args[ArgIndexTransfererDeponent],
 			DeponentTo: 	args[ArgIndexReceiverDeponent],
 			Status:			InstructionInitiated,
@@ -228,7 +218,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 
 		if value.Initiator == InitiatorIsTransferer {
 			value.Status = InstructionMatched
-			return t.match(stub, key, value)
+			return t.match(stub, instruction, value)
 		} else {
 			return shim.Error("Access denied.")
 		}
@@ -242,7 +232,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		return shim.Error("Incorrect number of arguments. Expecting 12.")
 	}
 
-	key := InstructionKey{
+	key := Instruction{
 		Transferer: Balance{
 			Account:		args[ArgIndexTransfererAccount],
 			Division: 		args[ArgIndexTransfererDivision]},
@@ -286,8 +276,8 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	}
 }
 
-func (t *InstructionChaincode) initiate(stub shim.ChaincodeStubInterface, key InstructionKey, value InstructionValue) pb.Response {
-	compositeKey, err := key.ToCompositeKey(stub)
+func (t *InstructionChaincode) initiate(stub shim.ChaincodeStubInterface, instruction Instruction, value InstructionValue) pb.Response {
+	compositeKey, err := instruction.ToCompositeKey(stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -306,8 +296,8 @@ func (t *InstructionChaincode) initiate(stub shim.ChaincodeStubInterface, key In
 	return shim.Success([]byte("Instruction was successfully initiated."));
 }
 
-func (t *InstructionChaincode) match(stub shim.ChaincodeStubInterface, key InstructionKey, value InstructionValue) pb.Response {
-	compositeKey, err := key.ToCompositeKey(stub)
+func (t *InstructionChaincode) match(stub shim.ChaincodeStubInterface, instruction Instruction, value InstructionValue) pb.Response {
+	compositeKey, err := instruction.ToCompositeKey(stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -417,7 +407,7 @@ func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []
 			"security, quantity, reference, instructionDate, tradeDate")
 	}
 
-	key := InstructionKey{
+	key := Instruction{
 		Transferer: Balance{
 			Account:		args[ArgIndexTransfererAccount],
 			Division: 		args[ArgIndexTransfererDivision]},
