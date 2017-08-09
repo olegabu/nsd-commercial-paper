@@ -9,7 +9,7 @@ angular.module('nsd.controller', [
   'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
-  'nsd.controller.security',
+  'nsd.controller.security'
 ]);
 
 angular.module('nsd.service', [
@@ -18,7 +18,8 @@ angular.module('nsd.service', [
   'nsd.service.channel',
   'nsd.service.socket',
   'nsd.service.instructions',
-  'nsd.service.book'
+  'nsd.service.book',
+  'nsd.service.security'
 ]);
 
 angular.module('nsd.app',[
