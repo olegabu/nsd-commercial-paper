@@ -58,7 +58,7 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
-		"move, query, history. But got: %v", args[0])
+		"put, query, history. But got: %v", args[0])
 	logger.Error(err)
 	return shim.Error(err)
 }

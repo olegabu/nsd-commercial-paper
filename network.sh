@@ -160,7 +160,10 @@ function networkUp () {
   joinChannel ${ORG1} depository
 
   installChaincode ${ORG1} book book
-  instantiateChaincode ${ORG1} depository book '{"Args":["init","aDeponent","aEmissionAccount","aActiveDivision","RU000ABC0001","1000"]}'
+  instantiateChaincode ${ORG1} depository book '{"Args":["init","aEmissionAccount","aActiveDivision","RU000ABC0001","1000"]}'
+
+  installChaincode ${ORG1} security security
+  instantiateChaincode ${ORG1} depository security '{"Args":["init","RU000ABC0001","active"]}'
 
   createChannel "$ORG2-$ORG3"
   joinChannel ${ORG1} "$ORG2-$ORG3"
@@ -179,7 +182,7 @@ function networkUp () {
 
   CHAINCODE_NAME=instruction
   CHAINCODE_PATH=instruction
-  CHAINCODE_INIT='{"Args":[]}'
+  CHAINCODE_INIT='{"Args":["init","depository"]}'
 
   installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
   installChaincode ${ORG2} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
@@ -207,7 +210,7 @@ function devNetworkDown () {
 }
 
 function devInstallInstantiate () {
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"1000\"]}'"
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0 && peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"1000\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"myc\",\"myc\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"myc\"]}'"
