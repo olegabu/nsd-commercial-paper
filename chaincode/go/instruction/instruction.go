@@ -236,7 +236,54 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 }
 
 func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	return shim.Success(nil)
+	// deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo,
+	// security, quantity, reference, instructionDate, tradeDate, reason
+	if len(args) != 12 {
+		return shim.Error("Incorrect number of arguments. Expecting 12.")
+	}
+
+	key := InstructionKey{
+		Transferer: Balance{
+			Account:		args[ArgIndexTransfererAccount],
+			Division: 		args[ArgIndexTransfererDivision]},
+		Receiver: Balance{
+			Account:		args[ArgIndexReceiverAccount],
+			Division: 		args[ArgIndexReceiverDivision]},
+		Security: 			args[ArgIndexSecurity],
+		Quantity: 			args[ArgIndexQuantity],
+		Reference: 			args[ArgIndexReference],
+		InstructionDate: 	args[ArgIndexInstructionDate],
+		TradeDate: 			args[ArgIndexTradeDate],
+	}
+
+	compositeKey, err := key.ToCompositeKey(stub)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	bytes, _ := stub.GetState(compositeKey)
+	if bytes == nil {
+		// Instruction does not exist
+		return t.initiate(stub, key, InstructionValue{
+			DeponentFrom: 	args[ArgIndexTransfererDeponent],
+			DeponentTo: 	args[ArgIndexReceiverDeponent],
+			Status:			InstructionInitiated,
+			Initiator:		InitiatorIsTransferer})
+	} else {
+		// Instruction do exist - match it
+		var value InstructionValue
+		err = json.Unmarshal(bytes, &value)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		if value.Initiator == InitiatorIsReceiver {
+			value.Status = InstructionMatched
+			return t.match(stub, key, value)
+		} else {
+			return shim.Error("Access denied.")
+		}
+	}
 }
 
 func (t *InstructionChaincode) initiate(stub shim.ChaincodeStubInterface, key InstructionKey, value InstructionValue) pb.Response {
