@@ -37,7 +37,8 @@ angular.module('nsd.app',[
 
    'nsd.directive.form',
    'nsd.directive.certificate',
-   'nsd.directive.blockchain'
+   'nsd.directive.blockchain',
+   'nsd.directive.role'
 ])
 .config(function($stateProvider) {
 
