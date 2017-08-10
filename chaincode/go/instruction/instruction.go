@@ -143,6 +143,20 @@ func (this *Instruction) upsertIn(stub shim.ChaincodeStubInterface) (error) {
 	return nil
 }
 
+func (this *Instruction) setEvent(stub shim.ChaincodeStubInterface) (error) {
+	value, err := this.toLedgerValue()
+	if err != nil {
+		return err
+	}
+
+	err = stub.SetEvent(indexName + "." + this.Status, value)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
 	err := this.loadFrom(stub)
 	if err != nil {
@@ -154,7 +168,13 @@ func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitia
 	}
 
 	this.Status = InstructionMatched
+
 	err = this.upsertIn(stub)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	err = this.setEvent(stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}

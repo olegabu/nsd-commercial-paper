@@ -245,8 +245,11 @@ function devInstallInstantiate () {
 }
 
 function devInvoke () {
+# ["aEmissionAccount","aActiveDivision","bInvestmentAccount","bActiveDivision","RU000ABC0001","10"]
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
 
+ # ["aDeponent","aEmissionAccount","aActiveDivision","bDeponent","bInvestmentAccount","bActiveDivision","RU000ABC0001","10","reference1000","2017-08-08","2017-08-07","reason"]
+ # ["aDeponent","aEmissionAccount","aActiveDivision","bDeponent","bInvestmentAccount","bActiveDivision","RU000ABC0001","10","reference1000","2017-08-08","2017-08-07","reason"]
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
  docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"check\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
 

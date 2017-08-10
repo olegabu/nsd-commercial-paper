@@ -1,8 +1,8 @@
 {
   "middleware":[
     {
-      "name":"Contract Communicator",
-      "file":"./contract-communicator.js"
+      "name":"Chaincode Event Orchestrator",
+      "file":"./orchestrator.js"
     }
   ]
 }
