@@ -1,0 +1,8 @@
+{
+  "middleware":[
+    {
+      "name":"Ledger listener",
+      "file":"./ledger-listener.js"
+    }
+  ]
+}
