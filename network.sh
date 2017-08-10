@@ -134,6 +134,16 @@ function instantiateChaincode () {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode instantiate -n $N -v 1.0 -c '$I' -o orderer.$DOMAIN:7050 -C $CHANNEL_NAME --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 }
 
+function warmUpChaincode () {
+    ORG=$1
+    CHANNEL_NAME=$2
+    N=$3
+    info "warming up chaincode $N on $CHANNEL_NAME on all peers of $ORG with query"
+
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode query -n $N -v 1.0 -c '{\"Args\":[\"query\"]}' -C $CHANNEL_NAME"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode query -n $N -v 1.0 -c '{\"Args\":[\"query\"]}' -C $CHANNEL_NAME"
+}
+
 function installChaincode() {
     ORG=$1
     N=$2
@@ -161,9 +171,11 @@ function networkUp () {
 
   installChaincode ${ORG1} book book
   instantiateChaincode ${ORG1} depository book '{"Args":["init","aEmissionAccount","aActiveDivision","RU000ABC0001","1000"]}'
+  warmUpChaincode ${ORG1} depository book
 
   installChaincode ${ORG1} security security
   instantiateChaincode ${ORG1} depository security '{"Args":["init","RU000ABC0001","active"]}'
+  warmUpChaincode ${ORG1} depository security
 
   createChannel "$ORG2-$ORG3"
   joinChannel ${ORG1} "$ORG2-$ORG3"
@@ -192,6 +204,18 @@ function networkUp () {
   instantiateChaincode ${ORG1} "$ORG2-$ORG3" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
   instantiateChaincode ${ORG1} "$ORG2-$ORG4" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
   instantiateChaincode ${ORG1} "$ORG3-$ORG4" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+
+  warmUpChaincode ${ORG1} "$ORG2-$ORG3" ${CHAINCODE_NAME}
+  warmUpChaincode ${ORG2} "$ORG2-$ORG3" ${CHAINCODE_NAME}
+  warmUpChaincode ${ORG3} "$ORG2-$ORG3" ${CHAINCODE_NAME}
+
+  warmUpChaincode ${ORG1} "$ORG2-$ORG4" ${CHAINCODE_NAME}
+  warmUpChaincode ${ORG2} "$ORG2-$ORG4" ${CHAINCODE_NAME}
+  warmUpChaincode ${ORG4} "$ORG2-$ORG4" ${CHAINCODE_NAME}
+
+  warmUpChaincode ${ORG1} "$ORG3-$ORG4" ${CHAINCODE_NAME}
+  warmUpChaincode ${ORG3} "$ORG3-$ORG4" ${CHAINCODE_NAME}
+  warmUpChaincode ${ORG4} "$ORG3-$ORG4" ${CHAINCODE_NAME}
 
   #logs
 }
