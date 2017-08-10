@@ -30,19 +30,24 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var chaincodeID = InstructionService._getChaincodeID();
     var peer = InstructionService._getQueryPeer();
 
-    return ApiService.channels.list().then(function(list){
-      return $q.all( list
+    return ApiService.channels.list().then(function(channelList){
+      return $q.all( channelList
         .map(function(channel){ return channel.channel_id; })
         .filter(function(channelID){ return _isBilateralChannel(channelID); })
         .sort()
         .map(function(channelID){
-        // promise for each channel:
-        return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
+          // promise for each channel:
+          return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
             .then(function(data){ return {
                 channel: channelID,
                 result: parseJson(data.result)
               };
-            });
+            }).catch(function(){
+              return {
+                channel: channelID,
+                result: []
+              };
+            })
 
       }));
     }).then(function(results){
