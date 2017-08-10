@@ -222,7 +222,7 @@ func (this *Instruction) fillFromArgs(args []string) (error) {
 }
 
 func (this *Instruction) toLedgerValue() ([]byte, error) {
-	return json.Marshal([]string{this.DeponentFrom, this.DeponentTo, this.Status, string(this.Initiator)})
+	return json.Marshal([]string{this.DeponentFrom, this.DeponentTo, this.Status, this.Initiator})
 }
 
 func (this *Instruction) fillFromLedgerValue(bytes []byte) (error) {
@@ -307,6 +307,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 	if instruction.existsIn(stub) {
 		return instruction.matchIf(stub, InitiatorIsTransferer)
 	} else {
+		instruction.Initiator = InitiatorIsReceiver
 		instruction.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
 			return shim.Error("Instruction initialization error.")
@@ -325,6 +326,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	if instruction.existsIn(stub) {
 		return instruction.matchIf(stub, InitiatorIsReceiver)
 	} else {
+		instruction.Initiator = InitiatorIsTransferer
 		instruction.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
 			return shim.Error("Instruction initialization error.")
