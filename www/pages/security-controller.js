@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function SecurityController(SecurityService) {
+function SecurityController($scope, SecurityService) {
 
   var ctrl = this;
 
@@ -13,12 +13,7 @@ function SecurityController(SecurityService) {
    *
    */
   ctrl.init = function(){
-      // var socket = SocketService.getSocket();
-      // socket.on('chainblock', ctrl.reload);
-      // $scope.$on("$destroy", function handler() {
-      //     // destruction code here
-      //     socket.off('chainblock', ctrl.reload);
-      // });
+      $scope.$on('chainblock', ctrl.reload);
       ctrl.reload();
   }
 

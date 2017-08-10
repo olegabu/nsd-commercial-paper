@@ -30,17 +30,24 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var chaincodeID = InstructionService._getChaincodeID();
     var peer = InstructionService._getQueryPeer();
 
-    return ApiService.channels.list().then(function(list){
-      return $q.all( list
-        .filter(function(channel){ return _isBilateralChannel(channel.channel_id); })
-        .map(function(channel){
-        // promise for each channel:
-        return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query')
+    return ApiService.channels.list().then(function(channelList){
+      return $q.all( channelList
+        .map(function(channel){ return channel.channel_id; })
+        .filter(function(channelID){ return _isBilateralChannel(channelID); })
+        .sort()
+        .map(function(channelID){
+          // promise for each channel:
+          return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
             .then(function(data){ return {
-                channel: channel.channel_id,
+                channel: channelID,
                 result: parseJson(data.result)
               };
-            });
+            }).catch(function(){
+              return {
+                channel: channelID,
+                result: []
+              };
+            })
 
       }));
     }).then(function(results){
@@ -56,13 +63,14 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   function parseJson(data){
-    var parsed = null;
-    try{
-      parsed = JSON.parse(data);
-    }catch(e){
-      $log.warn(e, data);
+    if(typeof data == "string"){
+      try{
+        data = JSON.parse(data);
+      }catch(e){
+        $log.warn(e, data);
+      }
     }
-    return parsed;
+    return data;
   }
 
   function _isBilateralChannel(channelID){

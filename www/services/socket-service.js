@@ -36,6 +36,12 @@ function SocketService(env, $rootScope) {
     socket.on('reconnect_error', function(error){      SocketService.state = STATE_ERROR;       $rootScope.$apply(); });
 
 
+    // TODO: this is an application-specific logic
+    socket.on('chainblock', function(e){
+      $rootScope.$broadcast('chainblock', e);
+    });
+
+
     // socket.on('ping', function(){
     //   console.log('socket: ping');
     // });

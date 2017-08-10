@@ -14,11 +14,11 @@
     <div class="col s12">
       <div>
         <!-- Modal Trigger -->
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer', channel)" href="#transferInstruction" modal>
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer', channel)" href="#transferInstruction" modal role-show="issuer, investor">
           Transfer Instruction
         </button>
 
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver', channel)" href="#transferInstruction" modal>
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver', channel)" href="#transferInstruction" modal role-show="issuer, investor">
           Receive Instruction
         </button>
       </div>
