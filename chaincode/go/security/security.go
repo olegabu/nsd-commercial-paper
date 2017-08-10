@@ -8,6 +8,8 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	//cb "github.com/hyperledger/fabric/protos/common"
+	//"github.com/golang/protobuf/proto"
 )
 
 var logger = shim.NewLogger("SecurityChaincode")
@@ -57,10 +59,8 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 		return t.history(stub, args)
 	}
 
-	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
-		"put, query, history. But got: %v", args[0])
-	logger.Error(err)
-	return shim.Error(err)
+	return shim.Error(fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
+		"put, query, history. But got: %v", args[0]))
 }
 
 func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
