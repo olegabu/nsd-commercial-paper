@@ -1,8 +1,8 @@
 {
   "middleware":[
     {
-      "name":"Ledger listener",
-      "file":"./ledger-listener.js"
+      "name":"Contract Communicator",
+      "file":"./contract-communicator.js"
     }
   ]
 }

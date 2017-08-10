@@ -1,8 +1,17 @@
 
 module.exports = function(require){
-
   var log4js  = require('log4js');
-  var logger  = log4js.getLogger('LedgerListener');
+  var logger  = log4js.getLogger('contract-communicator');
+
+
+  const ORG = process.env.ORG || null;
+
+  if(ORG != 'nsd'){
+    logger.info('Disabled for common members');
+    return;
+  }
+
+
 
   var peerListener = require('../lib-fabric/peer-listener.js');
 
