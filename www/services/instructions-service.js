@@ -57,13 +57,14 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   function parseJson(data){
-    var parsed = null;
-    try{
-      parsed = JSON.parse(data);
-    }catch(e){
-      $log.warn(e, data);
+    if(typeof data == "string"){
+      try{
+        data = JSON.parse(data);
+      }catch(e){
+        $log.warn(e, data);
+      }
     }
-    return parsed;
+    return data;
   }
 
   function _isBilateralChannel(channelID){
