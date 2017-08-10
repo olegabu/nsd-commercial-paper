@@ -1,5 +1,5 @@
 
 <div class="container-fluid" style="margin-left: 20px; margin-right: 20px;">
-  <h2 ng-hide="$state.data.header===false">{{$state.data.header||$state.data.name||$state.name}}</h2>
+  <h2 ng-hide="$state.data.name===false">{{$state.data.name||$state.name}}</h2>
   <ui-view></ui-view>
 </div>

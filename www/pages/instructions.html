@@ -1,24 +1,24 @@
 
-<div class="row">
-<!--
-  <div class="col s12">
-    <ul tabs class="tabs">
-      <li class="tab col s3"><a href="#tab-balances">Instructions</a></li>
-      <li class="tab col s3"><a href="#tab-history">History</a></li>
-    </ul>
-  </div>
--->
 
+<div class="progress" ng-show="ctl.invokeInProgress">
+    <div class="indeterminate"></div>
+</div>
+
+
+<div ng-repeat="(channel, instructions) in ctl.list">
+
+
+  <h4>{{::channel}}</h4>
 
   <div class="row">
     <div class="col s12">
       <div>
         <!-- Modal Trigger -->
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer')" href="#transferInstruction" modal>
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer', channel)" href="#transferInstruction" modal>
           Transfer Instruction
         </button>
 
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal>
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver', channel)" href="#transferInstruction" modal>
           Receive Instruction
         </button>
       </div>
@@ -27,7 +27,6 @@
 
 
 
-  <!-- tab -->
   <div id="tab-balances" class="col s12">
       <table class="table-bordered highlight responsive-table">
         <thead>
@@ -37,31 +36,31 @@
                 <th>Security</th>
                 <th>Quantity</th>
                 <th>Reference</th>
-                <th>Trade Date</th>
                 <th>Instruction Date</th>
+                <th>Trade Date</th>
                 <th>Status</th>
-                <th>Side</th>
+                <th>Initialor</th>
                 <!-- <th></th> -->
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in ctl.list">
-                <td>{{::o.transferer.dep}} / {{::o.transferer.acc}} / {{::o.transferer.div}}</td>
-                <td>{{::o.receiver.dep}} / {{::o.receiver.acc}} / {{::o.receiver.div}}</td>
+            <tr ng-repeat="o in instructions">
+                <td>{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
+                <td>{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
                 <td>{{::o.reference}}</td>
-                <td>{{::o.trade_date|date}}</td>
-                <td>{{::o.created|date}}</td>
+                <td>{{::o.instructionDate|date}}</td>
+                <td>{{::o.tradeDate|date}}</td>
                 <td>{{::o.status}}</td>
-                <td>{{::o.side}}</td>
+                <td>{{::o.initiator}}</td>
                 <td hidden>
                     <input type="button" class="btn btn-default" ng-click="ctl.verify(o)"  value="Verify"  ng-hide="o.status"/>
                     <input type="button" class="btn btn-danger"  ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
                 </td>
             </tr>
 
-            <tr ng-hide="ctl.list.length">
+            <tr ng-hide="instructions.length">
                 <td colspan="99" align="center">
                     <i>No items</i>
                 </td>
@@ -69,14 +68,13 @@
         </tbody>
       </table>
   </div>
-  <!-- tab -->
-  <!--
-  <div id="tab-history" class="col s12">
-    <i>data will be here</i>
-  </div>
-  -->
-</div>
 
+
+</div>
+<!-- <div ng-hide="ctl.list.length">
+  <i>No channels</i>
+</div>
+ -->
 
 
 <!-- Modal Structure -->
@@ -85,8 +83,8 @@
     <h4>{{inst.side=='transferer'?'Transfer':'Receive'}} Instruction</h4>
     <form name="form" class="form-horizontal">
 
+        <!-- transferer/From -->
         <div class="row">
-          <!-- transferer/From -->
           <div class="input-field col s5">
             <i class="material-icons prefix">call_made</i>
             <i class="material-icons postfix" ng-show="inst.side=='transferer'">lock</i>
@@ -96,7 +94,7 @@
 
           <div class="input-field col s4" ng-show="inst.side=='transferer'">
             <select ng-model="inst.transferer.acc" name="t_acc" material-select watch class="validate"
-                    ng-options="n as n for (n, o) in ctl.account.acc" placeholder="Account" required></select>
+                    ng-options="n as n for (n, o) in ctl.accountFrom.acc" placeholder="Account" required></select>
             <label for="t_acc">Account</label>
           </div>
           <div class="input-field col s4" ng-hide="inst.side=='transferer'">
@@ -107,7 +105,7 @@
 
           <div class="input-field col s3" ng-show="inst.side=='transferer'">
             <select ng-model="inst.transferer.div" name="t_acc" material-select watch class="validate"
-                    ng-options="o for o in ctl.account.acc[inst.transferer.acc]" placeholder="Division" required></select>
+                    ng-options="o for o in ctl.accountFrom.acc[inst.transferer.acc]" placeholder="Division" required></select>
             <label for="t_div">Division</label>
           </div>
           <div class="input-field col s3" ng-hide="inst.side=='transferer'">
@@ -127,7 +125,7 @@
 
           <div class="input-field col s4" ng-show="inst.side=='receiver'">
             <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.acc"
-                    ng-options="n as n for (n, o) in ctl.account.acc" placeholder="Account" required></select>
+                    ng-options="n as n for (n, o) in ctl.accountTo.acc" placeholder="Account" required></select>
             <label for="t_acc">Account</label>
           </div>
           <div class="input-field col s4" ng-hide="inst.side=='receiver'">
@@ -138,7 +136,7 @@
 
           <div class="input-field col s3" ng-show="inst.side=='receiver'">
             <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.div"
-                    ng-options="o for o in ctl.account.acc[inst.receiver.acc]" placeholder="Division" required></select>
+                    ng-options="o for o in ctl.accountTo.acc[inst.receiver.acc]" placeholder="Division" required></select>
             <label for="t_div">Division</label>
           </div>
           <div class="input-field col s3" ng-hide="inst.side=='receiver'">

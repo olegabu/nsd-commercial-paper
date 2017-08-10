@@ -25,23 +25,30 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.list = function() {
+    $log.debug('InstructionService.list');
 
     var chaincodeID = InstructionService._getChaincodeID();
     var peer = InstructionService._getQueryPeer();
 
     return ApiService.channels.list().then(function(list){
-      return $q.all( list.map(function(channel){
+      return $q.all( list
+        .filter(function(channel){ return _isBilateralChannel(channel.channel_id); })
+        .map(function(channel){
         // promise for each channel:
         return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query')
-            .then(function(data){ return parseJson(data.result); });
+            .then(function(data){ return {
+                channel: channel.channel_id,
+                result: parseJson(data.result)
+              };
+            });
 
       }));
     }).then(function(results){
       // join array of array into one array (flatten)
       return results.reduce(function(result, singleResult){
-        result.push.apply(result, singleResult);
+        result[singleResult.channel] = singleResult.result;
         return result;
-      }, []);
+      }, {});
     });
   };
 
@@ -53,9 +60,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     try{
       parsed = JSON.parse(data);
     }catch(e){
-      $log.warn(e);
+      $log.warn(e, data);
     }
     return parsed;
+  }
+
+  function _isBilateralChannel(channelID){
+    return channelID.indexOf('-') > 0;
   }
 
 
@@ -64,13 +75,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.transfer = function(instruction) {
-    $log.info('InstructionService.transfer', instruction);
+    $log.debug('InstructionService.transfer', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
     var opponent    = InstructionService._getOpponentID(instruction);
     var channelID   = InstructionService._getOpponentChannel(opponent);
     var peers       = InstructionService._getEndorsePeers(opponent);
-    var args        = InstructionService._instructionToArguments(instruction);
+    var args        = InstructionService._instructionArguments(instruction);
 
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
@@ -80,13 +91,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.receive = function(instruction) {
-    $log.info('InstructionService.receive', instruction);
+    $log.debug('InstructionService.receive', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
     var opponent    = InstructionService._getOpponentID(instruction);
     var channelID   = InstructionService._getOpponentChannel(opponent);
     var peers       = InstructionService._getEndorsePeers(opponent);
-    var args        = InstructionService._instructionFromArguments(instruction);
+    var args        = InstructionService._instructionArguments(instruction);
 
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
@@ -96,46 +107,24 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  InstructionService._instructionToArguments = function(instruction) {
+  InstructionService._instructionArguments = function(instruction) {
     return [
-      // no deponentFrom here
-      instruction.transferer.acc,     // 0: accountFrom
-      instruction.transferer.div,     // 1: divisionFrom
-
-      instruction.receiver.dep,       // 2: deponentTo
-      instruction.receiver.acc,       // 3: accountTo
-      instruction.receiver.div,       // 4: divisionTo
-
-      instruction.security,           // 5: security
-      ''+instruction.quantity,           // 6: quantity // TODO: fix: string parameters
-      instruction.reference,          // 7: reference
-      instruction.instruction_date,   // 8: instructionDate  (date format?)
-      instruction.trade_date,         // 9: tradeDate  (date format?)
-      JSON.stringify(instruction.reason)              // 10: reason (TODO: complex field)
-    ];
-  }
-  /**
-   *
-   */
-  InstructionService._instructionFromArguments = function(instruction) {
-    return [
-      // no deponentFrom here
       instruction.transferer.dep,     // 0: deponentFrom
       instruction.transferer.acc,     // 1: accountFrom
       instruction.transferer.div,     // 2: divisionFrom
 
-      instruction.receiver.acc,       // 3: accountTo
-      instruction.receiver.div,       // 4: divisionTo
+      instruction.receiver.dep,       // 3: deponentTo
+      instruction.receiver.acc,       // 4: accountTo
+      instruction.receiver.div,       // 5: divisionTo
 
-      instruction.security,           // 5: security
-      ''+instruction.quantity,           // 6: quantity // TODO: fix: string parameters
-      instruction.reference,          // 7: reference
-      instruction.instruction_date,   // 8: instructionDate  (date format?)
-      instruction.trade_date,         // 9: tradeDate  (date format?)
-      JSON.stringify(instruction.reason)              // 10: reason (TODO: complex field)
+      instruction.security,           // 6: security
+      ''+instruction.quantity,        // 7: quantity // TODO: fix: string parameters
+      instruction.reference,          // 8: reference
+      instruction.instruction_date,   // 9: instructionDate  (date format?)
+      instruction.trade_date,         // 10: tradeDate  (date format?)
+      JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
     ];
   }
-
 
 
   /**
@@ -196,14 +185,6 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return config.org+'/'+peers[0];
   };
 
-
-  /**
-   */
-  InstructionService.receive = function(instruction) {
-    $log.info('InstructionService.receive', instruction);
-    return $q.resolve();
-    // return ApiService.sc.invoke(channelID, chaincodeID, peers, 'list');
-  };
 
 }
 

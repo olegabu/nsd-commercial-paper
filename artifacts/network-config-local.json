@@ -28,41 +28,19 @@
 			}
 		},
 
-		"issuer": {
-			"name":  "peerissuer",
-			"mspid": "issuerMSP",
+		"a": {
+			"name":  "peera",
+			"mspid": "aMSP",
 			"ca": "https://localhost:8054",
 			"peer0": {
 				"requests": "grpcs://localhost:8051",
 				"events":   "grpcs://localhost:8053",
-				"server-hostname": "peer0.issuer.nsd.ru",
-				"tls_cacerts": "crypto-config/peerOrganizations/issuer.nsd.ru/peers/peer0.issuer.nsd.ru/tls/ca.crt"
-			},
-			"peer1": {
-				"requests": "grpcs://localhost:8056",
-				"events":   "grpcs://localhost:8058",
-				"server-hostname": "peer1.issuer.nsd.ru",
-				"tls_cacerts": "crypto-config/peerOrganizations/issuer.nsd.ru/peers/peer1.issuer.nsd.ru/tls/ca.crt"
-			},
-			"admin": {
-				"key":  "crypto-config/peerOrganizations/issuer.nsd.ru/users/Admin@issuer.nsd.ru/msp/keystore",
-				"cert": "crypto-config/peerOrganizations/issuer.nsd.ru/users/Admin@issuer.nsd.ru/msp/signcerts"
-			}
-		},
-
-		"a": {
-			"name":  "peera",
-			"mspid": "aMSP",
-			"ca": "https://localhost:9054",
-			"peer0": {
-				"requests": "grpcs://localhost:8061",
-				"events":   "grpcs://localhost:8063",
 				"server-hostname": "peer0.a.nsd.ru",
 				"tls_cacerts": "crypto-config/peerOrganizations/a.nsd.ru/peers/peer0.a.nsd.ru/tls/ca.crt"
 			},
 			"peer1": {
-				"requests": "grpcs://localhost:8066",
-				"events":   "grpcs://localhost:8068",
+				"requests": "grpcs://localhost:8056",
+				"events":   "grpcs://localhost:8058",
 				"server-hostname": "peer1.a.nsd.ru",
 				"tls_cacerts": "crypto-config/peerOrganizations/a.nsd.ru/peers/peer1.a.nsd.ru/tls/ca.crt"
 			},
@@ -75,22 +53,44 @@
 		"b": {
 			"name":  "peerb",
 			"mspid": "bMSP",
-			"ca": "https://localhost:10054",
+			"ca": "https://localhost:9054",
 			"peer0": {
-				"requests": "grpcs://localhost:8071",
-				"events":   "grpcs://localhost:8073",
+				"requests": "grpcs://localhost:8061",
+				"events":   "grpcs://localhost:8063",
 				"server-hostname": "peer0.b.nsd.ru",
 				"tls_cacerts": "crypto-config/peerOrganizations/b.nsd.ru/peers/peer0.b.nsd.ru/tls/ca.crt"
 			},
 			"peer1": {
-				"requests": "grpcs://localhost:8076",
-				"events":   "grpcs://localhost:8078",
+				"requests": "grpcs://localhost:8066",
+				"events":   "grpcs://localhost:8068",
 				"server-hostname": "peer1.b.nsd.ru",
 				"tls_cacerts": "crypto-config/peerOrganizations/b.nsd.ru/peers/peer1.b.nsd.ru/tls/ca.crt"
 			},
 			"admin": {
 				"key":  "crypto-config/peerOrganizations/b.nsd.ru/users/Admin@b.nsd.ru/msp/keystore",
 				"cert": "crypto-config/peerOrganizations/b.nsd.ru/users/Admin@b.nsd.ru/msp/signcerts"
+			}
+		},
+
+		"c": {
+			"name":  "peerc",
+			"mspid": "cMSP",
+			"ca": "https://localhost:10054",
+			"peer0": {
+				"requests": "grpcs://localhost:8071",
+				"events":   "grpcs://localhost:8073",
+				"server-hostname": "peer0.c.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/c.nsd.ru/peers/peer0.c.nsd.ru/tls/ca.crt"
+			},
+			"peer1": {
+				"requests": "grpcs://localhost:8076",
+				"events":   "grpcs://localhost:8078",
+				"server-hostname": "peer1.c.nsd.ru",
+				"tls_cacerts": "crypto-config/peerOrganizations/c.nsd.ru/peers/peer1.c.nsd.ru/tls/ca.crt"
+			},
+			"admin": {
+				"key":  "crypto-config/peerOrganizations/c.nsd.ru/users/Admin@c.nsd.ru/msp/keystore",
+				"cert": "crypto-config/peerOrganizations/c.nsd.ru/users/Admin@c.nsd.ru/msp/signcerts"
 			}
 		}
 	},
@@ -104,7 +104,7 @@
         "903" :["03", "04"]
       }
     },
-    "issuer":{
+    "a":{
       "dep":"CA9861913023",
       "role":"issuer",
       "acc":{
@@ -112,7 +112,7 @@
         "904" :["07", "08"]
       }
     },
-    "a":{
+    "b":{
       "dep":"DE000DB7HWY7",
       "role":"investor",
       "acc":{
@@ -120,7 +120,7 @@
         "905" :["11", "12"]
       }
     },
-    "b":{
+    "c":{
       "dep":"NL0000729408",
       "role":"investor",
       "acc":{

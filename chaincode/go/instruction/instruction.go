@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"strings"
 	"time"
+	"io/ioutil"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -164,14 +165,31 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	return shim.Error(err)
 }
 
-func (t *InstructionChaincode) GetOrganization(stub shim.ChaincodeStubInterface) string {
-	certificate, _ := stub.GetCreator()
+func getOrganization(certificate []byte) string {
 	data := certificate[strings.Index(string(certificate), "-----"):strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
 	cert, _ := x509.ParseCertificate(block.Bytes)
 	organization := cert.Issuer.Organization[0]
 
 	return organization
+}
+
+func getCreatorOrganization(stub shim.ChaincodeStubInterface) string {
+	certificate, _ := stub.GetCreator()
+	return getOrganization(certificate)
+}
+
+func getMyOrganization() string {
+	// TODO get the filename from $CORE_PEER_TLS_ROOTCERT_FILE
+	// better way perhaps is to pass a flag in transient map to nsd peer to ask to check against book chaincode
+	certFilename := "/etc/hyperledger/fabric/peer.crt"
+	certificate, err := ioutil.ReadFile(certFilename)
+	if err != nil {
+		logger.Debugf("cannot read my peer's certificate file %s", certFilename)
+		return ""
+	}
+
+	return getOrganization(certificate)
 }
 
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -327,24 +345,28 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
 	quantity int) bool {
 
-	bookChannelBytes, err := stub.GetState("bookChannel")
-	if err != nil {
-		logger.Error("cannot find bookChannel")
-		return false
+	myOrganization := getMyOrganization()
+
+	if  myOrganization == "nsd.nsd.ru" {
+		/*bookChannelBytes, err := stub.GetState("bookChannel")
+		if err != nil {
+			logger.Error("cannot find bookChannel")
+			return false
+		}*/
+
+		byteArgs := [][]byte{}
+		byteArgs = append(byteArgs, []byte("check"))
+		byteArgs = append(byteArgs, []byte(account))
+		byteArgs = append(byteArgs, []byte(division))
+		byteArgs = append(byteArgs, []byte(security))
+		byteArgs = append(byteArgs, []byte(strconv.Itoa(quantity)))
+
+		res := stub.InvokeChaincode("book", byteArgs, /*string(bookChannelBytes)*/"depository")
+
+		return res.Status == 200
 	}
 
-	byteArgs := [][]byte{}
-	byteArgs = append(byteArgs, []byte("check"))
-	byteArgs = append(byteArgs, []byte(account))
-	byteArgs = append(byteArgs, []byte(division))
-	byteArgs = append(byteArgs, []byte(security))
-	byteArgs = append(byteArgs, []byte(strconv.Itoa(quantity)))
-
-	res := stub.InvokeChaincode("book", byteArgs, string(bookChannelBytes))
-
-	logger.Debug(res)
-
-	return res.Status == 200
+	return true
 }
 
 func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {

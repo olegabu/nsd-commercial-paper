@@ -9,7 +9,7 @@ angular.module('nsd.controller', [
   'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
-  'nsd.controller.security',
+  'nsd.controller.security'
 ]);
 
 angular.module('nsd.service', [
@@ -17,7 +17,9 @@ angular.module('nsd.service', [
   'nsd.service.user',
   'nsd.service.channel',
   'nsd.service.socket',
-  'nsd.service.instructions'
+  'nsd.service.instructions',
+  'nsd.service.book',
+  'nsd.service.security'
 ]);
 
 angular.module('nsd.app',[
@@ -63,6 +65,7 @@ angular.module('nsd.app',[
       controller: 'LoginController',
       controllerAs: 'ctl',
       data:{
+        name: false,
         visible: false,
         roles:'*'
       }
@@ -338,10 +341,12 @@ angular.module('nsd.app',[
       return m[2];
     }
 
-
-    function getAccount(){
+    /**
+     * @param {string} [orgID]
+     */
+    function getAccount(orgID){
       var accountConfig = _config['account-config'] || {};
-      return accountConfig[_config.org];
+      return accountConfig[orgID||_config.org];
     }
 
     function getOrg(){
