@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function BookController(BookService, ConfigLoader) {
+function BookController($scope, BookService, ConfigLoader) {
 
   var ctrl = this;
 
@@ -13,12 +13,7 @@ function BookController(BookService, ConfigLoader) {
    *
    */
   ctrl.init = function(){
-      // var socket = SocketService.getSocket();
-      // socket.on('chainblock', ctrl.reload);
-      // $scope.$on("$destroy", function handler() {
-      //     // destruction code here
-      //     socket.off('chainblock', ctrl.reload);
-      // });
+      $scope.$on('chainblock', ctrl.reload);
       ctrl.reload();
   }
 

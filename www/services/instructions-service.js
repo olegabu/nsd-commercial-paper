@@ -33,6 +33,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return ApiService.channels.list().then(function(list){
       return $q.all( list
         .filter(function(channel){ return _isBilateralChannel(channel.channel_id); })
+        .sort()
         .map(function(channel){
         // promise for each channel:
         return ApiService.sc.query(channel.channel_id, chaincodeID, peer, 'query')

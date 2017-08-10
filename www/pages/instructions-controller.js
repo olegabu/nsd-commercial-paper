@@ -24,12 +24,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
    *
    */
   ctrl.init = function(){
-      // var socket = SocketService.getSocket();
-      // socket.on('chainblock', ctrl.reload);
-      // $scope.$on("$destroy", function handler() {
-      //     // destruction code here
-      //     socket.off('chainblock', ctrl.reload);
-      // });
+      $scope.$on('chainblock', ctrl.reload);
       ctrl.reload();
   }
 
@@ -126,7 +121,6 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     ctrl.invokeInProgress = true;
     return p.then(function(){
       $scope.inst = null;
-      return ctrl.reload();
     })
     .finally(function(){
       ctrl.invokeInProgress = false;
