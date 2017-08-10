@@ -333,46 +333,6 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	}
 }
 
-func (t *InstructionChaincode) initiate(stub shim.ChaincodeStubInterface, instruction Instruction, value InstructionValue) pb.Response {
-	compositeKey, err := instruction.toCompositeKey(stub)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	value.Status = InstructionInitiated
-	bytes, err := json.Marshal(value)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	err = stub.PutState(compositeKey, bytes)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success([]byte("Instruction was successfully initiated."));
-}
-
-func (t *InstructionChaincode) match(stub shim.ChaincodeStubInterface, instruction Instruction, value InstructionValue) pb.Response {
-	compositeKey, err := instruction.toCompositeKey(stub)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	value.Status = InstructionMatched
-	bytes, err := json.Marshal(value)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	err = stub.PutState(compositeKey, bytes)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success([]byte("Instruction was successfully matched."));
-}
-
 func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 0 {
 		return shim.Error("Incorrect number of arguments. Expecting 0.")
