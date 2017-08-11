@@ -5,8 +5,6 @@ module.exports = function(require) {
   let logger  = log4js.getLogger('orchestrator');
 
   const TYPE_ENDORSER_TRANSACTION = 'ENDORSER_TRANSACTION';
-  const INSTRUCTION_CHANNEL = 'instruction';
-  const BOOK_CHANNEL = 'depository';
 
   // TODO: move somewhere =)
   const ORG = process.env.ORG || null;
@@ -49,13 +47,13 @@ module.exports = function(require) {
           logger.info('Instruction.matched', instruction);
 
           //TODO get peer url from network config
-          logger.info('Moving balance %s/5s => %s/%s',
+          logger.info('Moving balance %s/%s => %s/%s',
               instruction.transferer.account,
               instruction.transferer.division,
               instruction.receiver.account,
               instruction.receiver.division
           );
-          invoke.invokeChaincode([ 'peer0.nsd.nsd.ru:7051' ], BOOK_CHANNEL, 'book', 'move',
+          invoke.invokeChaincode([ 'peer0.nsd.nsd.ru:7051' ], 'depository', 'book', 'move',
             [
               instruction.transferer.account,
               instruction.transferer.division,
@@ -80,8 +78,8 @@ module.exports = function(require) {
               // In the above scenario if the orchestrator dies while waiting for transactionId to commit it'll never get set to executed
 
               // update instruction status
-              logger.info('Updating status for', JSON.strigify(instruction));
-              return invoke.invokeChaincode([ 'peer0.nsd.nsd.ru:7051' ], INSTRUCTION_CHANNEL, 'instruction', 'status',
+              logger.info('Updating status for', JSON.stringify(instruction));
+              return invoke.invokeChaincode([ 'peer0.nsd.nsd.ru:7051' ], channelId, 'instruction', 'status',
                 [
                   instruction.deponentFrom,
                   instruction.transferer.account,
