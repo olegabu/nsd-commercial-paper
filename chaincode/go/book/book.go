@@ -155,8 +155,9 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// accountFrom, divisionFrom, accountTo, divisionTo, security, quantity
 	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting accountFrom, divisionFrom, accountTo, divisionTo, security, quantity")
+		return shim.Error(fmt.Sprintf("Incorrect number of arguments. " +
+			"Expecting accountFrom, divisionFrom, accountTo, divisionTo, security, quantity. " +
+			"But got %d length %s", len(args), args))
 	}
 
 	accountFrom := args[0]

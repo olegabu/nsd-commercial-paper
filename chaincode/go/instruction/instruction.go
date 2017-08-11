@@ -144,12 +144,12 @@ func (this *Instruction) upsertIn(stub shim.ChaincodeStubInterface) (error) {
 }
 
 func (this *Instruction) setEvent(stub shim.ChaincodeStubInterface) (error) {
-	value, err := this.toLedgerValue()
+	bytes, err := this.toJSON()
 	if err != nil {
 		return err
 	}
 
-	err = stub.SetEvent(indexName + "." + this.Status, value)
+	err = stub.SetEvent(indexName + "." + this.Status, bytes)
 	if err != nil {
 		return err
 	}
@@ -165,6 +165,10 @@ func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitia
 
 	if this.Initiator != desiredInitiator {
 		return shim.Error("Instruction is already created by " + this.Initiator)
+	}
+
+	if this.Status != InstructionInitiated {
+		return shim.Error("Instruction status is not " + InstructionInitiated)
 	}
 
 	this.Status = InstructionMatched
@@ -243,6 +247,10 @@ func (this *Instruction) fillFromArgs(args []string) (error) {
 
 func (this *Instruction) toLedgerValue() ([]byte, error) {
 	return json.Marshal([]string{this.DeponentFrom, this.DeponentTo, this.Status, this.Initiator})
+}
+
+func (this *Instruction) toJSON() ([]byte, error) {
+	return json.Marshal(this)
 }
 
 func (this *Instruction) fillFromLedgerValue(bytes []byte) (error) {
