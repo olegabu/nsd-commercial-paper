@@ -225,8 +225,8 @@ func (this *Instruction) fillFromCompositeKeyParts(compositeKeyParts []string) (
 }
 
 func (this *Instruction) fillFromArgs(args []string) (error) {
-	if len(args) < 12 {
-		return errors.New("Incorrect number of arguments. Expecting >= 12.")
+	if len(args) < 11 {
+		return errors.New("Incorrect number of arguments. Expecting >= 11.")
 	}
 
 	this.DeponentFrom			= args[0]
@@ -364,17 +364,41 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 }
 
 func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 0 {
-		return shim.Error("Incorrect number of arguments. Expecting 0.")
+	instruction := Instruction{}
+	err := instruction.fillFromArgs(args)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
-	return shim.Success([]byte("METHOD IS NOT READY."));
+	status := args[len(args) - 1]
+
+	if status != InstructionExecuted {
+		shim.Error("Wrong instruction state.")
+	}
+
+	if instruction.existsIn(stub) {
+		err := instruction.loadFrom(stub)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		instruction.Status = status
+
+		err = instruction.upsertIn(stub)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+	} else {
+		return shim.Error("Instruction state change error.")
+	}
+	return shim.Success(nil)
 }
 
 func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
 	quantity int) bool {
 
 	myOrganization := getMyOrganization()
+	logger.Debugf("ORGANIZATION IS: " + myOrganization)
 
 	if  myOrganization == "nsd.nsd.ru" {
 		/*bookChannelBytes, err := stub.GetState("bookChannel")
@@ -390,9 +414,14 @@ func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account s
 		byteArgs = append(byteArgs, []byte(security))
 		byteArgs = append(byteArgs, []byte(strconv.Itoa(quantity)))
 
-		res := stub.InvokeChaincode("book", byteArgs, /*string(bookChannelBytes)*/"depository")
+		logger.Debugf("BEFORE INVOKE")
 
-		return res.Status == 200
+		res := stub.InvokeChaincode("book", byteArgs, /*string(bookChannelBytes)*/"depository")
+		if res.GetStatus() != 200 {
+			return false
+		}
+
+		return true
 	}
 
 	return true
