@@ -9,6 +9,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   ctrl.list = [];
 
   var DATE_INPUT_FORMAT = 'dd/mm/yyyy';
+  var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
   var TRANSFER_SIDE_TRANSFERER = 'transferer';
   var TRANSFER_SIDE_RECEIVER = 'receiver';
 
@@ -103,8 +104,13 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   /**
    *
    */
-  ctrl.sendTransfer = function(){
+  ctrl.sendInstruction = function(){
     var instruction = $scope.inst;
+
+    instruction.trade_date        = parseDate(instruction.trade_date).format(DATE_FABRIC_FORMAT);
+    instruction.instruction_date  = parseDate(instruction.instruction_date).format(DATE_FABRIC_FORMAT);
+    instruction.reason.created    = parseDate(instruction.reason.created).format(DATE_FABRIC_FORMAT);
+
     var p;
     switch(instruction.side){
       case TRANSFER_SIDE_TRANSFERER:
@@ -125,13 +131,22 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     .finally(function(){
       ctrl.invokeInProgress = false;
     });
-
   };
+
+  /**
+   * Parse date in format dd/mm/yyyy
+   * @param {string} dateStr
+   * @return {Date}
+   */
+  function parseDate(dateStr){
+    var p = dateStr.split('/') || [];
+    return new Date( /*year*/ p[2], /*month*/ p[1], /*day*/p[0]);
+  }
 
   /**
    *
    */
-  ctrl.cancelTransfer = function(){
+  ctrl.cancelInstruction = function(){
     $scope.inst = null;
   };
 
