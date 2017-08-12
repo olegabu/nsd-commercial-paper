@@ -87,11 +87,7 @@ function generateArtifacts() {
     mkdir -p artifacts/channel
     docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile OrdererGenesis -outputBlock ./channel/genesis.block
 
-    CHANNEL_NAME=depository
-    echo "Generating channel config transaction for $CHANNEL_NAME"
-    docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$CHANNEL_NAME" -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
-
-    for CHANNEL_NAME in "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4"
+    for CHANNEL_NAME in depository common "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4" "$ORG1-$ORG2" "$ORG1-$ORG3" "$ORG1-$ORG4"
     do
         echo "Generating channel config transaction for $CHANNEL_NAME"
         docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$CHANNEL_NAME" -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
@@ -145,12 +141,40 @@ function warmUpChaincode () {
 }
 
 function installChaincode() {
-    ORG=$1
-    N=$2
-    P=$3
-    info "installing chaincode $N to peers of $ORG from $P"
+    N=$1
+    # chaincode path is the same as chaincode name by convention: code of chaincode instruction lives in ./chaincode/go/instruction mapped to docker path /opt/gopath/src/instruction
+    P=${N}
 
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P      && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P"
+    for ORG in ${@:2}
+    do
+        info "installing chaincode $N to peers of $ORG from ./chaincode/go/$P"
+        docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P"
+    done
+}
+
+function startChannel() {
+    CHANNEL_NAME=$1
+
+    createChannel ${CHANNEL_NAME}
+
+    for ORG in ${@:2}
+    do
+        joinChannel ${ORG} ${CHANNEL_NAME}
+    done
+}
+
+function startChaincode() {
+    CHAINCODE_NAME=$1
+    CHAINCODE_INIT=$2
+    CHANNEL_NAME=$3
+    ORG1=$4
+
+    instantiateChaincode ${ORG1} ${CHANNEL_NAME} ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+
+    for ORG in ${@:4}
+    do
+        warmUpChaincode ${ORG} ${CHANNEL_NAME} ${CHAINCODE_NAME}
+    done
 }
 
 function networkUp () {
@@ -166,56 +190,34 @@ function networkUp () {
     exit 1
   fi
 
-  createChannel depository
-  joinChannel ${ORG1} depository
+  CHANNEL_NAME=depository
+  CHAINCODE_NAME=book
+  CHAINCODE_INIT='{"Args":["init","902","05","RU000ABC0001","100"]}'
 
-  installChaincode ${ORG1} book book
-  instantiateChaincode ${ORG1} depository book '{"Args":["init","902","05","RU000ABC0001","100"]}'
-  warmUpChaincode ${ORG1} depository book
+  startChannel ${CHANNEL_NAME} ${ORG1}
+  installChaincode ${CHAINCODE_NAME} ${ORG1}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1}
 
-  installChaincode ${ORG1} security security
-  instantiateChaincode ${ORG1} depository security '{"Args":["init","RU000ABC0001","active"]}'
-  warmUpChaincode ${ORG1} depository security
+  CHANNEL_NAME=common
+  CHAINCODE_NAME=security
+  CHAINCODE_INIT='{"Args":["init","RU000ABC0001","active"]}'
 
-  createChannel "$ORG2-$ORG3"
-  joinChannel ${ORG1} "$ORG2-$ORG3"
-  joinChannel ${ORG2} "$ORG2-$ORG3"
-  joinChannel ${ORG3} "$ORG2-$ORG3"
-
-  createChannel "$ORG2-$ORG4"
-  joinChannel ${ORG1} "$ORG2-$ORG4"
-  joinChannel ${ORG2} "$ORG2-$ORG4"
-  joinChannel ${ORG4} "$ORG2-$ORG4"
-
-  createChannel "$ORG3-$ORG4"
-  joinChannel ${ORG1} "$ORG3-$ORG4"
-  joinChannel ${ORG3} "$ORG3-$ORG4"
-  joinChannel ${ORG4} "$ORG3-$ORG4"
+  startChannel ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
 
   CHAINCODE_NAME=instruction
-  CHAINCODE_PATH=instruction
-  CHAINCODE_INIT='{"Args":["init","depository"]}'
+  CHAINCODE_INIT='{"Args":["init"]}'
 
-  installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
-  installChaincode ${ORG2} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
-  installChaincode ${ORG3} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
-  installChaincode ${ORG4} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
+  startChannel "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
+  startChannel "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
+  startChannel "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
 
-  instantiateChaincode ${ORG1} "$ORG2-$ORG3" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
-  instantiateChaincode ${ORG1} "$ORG2-$ORG4" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
-  instantiateChaincode ${ORG1} "$ORG3-$ORG4" ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
 
-  warmUpChaincode ${ORG1} "$ORG2-$ORG3" ${CHAINCODE_NAME}
-  warmUpChaincode ${ORG2} "$ORG2-$ORG3" ${CHAINCODE_NAME}
-  warmUpChaincode ${ORG3} "$ORG2-$ORG3" ${CHAINCODE_NAME}
-
-  warmUpChaincode ${ORG1} "$ORG2-$ORG4" ${CHAINCODE_NAME}
-  warmUpChaincode ${ORG2} "$ORG2-$ORG4" ${CHAINCODE_NAME}
-  warmUpChaincode ${ORG4} "$ORG2-$ORG4" ${CHAINCODE_NAME}
-
-  warmUpChaincode ${ORG1} "$ORG3-$ORG4" ${CHAINCODE_NAME}
-  warmUpChaincode ${ORG3} "$ORG3-$ORG4" ${CHAINCODE_NAME}
-  warmUpChaincode ${ORG4} "$ORG3-$ORG4" ${CHAINCODE_NAME}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
 
   #logs
 }
@@ -269,7 +271,6 @@ function info() {
     echo "*************************************************************************************************************"
     echo "$1"
     echo "*************************************************************************************************************"
-    sleep 2
 }
 
 function logs () {
@@ -342,16 +343,6 @@ elif [ "${MODE}" == "restart" ]; then
   networkUp
 elif [ "${MODE}" == "logs" ]; then
   logs
-elif [ "${MODE}" == "channel" ]; then
-  createChannel "$ORG2-$ORG3"
-elif [ "${MODE}" == "join" ]; then
-  joinChannel ${ORG1} "$ORG2-$ORG3"
-  joinChannel ${ORG2} "$ORG2-$ORG3"
-  joinChannel ${ORG3} "$ORG2-$ORG3"
-elif [ "${MODE}" == "install" ]; then
-  installChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_PATH}
-elif [ "${MODE}" == "instantiate" ]; then
-  instantiateChaincode ${ORG1} ${CHAINCODE_NAME} ${CHAINCODE_INIT}
 elif [ "${MODE}" == "devup" ]; then
   devNetworkUp
 elif [ "${MODE}" == "devinit" ]; then
