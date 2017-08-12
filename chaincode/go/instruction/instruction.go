@@ -164,11 +164,11 @@ func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitia
 	}
 
 	if this.Initiator != desiredInitiator {
-		return shim.Error("Instruction is already created by " + this.Initiator)
+		return pb.Response{Status:400, Message:"Instruction is already created by " + this.Initiator}
 	}
 
 	if this.Status != InstructionInitiated {
-		return shim.Error("Instruction status is not " + InstructionInitiated)
+		return pb.Response{Status:400, Message:"Instruction status is not " + InstructionInitiated}
 	}
 
 	this.Status = InstructionMatched
@@ -207,8 +207,8 @@ func (this *Instruction) initiateIn(stub shim.ChaincodeStubInterface) pb.Respons
 }
 
 func (this *Instruction) fillFromCompositeKeyParts(compositeKeyParts []string) (error) {
-	if len(compositeKeyParts) != 9 {
-		return errors.New("Composite key parts array length must be 9.")
+	if len(compositeKeyParts) < 9 {
+		return errors.New("Composite key parts array length must be at least 9.")
 	}
 
 	this.Transferer.Account 	= compositeKeyParts[0]
@@ -271,14 +271,6 @@ func (this *Instruction) fillFromLedgerValue(bytes []byte) (error) {
 // **** Chaincode Methods **** //
 func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### InstructionChaincode Init ###########")
-
-	args := stub.GetArgs()
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting bookChannel")
-	}
-
-	stub.PutState ("bookChannel", args[1])
 
 	return shim.Success(nil)
 }
@@ -348,6 +340,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	instruction := Instruction{}
 	err := instruction.fillFromArgs(args)
 	if err != nil {
+		//TODO change from 500 to bad request 400
 		return shim.Error(err.Error())
 	}
 
@@ -365,15 +358,16 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 
 func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := Instruction{}
-	err := instruction.fillFromArgs(args)
+	err := instruction.fillFromCompositeKeyParts(args)
 	if err != nil {
-		return shim.Error(err.Error())
+		return pb.Response{Status:400, Message:"cannot initialize instruction from args"}
 	}
 
 	status := args[len(args) - 1]
 
-	if status != InstructionExecuted {
-		shim.Error("Wrong instruction state.")
+	//TODO check if creator is not nsd then allow them to set status only to cancel; and nsd can set status to executed or declined and not to cancel
+	if status != InstructionExecuted && status != InstructionDeclined {
+		return pb.Response{Status:400, Message:"instruction status can be set only to executed or declined"}
 	}
 
 	if instruction.existsIn(stub) {
@@ -389,7 +383,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 			return shim.Error(err.Error())
 		}
 	} else {
-		return shim.Error("Instruction state change error.")
+		return pb.Response{Status:404, Message:"instruction not found"}
 	}
 	return shim.Success(nil)
 }
@@ -401,12 +395,6 @@ func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account s
 	logger.Debugf("ORGANIZATION IS: " + myOrganization)
 
 	if  myOrganization == "nsd.nsd.ru" {
-		/*bookChannelBytes, err := stub.GetState("bookChannel")
-		if err != nil {
-			logger.Error("cannot find bookChannel")
-			return false
-		}*/
-
 		byteArgs := [][]byte{}
 		byteArgs = append(byteArgs, []byte("check"))
 		byteArgs = append(byteArgs, []byte(account))
@@ -416,7 +404,7 @@ func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account s
 
 		logger.Debugf("BEFORE INVOKE")
 
-		res := stub.InvokeChaincode("book", byteArgs, /*string(bookChannelBytes)*/"depository")
+		res := stub.InvokeChaincode("book", byteArgs, "depository")
 		if res.GetStatus() != 200 {
 			return false
 		}

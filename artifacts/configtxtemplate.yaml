@@ -19,10 +19,19 @@ Profiles:
         Consortiums:
             SampleConsortium:
                 Organizations:
-                    - *ORG1 # NSD
-                    - *ORG2 # issuer
-                    - *ORG3 # investor a
-                    - *ORG4 # investor b
+                    - *ORG1 # nsd depository
+                    - *ORG2 # a issuer
+                    - *ORG3 # b investor
+                    - *ORG4 # c investor
+    common:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
+                - *ORG2
+                - *ORG3
+                - *ORG4
     depository:
         Consortium: SampleConsortium
         Application:
@@ -52,6 +61,27 @@ Profiles:
             Organizations:
                 - *ORG1
                 - *ORG2
+                - *ORG4
+    ORG1-ORG2:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
+                - *ORG2
+    ORG1-ORG3:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
+                - *ORG3
+    ORG1-ORG4:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG1
                 - *ORG4
 
 ################################################################################

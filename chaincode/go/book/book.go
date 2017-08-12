@@ -113,6 +113,7 @@ func (t *BookChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.
 func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// account, division, security, quantity
 	if len(args) != 4 {
+		//TODO 400
 		return shim.Error("Incorrect number of arguments. " +
 			"Expecting account, division, security, quantity")
 	}
@@ -136,6 +137,7 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 	}
 
 	if bytes == nil {
+		//TODO 404
 		return shim.Error("cannot find balance")
 	}
 
@@ -146,6 +148,7 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 	}
 
 	if value.Quantity < quantity {
+		//TODO 409
 		return shim.Error("quantity less than current balance")
 	}
 
@@ -153,11 +156,11 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 }
 
 func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// accountFrom, divisionFrom, accountTo, divisionTo, security, quantity
-	if len(args) != 6 {
-		return shim.Error(fmt.Sprintf("Incorrect number of arguments. " +
+	// accountFrom, divisionFrom, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate
+	if len(args) < 6 {
+		return pb.Response{Status:400, Message: fmt.Sprintf("Incorrect number of arguments. " +
 			"Expecting accountFrom, divisionFrom, accountTo, divisionTo, security, quantity. " +
-			"But got %d length %s", len(args), args))
+			"But got %d args: %s", len(args), args)}
 	}
 
 	accountFrom := args[0]
@@ -181,7 +184,7 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	}
 
 	if bytes == nil {
-		return shim.Error("cannot find balance")
+		return pb.Response{Status:400, Message: "cannot find position"}
 	}
 
 	var valueFrom BookValue
@@ -191,7 +194,7 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	}
 
 	if valueFrom.Quantity < quantity {
-		return shim.Error("cannot move quantity less than current balance")
+		return pb.Response{Status:409, Message: "cannot move quantity less than current balance"}
 	}
 
 	valueFrom.Quantity = valueFrom.Quantity - quantity
