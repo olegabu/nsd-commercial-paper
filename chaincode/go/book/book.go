@@ -23,15 +23,39 @@ type BookValue struct {
 	Quantity   		int 	`json:"quantity"`
 }
 
+//TODO move to common package
 type Balance struct {
 	Account 		string 	`json:"account"`
 	Division 		string 	`json:"division"`
 }
 
+//TODO reuse Position struct
 type Book struct {
 	Balance 		Balance `json:"balance"`
 	Security        string 	`json:"security"`
 	Quantity   		int 	`json:"quantity"`
+}
+
+//TODO move to common package
+type Instruction struct {
+	Transferer      Balance `json:"transferer"`
+	Receiver        Balance `json:"receiver"`
+	Security        string 	`json:"security"`
+	Quantity        string 	`json:"quantity"`
+	Reference       string 	`json:"reference"`
+	InstructionDate string 	`json:"instructionDate"`
+	TradeDate       string 	`json:"tradeDate"`
+	DeponentFrom    string  `json:"deponentFrom"`
+	DeponentTo      string  `json:"deponentTo"`
+	Status          string 	`json:"status"`
+	Initiator       string 	`json:"initiator"`
+	Reason          Reason 	`json:"reason"`
+}
+
+type Reason struct {
+	Document 		string 	`json:"document"`
+	Description 	string 	`json:"description"`
+	DocumentDate 	string 	`json:"documentDate"`
 }
 
 type KeyModificationValue struct {
@@ -113,9 +137,8 @@ func (t *BookChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.
 func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// account, division, security, quantity
 	if len(args) != 4 {
-		//TODO 400
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting account, division, security, quantity")
+		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
+			"Expecting account, division, security, quantity"}
 	}
 
 	account := args[0]
@@ -137,8 +160,7 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 	}
 
 	if bytes == nil {
-		//TODO 404
-		return shim.Error("cannot find balance")
+		return pb.Response{Status:404, Message: "cannot find position"}
 	}
 
 	var value BookValue
@@ -148,8 +170,7 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 	}
 
 	if value.Quantity < quantity {
-		//TODO 409
-		return shim.Error("quantity less than current balance")
+		return pb.Response{Status:409, Message: "quantity less than current balance"}
 	}
 
 	return shim.Success(nil)
@@ -173,6 +194,19 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
+	var instruction Instruction
+	if len(args) == 9 {
+		instruction = Instruction{Transferer:Balance{Account:accountFrom, Division:divisionFrom},
+			Receiver:Balance{Account:accountTo, Division:divisionTo},
+			Security:security,
+			Quantity:strconv.Itoa(quantity),
+			Reference:args[6],
+			InstructionDate:args[7],
+			TradeDate:args[8],}
+
+		//TODO check stored list for this instructions has been executed already
+	}
+
 	keyFrom, err := stub.CreateCompositeKey(indexName, []string{accountFrom, divisionFrom, security})
 	if err != nil {
 		return shim.Error(err.Error())
@@ -184,7 +218,15 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	}
 
 	if bytes == nil {
-		return pb.Response{Status:400, Message: "cannot find position"}
+		if instruction != (Instruction{}) {
+			instruction.Status = "declined"
+			err = setInstructionEvent(stub, instruction)
+			if err != nil {
+				return shim.Error(err.Error())
+			}
+		}
+
+		return pb.Response{Status:404, Message: "cannot find position"}
 	}
 
 	var valueFrom BookValue
@@ -194,6 +236,14 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	}
 
 	if valueFrom.Quantity < quantity {
+		if instruction != (Instruction{}) {
+			instruction.Status = "declined"
+			err = setInstructionEvent(stub, instruction)
+			if err != nil {
+				return shim.Error(err.Error())
+			}
+		}
+
 		return pb.Response{Status:409, Message: "cannot move quantity less than current balance"}
 	}
 
@@ -244,7 +294,33 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
+	if instruction != (Instruction{}) {
+		instruction.Status = "executed"
+		err = setInstructionEvent(stub, instruction)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		//TODO save to the ledger list of executed instructions
+	}
+
 	return shim.Success(nil)
+}
+
+func setInstructionEvent(stub shim.ChaincodeStubInterface, instruction Instruction) (error) {
+	logger.Debugf("setInstructionEvent", instruction)
+
+	bytes, err := json.Marshal(instruction)
+	if err != nil {
+		return err
+	}
+
+	err = stub.SetEvent("Instruction." + instruction.Status, bytes)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -294,8 +370,8 @@ func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) p
 
 func (t *BookChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting account, division, security")
+		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
+			"Expecting account, division, security"}
 	}
 
 	//account-division-security

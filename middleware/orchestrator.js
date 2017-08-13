@@ -48,23 +48,17 @@ module.exports = function (require) {
 
             if(event.event_name === 'Instruction.matched') {
               let instruction = JSON.parse(event.payload.toString());
-              logger.info('Instruction.matched', instruction);
+              logger.info(event.event_name, instruction);
 
-              moveByInstruction(channel, instruction);
+              moveByInstruction(instruction);
             }
 
-            if(event.event_name === 'Instruction.executed') {
+            //TODO event Instruction.declined doesn't seem to be raised by Book as no transaction is committed  
+            if(event.event_name === 'Instruction.executed' || event.event_name === 'Instruction.declined') {
               let instruction = JSON.parse(event.payload.toString());
-              logger.info('Instruction.executed', instruction);
+              logger.info(event.event_name, instruction);
 
-              updateInstructionStatus(channel, instruction, 'executed');
-            }
-
-            if(event.event_name === 'Instruction.declined') {
-              let instruction = JSON.parse(event.payload.toString());
-              logger.info('Instruction.declined', instruction);
-
-              updateInstructionStatus(channel, instruction, 'declined');
+              updateInstructionStatus(instruction);
             }
 
           }); // thru action elements
@@ -91,22 +85,21 @@ module.exports = function (require) {
     return blockData.payload.header.channel_header.channel_id;
   }
 
+  //TODO read account to org map from config
   function getOrg(o) {
     let ret = null;
 
-    if (o.balance) {
-      if (o.balance.account === '902') {
-        ret = 'a';
-      }
-      else if (o.balance.account === '903') {
-        ret = 'b';
-      }
+    if (o.account === '902') {
+      ret = 'a';
+    }
+    else if (o.account === '903') {
+      ret = 'b';
     }
 
     return ret;
   }
 
-  function moveByInstruction(channel, instruction) {
+  function moveByInstruction(instruction) {
     logger.info(`invoking book to move ${instruction.quantity} of ${instruction.security} from ${instruction.transferer.account}/${instruction.transferer.division} to ${instruction.receiver.account}/${instruction.receiver.division}`);
 
     invoke.invokeChaincode(peers, 'depository', 'book', 'move',
@@ -127,19 +120,33 @@ module.exports = function (require) {
 
       //putPositionsFromBook();
 
-      return 'executed';
+      //return 'executed';
     })
-    .catch(function (e) {
-      logger.error(`move declined with ${e}`);
-      return 'declined';
+    .catch(function(e) {
+      logger.error('cannot move', e);
+      //return 'declined';
     })
-    .then(function (status) {
-      updateInstructionStatus(channel, instruction, status);
-    });
+    /*.then(function (status) {
+      updateInstructionStatus(instruction, status);
+    });*/
   }
 
-  function updateInstructionStatus(channel, instruction, status) {
-    logger.info(`invoking instruction on ${channel} to set status ${status}`, instruction);
+  function updateInstructionStatus(instruction) {
+    let orgTransferer = getOrg(instruction.transferer);
+    let orgReceiver = getOrg(instruction.receiver);
+
+    if(!orgTransferer) {
+      logger.error('cannot find orgTransferer', instruction)
+    }
+
+    if(!orgReceiver) {
+      logger.error('cannot find orgReceiver', instruction)
+    }
+
+    let orgs = [orgTransferer, orgReceiver].sort();
+    let channel = orgs[0] + '-' + orgs[1];
+
+    logger.info(`invoking instruction on ${channel} to set status ${instruction.status}`, instruction);
 
     invoke.invokeChaincode(peers, channel, 'instruction', 'status',
       [
@@ -152,11 +159,11 @@ module.exports = function (require) {
         instruction.reference,
         instruction.instructionDate,
         instruction.tradeDate,
-        status
+        instruction.status
       ],
       USERNAME, ORG)
-    .then(function () {
-      logger.debug('update instruction status success', status);
+    .then(function (transactionId) {
+      logger.debug('update instruction status success', transactionId);
     })
     .catch(function (e) {
       logger.error('cannot update instruction status', e);
@@ -174,7 +181,7 @@ module.exports = function (require) {
       res.result.forEach(position => {
         logger.debug('position', position);
 
-        let org = getOrg(position);
+        let org = getOrg(position.balance);
 
         if(!org) {
           logger.error('cannot find org for position', position);

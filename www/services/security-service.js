@@ -24,7 +24,7 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
   };
 
   SecurityService._getChannelID = function() {
-    return 'depository';
+    return 'common';
   };
 
 

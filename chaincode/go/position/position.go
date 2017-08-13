@@ -26,6 +26,7 @@ type Position struct {
 	Quantity        int 	`json:"quantity"`
 }
 
+//TODO move to common package
 type Balance struct {
 	Account 		string 	`json:"account"`
 	Division 		string 	`json:"division"`
@@ -34,7 +35,7 @@ type Balance struct {
 // required for history
 type KeyModificationValue struct {
 	TxId      string 			`json:"txId"`
-	Value     PositionValue  `json:"value"`
+	Value     PositionValue  	`json:"value"`
 	Timestamp string 			`json:"timestamp"`
 	IsDelete  bool   			`json:"isDelete"`
 }
