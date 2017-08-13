@@ -200,39 +200,39 @@ function networkUp () {
   installChaincode ${CHAINCODE_NAME} ${ORG1}
   startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1}
 
-#  CHANNEL_NAME=common
-#  CHAINCODE_NAME=security
-#  CHAINCODE_INIT='{"Args":["init","RU000ABC0001","active"]}'
-#
-#  startChannel ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
-#  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
-#  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  CHANNEL_NAME=common
+  CHAINCODE_NAME=security
+  CHAINCODE_INIT='{"Args":["init","RU000ABC0001","active"]}'
+
+  startChannel ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
 
   CHAINCODE_NAME=instruction
   CHAINCODE_INIT='{"Args":["init"]}'
 
   startChannel "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
-#  startChannel "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
-#  startChannel "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
+  startChannel "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
+  startChannel "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
 
   installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
 
   startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
-#  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
-#  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
 
   CHAINCODE_NAME=position
   CHAINCODE_INIT='{"Args":["init"]}'
 
   startChannel "$ORG1-$ORG2" ${ORG1} ${ORG2}
   startChannel "$ORG1-$ORG3" ${ORG1} ${ORG3}
-#  startChannel "$ORG1-$ORG4" ${ORG1} ${ORG4}
+  startChannel "$ORG1-$ORG4" ${ORG1} ${ORG4}
 
   installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
 
   startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG2" ${ORG1} ${ORG2}
   startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG3" ${ORG1} ${ORG3}
-#  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG4" ${ORG1} ${ORG4}
+  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG4" ${ORG1} ${ORG4}
 
   #logs
 }

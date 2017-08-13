@@ -31,7 +31,6 @@ module.exports = function (require) {
 
   peerListener.registerBlockEvent(function (block) {
     try {
-      //TODO block can have many data elements, don't assume data[0], loop thru data
       block.data.data.forEach(blockData => {
 
       let type = getTransactionType(blockData);
@@ -44,25 +43,23 @@ module.exports = function (require) {
           blockData.payload.data.actions.forEach(action => {
             let extension = action.payload.action.proposal_response_payload.extension;
             let event = extension.events;
-            logger.debug(`event ${event.event_name || 'none'}`);
+            if(!event.event_name) {
+              return;
+            }
+            logger.info(`event ${event.event_name}`);
 
             if(event.event_name === 'Instruction.matched') {
-              let instruction = JSON.parse(event.payload.toString());
-              logger.info(event.event_name, instruction);
-
-              moveByInstruction(instruction);
+              moveByInstruction(JSON.parse(event.payload.toString()));
             }
 
             if(event.event_name === 'Instruction.executed') {
-              let instruction = JSON.parse(event.payload.toString());
-              logger.info(event.event_name, instruction);
-
-              updateInstructionStatus(instruction);
+              updateInstructionStatus(JSON.parse(event.payload.toString()));
             }
-
           }); // thru action elements
 
 
+          //TODO this updates all positions on any new block on book channel. Better if this is done only on startup.
+          // Book can emit move event with payload of updated Positions, then you don't have to query Book
           if(channel === 'depository') {
             putPositionsFromBook();
           }
@@ -130,11 +127,13 @@ module.exports = function (require) {
     let orgReceiver = getOrg(instruction.receiver);
 
     if(!orgTransferer) {
-      logger.error('cannot find orgTransferer', instruction)
+      logger.error('cannot find orgTransferer', instruction);
+      return;
     }
 
     if(!orgReceiver) {
-      logger.error('cannot find orgReceiver', instruction)
+      logger.error('cannot find orgReceiver', instruction);
+      return;
     }
 
     let orgs = [orgTransferer, orgReceiver].sort();
@@ -207,7 +206,6 @@ module.exports = function (require) {
       logger.error('cannot query book', e);
     });
   }
-
 
 };
 
