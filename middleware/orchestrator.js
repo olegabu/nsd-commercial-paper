@@ -53,8 +53,7 @@ module.exports = function (require) {
               moveByInstruction(instruction);
             }
 
-            //TODO event Instruction.declined doesn't seem to be raised by Book as no transaction is committed  
-            if(event.event_name === 'Instruction.executed' || event.event_name === 'Instruction.declined') {
+            if(event.event_name === 'Instruction.executed') {
               let instruction = JSON.parse(event.payload.toString());
               logger.info(event.event_name, instruction);
 
@@ -117,18 +116,13 @@ module.exports = function (require) {
       USERNAME, ORG)
     .then(function (transactionId) {
       logger.debug('move success', transactionId);
-
-      //putPositionsFromBook();
-
-      //return 'executed';
     })
     .catch(function(e) {
       logger.error('cannot move', e);
-      //return 'declined';
+
+      instruction.status = 'declined';
+      updateInstructionStatus(instruction);
     })
-    /*.then(function (status) {
-      updateInstructionStatus(instruction, status);
-    });*/
   }
 
   function updateInstructionStatus(instruction) {

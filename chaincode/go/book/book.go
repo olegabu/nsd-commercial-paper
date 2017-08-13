@@ -218,14 +218,6 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	}
 
 	if bytes == nil {
-		if instruction != (Instruction{}) {
-			instruction.Status = "declined"
-			err = setInstructionEvent(stub, instruction)
-			if err != nil {
-				return shim.Error(err.Error())
-			}
-		}
-
 		return pb.Response{Status:404, Message: "cannot find position"}
 	}
 
@@ -236,14 +228,6 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	}
 
 	if valueFrom.Quantity < quantity {
-		if instruction != (Instruction{}) {
-			instruction.Status = "declined"
-			err = setInstructionEvent(stub, instruction)
-			if err != nil {
-				return shim.Error(err.Error())
-			}
-		}
-
 		return pb.Response{Status:409, Message: "cannot move quantity less than current balance"}
 	}
 
