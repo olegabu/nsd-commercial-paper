@@ -44,7 +44,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in instructions">
+            <tr ng-repeat="o in instructions|orderBy:'instructionDate':true|orderBy:'reference':true">
                 <td>{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td>{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
