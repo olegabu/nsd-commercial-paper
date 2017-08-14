@@ -8,7 +8,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   var ctrl = this;
   ctrl.list = [];
 
-  var DATE_INPUT_FORMAT = 'dd/mm/yyyy';
+  // var DATE_INPUT_FORMAT = 'dd/mm/yyyy';
   var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
   var TRANSFER_SIDE_TRANSFERER = 'transferer';
   var TRANSFER_SIDE_RECEIVER = 'receiver';
@@ -107,6 +107,10 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   ctrl.sendInstruction = function(){
     var instruction = $scope.inst;
 
+    // FIXME here date can come in two different formats: 
+    //  Date object when we change form value
+    //  String (like '1 August, 2017') when we not change form value
+    // Now we use formatDate() to transform both of it into ISO
     instruction.trade_date        = formatDate(instruction.trade_date);
     instruction.instruction_date  = formatDate(instruction.instruction_date);
     instruction.reason.created    = formatDate(instruction.reason.created);
@@ -135,16 +139,18 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
 
   /**
    * Parse date in format dd/mm/yyyy
-   * @param {string} dateStr
+   * @param {string|Date} dateStr
    * @return {Date}
    */
   function formatDate(date){
     if(!date) return null;
 
-    if(date instanceof Date){
-      return date.format(DATE_FABRIC_FORMAT);
-    }
-    throw new Error('Not a date: '+date);
+    if(!(date instanceof Date)){
+      // assumind date is a string: '1 August, 2017'
+      // TODO: we shouldn't rely on this 
+      date = new Date(date)
+    } 
+    return date.format(DATE_FABRIC_FORMAT);
   }
 
   /**
