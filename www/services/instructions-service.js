@@ -74,7 +74,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   }
 
   function _isBilateralChannel(channelID){
-    return channelID.indexOf('-') > 0;
+    return channelID.indexOf('-') > 0 && !channelID.startsWith('nsd-');
   }
 
 
