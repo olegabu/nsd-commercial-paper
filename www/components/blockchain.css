@@ -28,7 +28,7 @@ blockchain-log .block {
     left: 100%;
     height: 30px;
     width: 30px;
-    border-radius: 4px;
+    /*border-radius: 4px;*/
     opacity: 5;
     border: 1px solid #2EB9D6;
 
@@ -41,20 +41,33 @@ blockchain-log .block {
 
     user-select: none;
 }
-
 blockchain-log .block:last-child{
     transition: background-color 1s ease;
     background: #2EB9D6;
     color: #222832;
     border-color: #2EB9D6
 }
-
 blockchain-log .block:hover {
     transition: color 0.2s ease, border 0.2s ease;
 
     border: 1px solid #22697A;
     color: #22697A
 }
+
+
+blockchain-log .block.block-config{
+    border-color: #D6D62E;
+    color: #D6D62E;
+}
+blockchain-log .block.block-config:last-child{
+    background: #D6D62E;
+    color: #222832;
+}
+blockchain-log .block.block-config:hover{
+    border: 1px solid white;
+    color: white;
+}
+
 
 blockchain-log #details {
     background: #222832;

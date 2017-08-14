@@ -15,10 +15,12 @@ angular.module('nsd.directive.blockchain', ['nsd.service.socket'])
                   +'<i class="material-icons" title="{{ctl.getStatusText()}}">device_hub</i>'
 
                   +'<div id="details" ng-show="!!ctl.blockInfo" >'
-                    +'<p> Block:    {{ctl.blockInfo.header.data_hash|limitTo:25}}...'
-                      +'<br> TXID:     {{ctl.blockInfo.data.data[0].payload.header.channel_header.tx_id|limitTo:25}}...'
+                    +'<p> '
+                          +'Channel:   {{ctl.blockInfo.data.data[0].payload.header.channel_header.channel_id}}'
+                      +'<br> Block:     {{ctl.blockInfo.header.data_hash|limitTo:30}}...'
+                      +'<br> TXID:     {{ctl.blockInfo.data.data[0].payload.header.channel_header.tx_id|limitTo:30}}...'
                       +'<br> Type:     {{ctl.blockInfo.data.data[0].payload.header.channel_header.type}}'
-                      +'<br> Created:  {{ctl.blockInfo.data.data[0].payload.header.channel_header.timestamp}}'
+                      +'<br><small> Created:  {{ctl.blockInfo.data.data[0].payload.header.channel_header.timestamp}}</small>'
                       +'<br> Height:   {{ctl.blockInfo.header.number}}'
                     +'</p>'
                     +'<hr class="line">'
@@ -80,6 +82,14 @@ angular.module('nsd.directive.blockchain', ['nsd.service.socket'])
         return stateClasses[SocketService.getState()] || stateClasses['default'];
       };
 
+      ctl.getBlockType = function(block){
+        try{
+          return block.data.data[0].payload.header.channel_header.type;
+        }catch(e){
+          return null;
+        }
+      }
+
       /**
        *
        */
@@ -100,7 +110,8 @@ angular.module('nsd.directive.blockchain', ['nsd.service.socket'])
 
       function _blockHtml(block){
         var tx = block && block.header && block.header.data_hash;
-        return $('<div class="block">'+tx.substr(0,3)+'</div>')
+        var type = (ctl.getBlockType(block)||"").toLowerCase();
+        return $('<div class="block block-'+type+'">'+tx.substr(0,3)+'</div>')
                   .css({left: (blockCount * blockWidth)})
                   .click(_onBlockClick)
                   .hover(getBlockHoverIn(block), onBlockHoverOut);
