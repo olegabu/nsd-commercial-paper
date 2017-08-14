@@ -166,11 +166,11 @@ angular.module('nsd.app',[
       }
     }
 
-    if(toState.data.absolute){
-      event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
-      $window.location = toState.url;
-      return;
-    }
+    // if(toState.data.absolute){
+    //   event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
+    //   $window.location = toState.url;
+    //   return;
+    // }
 
   });
 

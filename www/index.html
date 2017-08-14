@@ -60,7 +60,10 @@
         <!-- main menu -->
         <ul class="menu hide-on-med-and-down" ng-cloak>
           <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
-            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">{{::state.data.name||state.name}}</a>
+            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active" 
+                href="{{::state.url}}" target="{{::state.data.absolute?'_blank':''}}">
+              {{::state.data.name||state.name}}
+            </a>
           </li>
 
           <li ng-show="ctrl.authorized()">
@@ -86,6 +89,9 @@
       <div ng-show="ctrl.authorized()">
         <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
           <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">{{::state.data.name||state.name}}</a>
+        </li>
+        <li>
+          <a href="/admin" target="_blank">Explorer</a>
         </li>
 
         <h5 class="center">Logged in</h5>

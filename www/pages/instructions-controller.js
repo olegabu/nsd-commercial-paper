@@ -58,7 +58,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
       },
       side: transferSide, // deprecate?
       initiator: transferSide,
-      quantity: 0,
+      // quantity: 0,
       trade_date    : new Date(),//.format(DATE_INPUT_FORMAT),
       instruction_date : new Date(),//.format(DATE_INPUT_FORMAT),
       reason:{
