@@ -107,9 +107,9 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   ctrl.sendInstruction = function(){
     var instruction = $scope.inst;
 
-    instruction.trade_date        = parseDate(instruction.trade_date).format(DATE_FABRIC_FORMAT);
-    instruction.instruction_date  = parseDate(instruction.instruction_date).format(DATE_FABRIC_FORMAT);
-    instruction.reason.created    = parseDate(instruction.reason.created).format(DATE_FABRIC_FORMAT);
+    instruction.trade_date        = formatDate(instruction.trade_date);
+    instruction.instruction_date  = formatDate(instruction.instruction_date);
+    instruction.reason.created    = formatDate(instruction.reason.created);
 
     var p;
     switch(instruction.side){
@@ -138,9 +138,13 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
    * @param {string} dateStr
    * @return {Date}
    */
-  function parseDate(dateStr){
-    var p = dateStr.split('/') || [];
-    return new Date( /*year*/ p[2], /*month*/ p[1], /*day*/p[0]);
+  function formatDate(date){
+    if(!date) return null;
+
+    if(date instanceof Date){
+      return date.format(DATE_FABRIC_FORMAT);
+    }
+    throw new Error('Not a date: '+date);
   }
 
   /**
