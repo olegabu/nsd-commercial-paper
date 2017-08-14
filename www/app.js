@@ -19,6 +19,7 @@ angular.module('nsd.service', [
   'nsd.service.socket',
   'nsd.service.instructions',
   'nsd.service.book',
+  'nsd.service.balance',
   'nsd.service.security'
 ]);
 
