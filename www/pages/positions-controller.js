@@ -1,9 +1,9 @@
 /**
- * @class BalanceController
+ * @class PositionsController
  * @classdesc
  * @ngInject
  */
-function BalanceController($scope, BalanceService, ConfigLoader) {
+function PositionsController($scope, PositionsService, ConfigLoader) {
 
   var ctrl = this;
 
@@ -22,7 +22,7 @@ function BalanceController($scope, BalanceService, ConfigLoader) {
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return BalanceService.list()
+    return PositionsService.list()
       .then(function(list){
         ctrl.list = list;
       })
@@ -35,5 +35,5 @@ function BalanceController($scope, BalanceService, ConfigLoader) {
   ctrl.init();
 }
 
-angular.module('nsd.controller.balance', ['nsd.service.balance'])
-.controller('BalanceController', BalanceController);
+angular.module('nsd.controller.positions', ['nsd.service.positions'])
+.controller('PositionsController', PositionsController);

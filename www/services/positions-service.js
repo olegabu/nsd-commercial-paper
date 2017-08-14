@@ -1,12 +1,12 @@
 /**
- * @class BalanceService
+ * @class PositionsService
  * @classdesc
  * @ngInject
  */
-function BalanceService(ApiService, ConfigLoader, $q, $log) {
+function PositionsService(ApiService, ConfigLoader, $q, $log) {
 
   // jshint shadow: true
-  var BalanceService = this;
+  var PositionsService = this;
 
 
   var CHAINCODE_ID = 'position';
@@ -14,12 +14,12 @@ function BalanceService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  BalanceService._getChaincodeID = function() {
+  PositionsService._getChaincodeID = function() {
     return CHAINCODE_ID;
   };
 
 
-  BalanceService._getChannelID = function() {
+  PositionsService._getChannelID = function() {
     // TODO: 'nsd' hardcoded
     return 'nsd-'+ConfigLoader.getOrg();
   };
@@ -27,12 +27,12 @@ function BalanceService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  BalanceService.list = function() {
-    $log.debug('BalanceService.list');
+  PositionsService.list = function() {
+    $log.debug('PositionsService.list');
 
-    var chaincodeID = BalanceService._getChaincodeID();
-    var channelID = BalanceService._getChannelID();
-    var peer = BalanceService._getQueryPeer();
+    var chaincodeID = PositionsService._getChaincodeID();
+    var channelID = PositionsService._getChannelID();
+    var peer = PositionsService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
         .then(function(data){ return parseJson(data.result); });
@@ -56,15 +56,15 @@ function BalanceService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  BalanceService._getQueryPeer = function() {
+  PositionsService._getQueryPeer = function() {
     var config = ConfigLoader.get();
     var peers = ConfigLoader.getOrgPeerIds(config.org);
     return config.org+'/'+peers[0];
   };
 
 
-  return BalanceService;
+  return PositionsService;
 }
 
-angular.module('nsd.service.balance', ['nsd.service.api'])
-  .service('BalanceService', BalanceService);
+angular.module('nsd.service.positions', ['nsd.service.api'])
+  .service('PositionsService', PositionsService);

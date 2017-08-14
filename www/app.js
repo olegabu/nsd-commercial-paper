@@ -5,7 +5,7 @@ angular.module('nsd.controller', [
   'nsd.controller.main',
   'nsd.controller.login',
   'nsd.controller.book',
-  'nsd.controller.balance',
+  'nsd.controller.positions',
   'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
@@ -19,7 +19,7 @@ angular.module('nsd.service', [
   'nsd.service.socket',
   'nsd.service.instructions',
   'nsd.service.book',
-  'nsd.service.balance',
+  'nsd.service.positions',
   'nsd.service.security'
 ]);
 
@@ -83,13 +83,13 @@ angular.module('nsd.app',[
         roles:'nsd'
       }
     })
-    .state('app.balance', {
-      url: 'balance',
-      templateUrl  : 'pages/balance.html',
-      controller   : 'BalanceController',
+    .state('app.positions', {
+      url: 'positions',
+      templateUrl  : 'pages/positions.html',
+      controller   : 'PositionsController',
       controllerAs : 'ctl',
       data:{
-        name: 'Balance',
+        name: 'Positions',
         roles: ['issuer', 'investor']
       }
     })
