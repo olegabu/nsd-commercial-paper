@@ -100,7 +100,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'Security Master',
-        roles:'nsd'
+        roles:'*'
       }
     })
     .state('app.instructions', {
