@@ -136,3 +136,6 @@ input.locked:disabled{
     margin-right: 15px;
     color: rgba(0,0,0,0.26);
 }
+.nowrap{
+  white-space: nowrap;
+}

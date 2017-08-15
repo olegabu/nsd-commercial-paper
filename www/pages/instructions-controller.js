@@ -82,8 +82,6 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     return account.dep;
   }
 
-
-
   /**
    *
    */
