@@ -37,8 +37,18 @@ function SocketService(env, $rootScope) {
 
 
     // TODO: this is an application-specific logic
-    socket.on('chainblock', function(e){
-      $rootScope.$broadcast('chainblock', e);
+    socket.on('chainblock', function(block){
+
+      block.getChannel = block_getChannel;
+
+      $rootScope.$broadcast('chainblock', block); // emit global event
+
+      // emit channel specific event ('-c-' - is a first letter from 'channel')
+      var blockChannel = SocketService.getBlockChannel(block);
+      $rootScope.$broadcast('chainblock-ch-'+blockChannel, block);
+
+      // emit type specific event ('-t-' - is a first letter from 'type')
+      // $rootScope.$broadcast('chainblock-t-'+blockType, e);
     });
 
 
@@ -52,6 +62,18 @@ function SocketService(env, $rootScope) {
     return socket;
   };
 
+  // THIS is a block
+  function block_getChannel(){
+    try{
+      return this.data.data[0].payload.header.channel_header.channel_id;
+    }catch(e){
+      return null;
+    }
+  }
+
+  SocketService.getBlockChannel = function(block){
+   return block.getChannel();
+  }
 
   /**
    *

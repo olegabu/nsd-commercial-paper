@@ -13,7 +13,7 @@ function PositionsController($scope, PositionsService, ConfigLoader) {
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock-ch-'+ PositionsService.getChannelID(), ctrl.reload);
       ctrl.reload();
   }
 

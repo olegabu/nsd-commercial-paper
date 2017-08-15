@@ -25,7 +25,11 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock', function(e, block){
+        if( InstructionService.isBilateralChannel(block.getChannel()) ){
+          ctrl.reload();
+        }
+      });
       ctrl.reload();
   }
 
@@ -107,7 +111,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   ctrl.sendInstruction = function(){
     var instruction = $scope.inst;
 
-    // FIXME here date can come in two different formats: 
+    // FIXME here date can come in two different formats:
     //  Date object when we change form value
     //  String (like '1 August, 2017') when we not change form value
     // Now we use formatDate() to transform both of it into ISO
@@ -147,9 +151,9 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
 
     if(!(date instanceof Date)){
       // assumind date is a string: '1 August, 2017'
-      // TODO: we shouldn't rely on this 
+      // TODO: we shouldn't rely on this
       date = new Date(date)
-    } 
+    }
     return date.format(DATE_FABRIC_FORMAT);
   }
 

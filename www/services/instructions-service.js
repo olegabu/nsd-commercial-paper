@@ -33,7 +33,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return ApiService.channels.list().then(function(channelList){
       return $q.all( channelList
         .map(function(channel){ return channel.channel_id; })
-        .filter(function(channelID){ return _isBilateralChannel(channelID); })
+        .filter(function(channelID){ return InstructionService.isBilateralChannel(channelID); })
         .sort()
         .map(function(channelID){
           // promise for each channel:
@@ -73,7 +73,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return data;
   }
 
-  function _isBilateralChannel(channelID){
+  InstructionService.isBilateralChannel = function(channelID){
     return channelID.indexOf('-') > 0 && !channelID.startsWith('nsd-');
   }
 

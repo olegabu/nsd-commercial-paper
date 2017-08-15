@@ -19,7 +19,7 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
   };
 
 
-  PositionsService._getChannelID = function() {
+  PositionsService.getChannelID = function() {
     // TODO: 'nsd' hardcoded
     return 'nsd-'+ConfigLoader.getOrg();
   };
@@ -31,7 +31,7 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('PositionsService.list');
 
     var chaincodeID = PositionsService._getChaincodeID();
-    var channelID = PositionsService._getChannelID();
+    var channelID = PositionsService.getChannelID();
     var peer = PositionsService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')

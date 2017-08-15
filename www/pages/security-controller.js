@@ -13,7 +13,8 @@ function SecurityController($scope, SecurityService) {
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      // $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock-ch-'+ SecurityService.getChannelID(), ctrl.reload);
       ctrl.reload();
   }
 

@@ -13,7 +13,7 @@ function BookController($scope, BookService, ConfigLoader) {
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock-ch-'+ BookService.getChannelID(), ctrl.reload);
       ctrl.reload();
   }
 
