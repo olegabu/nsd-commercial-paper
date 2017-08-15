@@ -56,7 +56,7 @@
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.reference}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.instructionDate|date}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.tradeDate|date}}</td>
-                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.status}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}" class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.initiator}}</td>
 
                 <td>{{::o.reason.transferer}} <i>TBD</i> </td>

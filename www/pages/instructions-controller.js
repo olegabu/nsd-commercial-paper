@@ -85,6 +85,19 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   /**
    *
    */
+  ctrl.getStatusClass = function(status){
+    switch(status){
+      case 'declined': return 'red-text darken-4';
+      case 'matched': return 'deep-purple-text';
+      case 'executed': return 'green-text darken-4';
+      default: return '';
+    }
+
+  }
+
+  /**
+   *
+   */
   ctrl.newInstructionTransfer = function(transferSide, _channel){
     if(!$scope.inst || $scope.inst.side != transferSide){
         // preset values
