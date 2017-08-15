@@ -111,6 +111,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
   };
 
+  /**
+   *
+   */
+  InstructionService.history = function(instruction){
+    // TODO:
+  }
+
 
   /**
    *

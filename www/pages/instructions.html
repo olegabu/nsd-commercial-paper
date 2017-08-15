@@ -45,7 +45,7 @@
                 <!-- <th></th> -->
             </tr>
         </thead>
-        <tbody ng-repeat="o in ctl.list|orderBy:'instructionDate':true|orderBy:'reference':true">
+        <tbody ng-repeat="o in ctl.list|orderBy:'instructionDate':true|orderBy:'reference':true" ng-click="ctl.showHistory(o)">
             <tr>
                 <th ng-if="o.initiator=='transferer'">16</th>
                 <th ng-if="o.initiator=='receiver'">16/1</th>
@@ -259,8 +259,14 @@
       <i>TBD</i>
      </div>
     <div class="modal-footer">
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat red white-text" ng-click="ctl.sendRedemption(redemption, 'Redeem '+redemption.security+' ?')" value="Ok"/>
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat red white-text" ng-disabled="form.$invalid" ng-click="ctl.sendRedemption(redemption)" value="Ok"/>
       <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="redemption = null">Cancel</a>
     </div>
   </form>
 </div>
+
+
+
+<script type="text/ng-template" id="templateId.html">
+  <p>This is the content of the template</p>
+</script>

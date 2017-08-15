@@ -182,12 +182,32 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
   }
 
 
-  ctrl.sendRedemption = function(redemption, _confirmText){
-    return DialogService.confirm(_confirmText, {confirmBtn:'Yes, redeem it'})
-      .then(function(){
-        return BookService.redeem(redemption);
+  /**
+   * @param {Redemption} redemption
+   */
+  ctrl.sendRedemption = function(redemption){
+    return DialogService.confirm( 'Redeem '+redemption.security+' ?', {yesTitle:'Yes, redeem it', yesKlass:'red white-text'})
+      .then(function(isConfirmed){
+        if(isConfirmed){
+          return BookService.redeem(redemption);
+        } else {
+          // user cancel input
+          return false;
+        }
       })
+      .then(function(){
+        $scope.redemption = null;
+      });
   }
+
+
+  /**
+   * @param {Instruction} instruction
+   */
+  ctrl.showHistory = function(instruction){
+    return InstructionService.history();
+  }
+
 
 
 
