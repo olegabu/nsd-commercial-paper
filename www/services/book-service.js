@@ -20,7 +20,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     return chaincodeID;
   };
 
-  BookService._getChannelID = function() {
+  BookService.getChannelID = function() {
     return 'depository';
   };
 
@@ -33,7 +33,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('BookService.list');
 
     var chaincodeID = BookService._getChaincodeID();
-    var channelID = BookService._getChannelID();
+    var channelID = BookService.getChannelID();
     var peer = BookService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
