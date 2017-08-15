@@ -100,34 +100,34 @@
 <div id="transferInstruction" class="modal modal-fixed-footer">
   <form name="form" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4>{{inst.side=='transferer'?'Transfer':'Receive'}} Instruction</h4>
+      <h4>{{inst.initiator=='transferer'?'Transfer':'Receive'}} Instruction</h4>
 
         <!-- transferer/From -->
         <div class="row">
           <div class="input-field col s5">
             <i class="material-icons prefix">call_made</i>
-            <i class="material-icons postfix" ng-show="inst.side=='transferer'">lock</i>
-            <input name="t_dep" type="text" class="validate locked" ng-model="inst.transferer.dep" required ng-disabled="inst.side=='transferer'">
+            <i class="material-icons postfix" ng-show="inst.initiator=='transferer'">lock</i>
+            <input name="t_dep" type="text" class="validate locked" ng-model="inst.transferer.dep" required ng-disabled="inst.initiator=='transferer'">
             <label for="t_dep">Deponent code</label>
           </div>
 
-          <div class="input-field col s4" ng-show="inst.side=='transferer'">
+          <div class="input-field col s4" ng-show="inst.initiator=='transferer'">
             <select ng-model="inst.transferer.acc" name="t_acc" material-select watch class="validate"
                     ng-options="n as n for (n, o) in ctl.accountFrom.acc" placeholder="Account" required></select>
             <label for="t_acc">Account</label>
           </div>
-          <div class="input-field col s4" ng-hide="inst.side=='transferer'">
+          <div class="input-field col s4" ng-hide="inst.initiator=='transferer'">
             <input name="t_acc" type="text" class="validate" ng-model="inst.transferer.acc" required>
             <label for="t_acc">Account</label>
           </div>
 
 
-          <div class="input-field col s3" ng-show="inst.side=='transferer'">
+          <div class="input-field col s3" ng-show="inst.initiator=='transferer'">
             <select ng-model="inst.transferer.div" name="t_acc" material-select watch class="validate"
                     ng-options="o for o in ctl.accountFrom.acc[inst.transferer.acc]" placeholder="Division" required></select>
             <label for="t_div">Division</label>
           </div>
-          <div class="input-field col s3" ng-hide="inst.side=='transferer'">
+          <div class="input-field col s3" ng-hide="inst.initiator=='transferer'">
             <input name="t_div" type="text" class="validate" ng-model="inst.transferer.div" required>
             <label for="t_div">Division</label>
           </div>
@@ -137,28 +137,28 @@
           <!-- receiver/To -->
            <div class="input-field col s5">
             <i class="material-icons prefix">call_received</i>
-            <i class="material-icons postfix" ng-show="inst.side=='receiver'">lock</i>
-            <input name="t_dep" type="text" class="validate locked" ng-model="inst.receiver.dep" required ng-disabled="inst.side=='receiver'">
+            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'">lock</i>
+            <input name="t_dep" type="text" class="validate locked" ng-model="inst.receiver.dep" required ng-disabled="inst.initiator=='receiver'">
             <label for="t_dep">Deponent code</label>
           </div>
 
-          <div class="input-field col s4" ng-show="inst.side=='receiver'">
+          <div class="input-field col s4" ng-show="inst.initiator=='receiver'">
             <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.acc"
                     ng-options="n as n for (n, o) in ctl.accountTo.acc" placeholder="Account" required></select>
             <label for="t_acc">Account</label>
           </div>
-          <div class="input-field col s4" ng-hide="inst.side=='receiver'">
+          <div class="input-field col s4" ng-hide="inst.initiator=='receiver'">
             <input name="t_acc" type="text" class="validate" ng-model="inst.receiver.acc" required>
             <label for="t_acc">Account</label>
           </div>
 
 
-          <div class="input-field col s3" ng-show="inst.side=='receiver'">
+          <div class="input-field col s3" ng-show="inst.initiator=='receiver'">
             <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.div"
                     ng-options="o for o in ctl.accountTo.acc[inst.receiver.acc]" placeholder="Division" required></select>
             <label for="t_div">Division</label>
           </div>
-          <div class="input-field col s3" ng-hide="inst.side=='receiver'">
+          <div class="input-field col s3" ng-hide="inst.initiator=='receiver'">
             <input name="t_div" type="text" class="validate" ng-model="inst.receiver.div" required>
             <label for="t_div">Division</label>
           </div>

@@ -66,7 +66,6 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       receiver:{
         dep: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID)
       },
-      side: transferSide, // deprecate?
       initiator: transferSide,
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
       trade_date    : new Date(),//.format(DATE_INPUT_FORMAT),
@@ -99,7 +98,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
    *
    */
   ctrl.newInstructionTransfer = function(transferSide, _channel){
-    if(!$scope.inst || $scope.inst.side != transferSide){
+    if(!$scope.inst || $scope.inst.initiator != transferSide){
         // preset values
 
         var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
@@ -144,7 +143,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
     instruction.reason.created    = formatDate(instruction.reason.created);
 
     var p;
-    switch(instruction.side){
+    switch(instruction.initiator){
       case TRANSFER_SIDE_TRANSFERER:
         p = InstructionService.transfer(instruction);
         break;
@@ -152,7 +151,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
         p = InstructionService.receive(instruction);
         break;
       default:
-        throw new Error('Unknpown transfer side: ' + instruction.side);
+        throw new Error('Unknpown transfer side: ' + instruction.initiator);
     }
 
 
@@ -205,7 +204,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
    * @param {Instruction} instruction
    */
   ctrl.showHistory = function(instruction){
-    return InstructionService.history();
+    return InstructionService.history(instruction);
   }
 
 

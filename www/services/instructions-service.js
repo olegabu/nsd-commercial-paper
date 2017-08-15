@@ -149,7 +149,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    * @return {string} orgID
    */
   InstructionService._getOpponentID = function(instruction) {
-    var opponentDep = instruction.side == 'transferer' ? instruction.receiver.dep : instruction.transferer.dep;
+    var opponentDep = instruction.initiator == 'transferer' ? instruction.receiver.dep : instruction.transferer.dep;
     if(!opponentDep){
       throw new Error("Deponent not set");
     }
