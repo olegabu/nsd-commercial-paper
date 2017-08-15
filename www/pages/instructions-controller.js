@@ -57,7 +57,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
   /**
    * @return {Instruction}
    */
-  ctrl._getDefaultinstruction = function(transferSide, opponentID){
+  ctrl._getDefaultInstruction = function(transferSide, opponentID){
     var orgID = ctrl.org;
     return {
       deponentFrom: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID),
@@ -99,7 +99,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
         // preset values
 
         var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
-        $scope.inst = ctrl._getDefaultinstruction(transferSide, opponentOrgID);
+        $scope.inst = ctrl._getDefaultInstruction(transferSide, opponentOrgID);
 
         // preset
         ctrl._fillAccount(transferSide, opponentOrgID);
@@ -177,6 +177,23 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
     return date.format(DATE_FABRIC_FORMAT);
   }
 
+
+  /**
+   *
+   */
+  ctrl.newRedemption = function(){
+    $scope.redemption = $scope.redemption || ctrl._getDefaultRedemption();
+  }
+  /**
+   * @return {Redemption}
+   */
+  ctrl._getDefaultRedemption = function(){
+    return {
+      reason:{
+        created   : new Date()//.format(DATE_INPUT_FORMAT)
+      }
+    };
+  }
 
   /**
    * @param {Redemption} redemption
