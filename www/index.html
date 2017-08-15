@@ -60,7 +60,7 @@
         <!-- main menu -->
         <ul class="menu hide-on-med-and-down" ng-cloak>
           <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
-            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active" 
+            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active"
                 href="{{::state.url}}" target="{{::state.data.absolute?'_blank':''}}">
               {{::state.data.name||state.name}}
             </a>
@@ -200,7 +200,6 @@
 <script src="pages/main-controller.js"></script>
 <script src="pages/book-controller.js"></script>
 <script src="pages/positions-controller.js"></script>
-<script src="pages/explorer-controller.js"></script>
 <script src="pages/instructions-controller.js"></script>
 <script src="pages/login-controller.js"></script>
 <script src="pages/security-controller.js"></script>

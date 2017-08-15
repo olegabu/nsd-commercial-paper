@@ -6,7 +6,6 @@ angular.module('nsd.controller', [
   'nsd.controller.login',
   'nsd.controller.book',
   'nsd.controller.positions',
-  'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
   'nsd.controller.security'
