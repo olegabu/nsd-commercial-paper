@@ -108,7 +108,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   };
 
   /**
-   *
+   * Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate)
    */
   InstructionService.history = function(instruction){
     $log.debug('InstructionService.history', instruction);
@@ -116,7 +116,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var chaincodeID = InstructionService._getChaincodeID();
     var channelID   = InstructionService._getInstructionChannel(instruction);
     var peer        = InstructionService._getQueryPeer();
-    var args        = InstructionService._instructionArguments(instruction);
+    var args        = InstructionService._instructionArguments(instruction, false);
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args);
   }
@@ -125,8 +125,9 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  InstructionService._instructionArguments = function(instruction) {
-    return [
+  InstructionService._instructionArguments = function(instruction, _withReason) {
+    _withReason = typeof _withReason == "undefined" ? true : _withReason;
+    var args = [
       instruction.deponentFrom,        // 0: deponentFrom
       instruction.transferer.account,  // 1: accountFrom
       instruction.transferer.division, // 2: divisionFrom
@@ -140,8 +141,17 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.reference,           // 8: reference
       instruction.instructionDate,     // 9: instructionDate  (date format?)
       instruction.tradeDate,           // 10: tradeDate  (date format?)
-      JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
+      // JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
     ];
+
+    if(_withReason){
+      args.push(
+        // HOTFIX
+        JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
+      );
+    }
+
+    return args;
   }
 
 
