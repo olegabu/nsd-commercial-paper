@@ -45,15 +45,20 @@
             <tr>
                 <th ng-if="o.initiator=='transferer'">16</th>
                 <th ng-if="o.initiator=='receiver'">16/1</th>
-                <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
-                <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
-                <td>{{::o.security}}</td>
-                <td>{{::o.quantity}}</td>
-                <td>{{::o.reference}}</td>
-                <td>{{::o.instructionDate|date}}</td>
-                <td>{{::o.tradeDate|date}}</td>
-                <td>{{::o.status}}</td>
-                <td>{{::o.initiator}}</td>
+                <td class="nowrap" rowspan="{{::o.status=='initiated'?'1':'2'}}">
+                  {{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}
+                </td>
+                <td class="nowrap" rowspan="{{::o.status=='initiated'?'1':'2'}}">
+                  {{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}
+                </td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.security}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.quantity}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.reference}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.instructionDate|date}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.tradeDate|date}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.status}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.initiator}}</td>
+
                 <td>{{::o.reason.transferer}} <i>TBD</i> </td>
                 <td hidden>
                     <input type="button" class="btn btn-default" ng-click="ctl.verify(o)"  value="Verify"  ng-hide="o.status"/>
@@ -64,15 +69,7 @@
             <tr ng-if="::o.status!='initiated'">
                 <th ng-if="o.initiator=='transferer'">16/1</th>
                 <th ng-if="o.initiator=='receiver'">16</th>
-                <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
-                <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
-                <td>{{::o.security}}</td>
-                <td>{{::o.quantity}}</td>
-                <td>{{::o.reference}}</td>
-                <td>{{::o.instructionDate|date}}</td>
-                <td>{{::o.tradeDate|date}}</td>
-                <td>{{::o.status}}</td>
-                <td>{{::o.initiator}}</td>
+                <!-- rowspan fields -->
                 <td>{{::o.reason.receiver}} <i>TBD</i> </td>
             </tr>
 
