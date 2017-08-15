@@ -17,6 +17,10 @@
         <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal role-show="issuer, investor">
           Receive Instruction
         </button>
+
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#redemption" modal role-show="nsd">
+          Create Redemption Instruction
+        </button>
       </div>
     </div>
   </div>
@@ -90,7 +94,9 @@
  -->
 
 
-<!-- Modal Structure -->
+<!--
+  Create transfer/receive instruction
+  -->
 <div id="transferInstruction" class="modal modal-fixed-footer">
   <form name="form" class="form-horizontal" novalidate>
     <div class="modal-content">
@@ -216,8 +222,45 @@
         </div>
     </div>
     <div class="modal-footer">
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction()" value="Ok"/>
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelInstruction()">Cancel</a>
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction(inst)" value="Ok"/>
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null">Cancel</a>
+    </div>
+  </form>
+</div>
+
+
+
+
+
+<!--
+  Redemption
+-->
+<div id="redemption" class="modal modal-fixed-footer">
+  <form name="form" class="form-horizontal" novalidate>
+    <div class="modal-content">
+      <h4>Create Redemption Instruction</h4>
+
+
+      <div class="row">
+        <div class="input-field col s12">
+          <input name="security" type="text" class="validate" ng-model="redemption.security" required>
+          <label for="security">ISIN</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">textsms</i>
+          <input name="reference" type="text" class="validate" ng-model="redemption.reference" required>
+          <label for="reference">Reference</label>
+        </div>
+      </div>
+
+      <i>TBD</i>
+     </div>
+    <div class="modal-footer">
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendRedemption(redemption)" value="Ok"/>
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="redemption = null">Cancel</a>
     </div>
   </form>
 </div>

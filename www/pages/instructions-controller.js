@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, InstructionService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, InstructionService, BookService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -133,8 +133,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   /**
    *
    */
-  ctrl.sendInstruction = function(){
-    var instruction = $scope.inst;
+  ctrl.sendInstruction = function(instruction){
 
     // FIXME here date can come in two different formats:
     //  Date object when we change form value
@@ -182,12 +181,12 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     return date.format(DATE_FABRIC_FORMAT);
   }
 
-  /**
-   *
-   */
-  ctrl.cancelInstruction = function(){
-    $scope.inst = null;
-  };
+
+  ctrl.sendRedemption = function(redemption){
+    return BookService.redeem(redemption);
+  }
+
+
 
   //////////////
 
