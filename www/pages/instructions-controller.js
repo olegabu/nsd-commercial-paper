@@ -60,16 +60,13 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
   ctrl._getDefaultinstruction = function(transferSide, opponentID){
     var orgID = ctrl.org;
     return {
-      transferer:{
-        dep: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID)
-      },
-      receiver:{
-        dep: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID)
-      },
+      deponentFrom: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID),
+      deponentTo:   ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID),
+
       initiator: transferSide,
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
-      trade_date    : new Date(),//.format(DATE_INPUT_FORMAT),
-      instruction_date : new Date(),//.format(DATE_INPUT_FORMAT),
+      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
+      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
       reason:{
         created   : new Date()//.format(DATE_INPUT_FORMAT)
       }
@@ -138,9 +135,9 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
     //  Date object when we change form value
     //  String (like '1 August, 2017') when we not change form value
     // Now we use formatDate() to transform both of it into ISO
-    instruction.trade_date        = formatDate(instruction.trade_date);
-    instruction.instruction_date  = formatDate(instruction.instruction_date);
-    instruction.reason.created    = formatDate(instruction.reason.created);
+    instruction.tradeDate        = formatDate(instruction.tradeDate);
+    instruction.instructionDate  = formatDate(instruction.instructionDate);
+    instruction.reason.created   = formatDate(instruction.reason.created);
 
     var p;
     switch(instruction.initiator){

@@ -115,6 +115,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   InstructionService.history = function(instruction){
+    $log.debug('InstructionService.history', instruction);
     // TODO:
   }
 
@@ -124,19 +125,19 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    */
   InstructionService._instructionArguments = function(instruction) {
     return [
-      instruction.transferer.dep,     // 0: deponentFrom
-      instruction.transferer.acc,     // 1: accountFrom
-      instruction.transferer.div,     // 2: divisionFrom
+      instruction.deponentFrom,        // 0: deponentFrom
+      instruction.transferer.account,  // 1: accountFrom
+      instruction.transferer.division, // 2: divisionFrom
 
-      instruction.receiver.dep,       // 3: deponentTo
-      instruction.receiver.acc,       // 4: accountTo
-      instruction.receiver.div,       // 5: divisionTo
+      instruction.deponentTo,          // 3: deponentTo
+      instruction.receiver.account,    // 4: accountTo
+      instruction.receiver.division,   // 5: divisionTo
 
-      instruction.security,           // 6: security
-      ''+instruction.quantity,        // 7: quantity // TODO: fix: string parameters
-      instruction.reference,          // 8: reference
-      instruction.instruction_date,   // 9: instructionDate  (date format?)
-      instruction.trade_date,         // 10: tradeDate  (date format?)
+      instruction.security,            // 6: security
+      ''+instruction.quantity,         // 7: quantity // TODO: fix: string parameters
+      instruction.reference,           // 8: reference
+      instruction.instructionDate,     // 9: instructionDate  (date format?)
+      instruction.tradeDate,           // 10: tradeDate  (date format?)
       JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
     ];
   }
@@ -149,7 +150,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    * @return {string} orgID
    */
   InstructionService._getOpponentID = function(instruction) {
-    var opponentDep = instruction.initiator == 'transferer' ? instruction.receiver.dep : instruction.transferer.dep;
+    var opponentDep = instruction.initiator == 'transferer' ? instruction.deponentFrom : instruction.deponentTo;
     if(!opponentDep){
       throw new Error("Deponent not set");
     }
