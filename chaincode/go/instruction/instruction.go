@@ -11,9 +11,11 @@ import (
 	"time"
 	"io/ioutil"
 	"errors"
+	"text/template"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"bytes"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
@@ -36,19 +38,23 @@ type InstructionChaincode struct {
 
 // Instruction is the main data type stored in ledger
 type Instruction struct {
-	Transferer      Balance `json:"transferer"`
-	Receiver        Balance `json:"receiver"`
-	Security        string 	`json:"security"`
+	Transferer      		Balance `json:"transferer"`
+	Receiver        		Balance `json:"receiver"`
+	Security        		string 	`json:"security"`
 	//TODO should be int like everywhere
-	Quantity        string 	`json:"quantity"`
-	Reference       string 	`json:"reference"`
-	InstructionDate string 	`json:"instructionDate"`
-	TradeDate       string 	`json:"tradeDate"`
-	DeponentFrom    string  `json:"deponentFrom"`
-	DeponentTo      string  `json:"deponentTo"`
-	Status          string 	`json:"status"`
-	Initiator       string 	`json:"initiator"`
-	Reason          Reason 	`json:"reason"`
+	Quantity        		string 	`json:"quantity"`
+	Reference       		string 	`json:"reference"`
+	InstructionDate 		string 	`json:"instructionDate"`
+	TradeDate       		string 	`json:"tradeDate"`
+	DeponentFrom    		string  `json:"deponentFrom"`
+	DeponentTo      		string  `json:"deponentTo"`
+	Status          		string 	`json:"status"`
+	Initiator       		string 	`json:"initiator"`
+	Reason          		Reason 	`json:"reason"`
+	AlamedaFrom				string	`json:"alamedaFrom"`
+	AlamedaTo				string	`json:"alamedaTo"`
+	AlamedaSignatureFrom	string	`json:"alamedaSignatureFrom"`
+	AlamedaSignatureTo		string	`json:"alamedaSignatureTo"`
 }
 
 type Balance struct {
@@ -72,10 +78,14 @@ type KeyModificationValue struct {
 
 // required for history
 type InstructionValue struct {
-	DeponentFrom 	string 	`json:"deponentFrom"`
-	DeponentTo		string 	`json:"deponentTo"`
-	Status      	string 	`json:"status"`
-	Initiator 		string 	`json:"initiator"`
+	DeponentFrom 			string 	`json:"deponentFrom"`
+	DeponentTo				string 	`json:"deponentTo"`
+	Status      			string 	`json:"status"`
+	Initiator 				string 	`json:"initiator"`
+	AlamedaFrom				string	`json:"alamedaFrom"`
+	AlamedaTo				string	`json:"alamedaTo"`
+	AlamedaSignatureFrom	string	`json:"alamedaSignatureFrom"`
+	AlamedaSignatureTo		string	`json:"alamedaSignatureTo"`
 }
 
 // **** Instruction Methods **** //
@@ -174,6 +184,8 @@ func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitia
 
 	this.Status = InstructionMatched
 
+	this.AlamedaFrom, this.AlamedaTo = this.createAlamedaXMLs()
+
 	err = this.upsertIn(stub)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -247,7 +259,10 @@ func (this *Instruction) fillFromArgs(args []string) (error) {
 }
 
 func (this *Instruction) toLedgerValue() ([]byte, error) {
-	return json.Marshal([]string{this.DeponentFrom, this.DeponentTo, this.Status, this.Initiator})
+	return json.Marshal([]string{
+		this.DeponentFrom, this.DeponentTo, this.Status, this.Initiator,
+		this.AlamedaFrom, this.AlamedaTo, this.AlamedaSignatureFrom, this.AlamedaSignatureTo,
+	})
 }
 
 func (this *Instruction) toJSON() ([]byte, error) {
@@ -265,8 +280,79 @@ func (this *Instruction) fillFromLedgerValue(bytes []byte) (error) {
 	this.DeponentTo = str[1]
 	this.Status = str[2]
 	this.Initiator = str[3]
+	this.AlamedaFrom = str[4]
+	this.AlamedaTo = str[5]
+	this.AlamedaSignatureFrom = str[6]
+	this.AlamedaSignatureTo = str[7]
 
 	return nil
+}
+
+func (this *Instruction) createAlamedaXMLs() (string, string) {
+	const xmlTemplate = `
+<Batch>
+<Documents_amount>1</Documents_amount>
+<Document DOC_ID="1" version="7">
+<ORDER_HEADER>
+<deposit_c>{{.Depositary}}</deposit_c>
+<contrag_c>{{.Initiator}}</contrag_c>
+<contr_d_id>{{.InstructionID}}</contr_d_id>
+<createdate>{{.Instruction.InstructionDate}}</createdate>
+<order_t_id>{{.OperationCode}}</order_t_id>
+<execute_dt>{{.Instruction.InstructionDate}}</execute_dt>
+<expirat_dt>{{.ExpirationDate}}</expirat_dt>
+</ORDER_HEADER>
+<MF010>
+<dep_acc_c>{{.Instruction.Transferer.Account}}</dep_acc_c>
+<sec_c>{{.Instruction.Transferer.Division}}</sec_c>
+<deponent_c>{{.Instruction.DeponentFrom}}</deponent_c>
+<corr_acc_c>{{.Instruction.Receiver.Account}}</corr_acc_c>
+<corr_sec_c>{{.Instruction.Receiver.Division}}</corr_sec_c>
+<corr_code>{{.Instruction.DeponentTo}}</corr_code>
+<based_on>{{.Instruction.Reason.Description}}</based_on>
+<based_numb>{{.Instruction.Reason.Document}}</based_numb>
+<based_date>{{.Instruction.Reason.DocumentDate}}</based_date>
+<securities><security>
+<security_c>{{.Instruction.Security}}</security_c>
+<security_q>{{.Instruction.Quantity}}</security_q>
+</security>
+</securities>
+<deal_reference>{{.Instruction.Reference}}</deal_reference>
+<date_deal>{{.Instruction.TradeDate}}</date_deal>
+</MF010>
+`
+	type InstructionWrapper struct {
+		Instruction Instruction
+		Depositary string
+		Initiator string
+		InstructionID string //TODO: remove this
+		OperationCode string
+		ExpirationDate string
+	}
+
+	instructionWrapper := InstructionWrapper{
+		Instruction: *this,
+		Depositary: "DEPOSITARY_CODE",
+		Initiator: this.DeponentFrom,
+		InstructionID: "42",
+		OperationCode: "16",
+		ExpirationDate: "+24h",
+	}
+
+	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
+
+	buf := new(bytes.Buffer)
+	t.Execute(buf, instructionWrapper)
+	alamedaFrom := buf.String()
+
+	buf.Reset()
+	instructionWrapper.OperationCode = "16/1"
+	instructionWrapper.Initiator = this.DeponentTo
+
+	t.Execute(buf, instructionWrapper)
+	alamedaTo := buf.String()
+
+	return alamedaFrom, alamedaTo
 }
 
 // **** Chaincode Methods **** //
