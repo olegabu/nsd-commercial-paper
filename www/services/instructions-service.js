@@ -24,8 +24,8 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  InstructionService.list = function() {
-    $log.debug('InstructionService.list');
+  InstructionService.listAll = function() {
+    $log.debug('InstructionService.listAll');
 
     var chaincodeID = InstructionService._getChaincodeID();
     var peer = InstructionService._getQueryPeer();
@@ -47,11 +47,11 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
                 channel: channelID,
                 result: []
               };
-            })
+            });
 
       }));
     }).then(function(results){
-      // join array of array into one array (flatten)
+      // join array of results into one array (groupedList)
       return results.reduce(function(result, singleResult){
         result[singleResult.channel] = singleResult.result;
         return result;

@@ -38,9 +38,15 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return InstructionService.list()
-      .then(function(list){
-        ctrl.list = list;
+    return InstructionService.listAll()
+      .then(function(groupedList){
+
+        // flattern: combine all group element into single array
+        ctrl.list = Object.keys(groupedList).reduce(function(result, channel){
+          result.push.apply(result, groupedList[channel]);
+          return result;
+        }, []);
+
       })
       .finally(function(){
         ctrl.invokeInProgress = false;
@@ -55,14 +61,14 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     var orgID = ctrl.org;
     return {
       transferer:{
-        dep: ConfigLoader.getAccount( transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID).dep
+        dep: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID)
       },
       receiver:{
-        dep: ConfigLoader.getAccount( transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID).dep
+        dep: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID)
       },
       side: transferSide, // deprecate?
       initiator: transferSide,
-      // quantity: 0,
+      // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
       trade_date    : new Date(),//.format(DATE_INPUT_FORMAT),
       instruction_date : new Date(),//.format(DATE_INPUT_FORMAT),
       reason:{
@@ -71,15 +77,11 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     };
   }
 
-  ctrl._fillAccount = function(transferSide, opponentID){
-      if(transferSide == TRANSFER_SIDE_TRANSFERER){
-        ctrl.accountFrom = ConfigLoader.getAccount();
-        ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-      } else {
-        ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-        ctrl.accountTo = ConfigLoader.getAccount();
-      }
-  };
+  ctrl._getDeponentCode = function(orgID){
+    var account = ConfigLoader.getAccount(orgID) || {};
+    return account.dep;
+  }
+
 
 
   /**
@@ -97,11 +99,23 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
     }
   };
 
+  ctrl._fillAccount = function(transferSide, opponentID){
+    if(transferSide == TRANSFER_SIDE_TRANSFERER){
+      ctrl.accountFrom = ConfigLoader.getAccount(ctrl.org);
+      ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
+    } else {
+      ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
+      ctrl.accountTo = ConfigLoader.getAccount(ctrl.org);
+    }
+  };
+
+
 
   /**
    *
    */
   ctrl._getOrgIDByChannel = function(channelID){
+    if(!channelID) return null;
     return channelID.split('-').filter(function(org){ return org != ctrl.org; })[0];
   }
 

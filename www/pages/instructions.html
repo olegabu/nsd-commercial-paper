@@ -5,20 +5,16 @@
 </div>
 
 
-<div ng-repeat="(channel, instructions) in ctl.list">
-
-
-  <h4>{{::channel}}</h4>
-
+<div>
   <div class="row">
     <div class="col s12">
       <div>
         <!-- Modal Trigger -->
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer', channel)" href="#transferInstruction" modal role-show="issuer, investor">
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer')" href="#transferInstruction" modal role-show="issuer, investor">
           Transfer Instruction
         </button>
 
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver', channel)" href="#transferInstruction" modal role-show="issuer, investor">
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal role-show="issuer, investor">
           Receive Instruction
         </button>
       </div>
@@ -44,7 +40,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in instructions|orderBy:'instructionDate':true|orderBy:'reference':true">
+            <tr ng-repeat="o in ctl.list|orderBy:'instructionDate':true|orderBy:'reference':true">
                 <td>{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td>{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -60,7 +56,7 @@
                 </td>
             </tr>
 
-            <tr ng-hide="instructions.length">
+            <tr ng-hide="ctl.list.length">
                 <td colspan="99" align="center">
                     <i>No items</i>
                 </td>

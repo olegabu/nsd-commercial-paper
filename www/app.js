@@ -343,11 +343,11 @@ angular.module('nsd.app',[
     }
 
     /**
-     * @param {string} [orgID]
+     * @param {string} orgID
      */
     function getAccount(orgID){
       var accountConfig = _config['account-config'] || {};
-      return accountConfig[orgID||_config.org];
+      return accountConfig[orgID];
     }
 
     function getOrg(){
