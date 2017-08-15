@@ -86,11 +86,9 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('InstructionService.transfer', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
-    var opponent    = InstructionService._getOpponentID(instruction);
-    var channelID   = InstructionService._getOpponentChannel(opponent);
-    var peers       = InstructionService._getEndorsePeers(opponent);
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
-
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
   };
@@ -102,11 +100,9 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('InstructionService.receive', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
-    var opponent    = InstructionService._getOpponentID(instruction);
-    var channelID   = InstructionService._getOpponentChannel(opponent);
-    var peers       = InstructionService._getEndorsePeers(opponent);
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
-
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
   };
@@ -116,7 +112,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    */
   InstructionService.history = function(instruction){
     $log.debug('InstructionService.history', instruction);
-    // TODO:
+
+    var chaincodeID = InstructionService._getChaincodeID();
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peer        = InstructionService._getQueryPeer();
+    var args        = InstructionService._instructionArguments(instruction);
+
+    return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args);
   }
 
 
@@ -144,45 +146,46 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
 
   /**
-   * get instruction opponent ID.
-   * It would be transfererID when you are receiver and vise a versa
+   * get instruction opponents ID.
    * @param {Instruction} instruction
-   * @return {string} orgID
+   * @return {Array<string>} multiple (two actually) orgID
    */
-  InstructionService._getOpponentID = function(instruction) {
-    var opponentDep = instruction.initiator == 'transferer' ? instruction.deponentFrom : instruction.deponentTo;
-    if(!opponentDep){
-      throw new Error("Deponent not set");
+  InstructionService._getInstructionOrgs = function(instruction) {
+    var org1 = ConfigLoader.getOrgByDepcode(instruction.deponentFrom);
+    if(!org1){
+      throw new Error("Deponent owner not found: " + instruction.deponentFrom);
     }
-    var opponent = ConfigLoader.getOrgByDepcode(opponentDep);
-    if(!opponent){
-      throw new Error("Deponent owner not found: "+opponentDep);
+    var org2 = ConfigLoader.getOrgByDepcode(instruction.deponentTo);
+    if(!org2){
+      throw new Error("Deponent owner not found: " + instruction.deponentTo);
     }
-    return opponent;
+    return [org1, org2];
   }
 
   /**
    * get name of bi-lateral channel for opponent and the organisation
    */
-  InstructionService._getOpponentChannel = function(opponent) {
+  InstructionService._getInstructionChannel = function(instruction) {
+    var orgArr = InstructionService._getInstructionOrgs(instruction);
     // make channel name as '<org1_ID>-<org2_ID>'.
     // Please, pay attention to the orgs order - ot should be sorted
-    return [ConfigLoader.getOrg(), opponent].sort().join('-');
+    return orgArr.sort().join('-');
   };
 
   /**
    * get orgPeerIDs of endorsers, which should endose the transaction
+   * @return {Array<string>}
    */
-  InstructionService._getEndorsePeers = function(opponent) {
+  InstructionService._getEndorsePeers = function(instruction) {
+    var endorserOrgs = InstructionService._getInstructionOrgs(instruction);
+
+    // root endorser
     var config = ConfigLoader.get();
-
-    var endorsersOrg = [config.org, opponent];
-
     var rootEndorsers = config.endorsers || [];
-    endorsersOrg.push.apply(endorsersOrg, rootEndorsers);
+    endorserOrgs.push.apply(endorserOrgs, rootEndorsers);
 
     //
-    var peers = endorsersOrg.reduce(function(result, org){
+    var peers = endorserOrgs.reduce(function(result, org){
       var peers = ConfigLoader.getOrgPeerIds(org);
       result.push( org+'/'+peers[0] ); // orgPeerID  // endorse by the first peer
       return result;
