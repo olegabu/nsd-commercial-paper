@@ -52,7 +52,7 @@
       <h4>Calendar Entry</h4>
 
         <!-- transferer/From -->
-        <div class="row">
+        <div class="row" hidden>
           <div class="input-field col s12">
             <p>
               <input class="with-gap" name="eventType" value="coupon" type="radio" id="coupon" />
@@ -67,101 +67,35 @@
               <label for="redemption">Redemption</label>
             </p>
           </div>
-
         </div>
 
         <div class="row">
-          <!-- receiver/To -->
-           <div class="input-field col s5">
-            <i class="material-icons prefix">call_received</i>
-            <i class="material-icons postfix" ng-show="inst.side=='receiver'">lock</i>
-            <input name="t_dep" type="text" class="validate locked" ng-model="inst.receiver.dep" required ng-disabled="inst.side=='receiver'">
-            <label for="t_dep">Deponent code</label>
-          </div>
-
-          <div class="input-field col s4" ng-show="inst.side=='receiver'">
-            <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.acc"
-                    ng-options="n as n for (n, o) in ctl.accountTo.acc" placeholder="Account" required></select>
-            <label for="t_acc">Account</label>
-          </div>
-          <div class="input-field col s4" ng-hide="inst.side=='receiver'">
-            <input name="t_acc" type="text" class="validate" ng-model="inst.receiver.acc" required>
-            <label for="t_acc">Account</label>
-          </div>
-
-
-          <div class="input-field col s3" ng-show="inst.side=='receiver'">
-            <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.div"
-                    ng-options="o for o in ctl.accountTo.acc[inst.receiver.acc]" placeholder="Division" required></select>
-            <label for="t_div">Division</label>
-          </div>
-          <div class="input-field col s3" ng-hide="inst.side=='receiver'">
-            <input name="t_div" type="text" class="validate" ng-model="inst.receiver.div" required>
-            <label for="t_div">Division</label>
+          <div class="input-field col s12">
+            <i class="material-icons prefix">schedule</i>
+            <input name="ce_date" type="text" class="validate datepicker" ng-model="centry.date" input-date>
+            <label for="ce_date">Calendar entry date</label>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="security" type="text" class="validate" ng-model="inst.security" required>
-            <label for="security">ISIN</label>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="input-field col s12">
-            <input name="quantity" type="number" min="0" class="validate" ng-model="inst.quantity" required>
-            <label for="quantity">Quantity</label>
+            <i class="material-icons prefix">textsms</i>
+            <input name="ce_reference" type="text" class="validate" ng-model="centry.code" required>
+            <label for="ce_reference">Code</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">textsms</i>
-            <input name="reference" type="text" class="validate" ng-model="inst.reference" required>
-            <label for="reference">Reference</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <i class="material-icons prefix">schedule</i>
-            <input name="trade_date" type="text" class="validate datepicker" ng-model="inst.trade_date" input-date>
-            <label for="trade_date">Trade Date</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <i class="material-icons prefix">schedule</i>
-            <input name="instruction_date" type="text" class="validate datepicker" ng-model="inst.instruction_date" input-date>
-            <label for="instruction_date">Instruction Date</label>
-          </div>
-        </div>
-
-        <div class="row">
-            <h5 class="col s12">Reason</h5>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
-            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
-            <label for="a_description">Description</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s8">
-            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.reason.document">
-            <label for="a_document">Document number</label>
-          </div>
-          <div class="input-field col s4">
-            <i class="material-icons prefix">schedule</i>
-            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.reason.created" input-date>
-            <label for="a_created">Document date</label>
+            <textarea id="ce_description" name="ce_description" class="materialize-textarea" ng-model="centry.description"></textarea>
+            <label for="ce_description">Description</label>
           </div>
         </div>
 
     </div>
     <div class="modal-footer">
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction()" value="Ok"/>
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelInstruction()">Cancel</a>
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendCEntry()" value="Ok"/>
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="centry=null;">Cancel</a>
     </div>
   </form>
 </div>

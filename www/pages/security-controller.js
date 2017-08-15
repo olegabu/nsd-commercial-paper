@@ -33,6 +33,21 @@ function SecurityController($scope, SecurityService) {
   }
 
 
+  ctrl.newCalendarEntry = function(){
+    $scope.centry = $scope.centry || {
+      date: new Date()
+    };
+  }
+
+  ctrl.sendCEntry = function(centry){
+    return SecurityService.addCalendarEntry(centry)
+      .then(function(){
+        $scope.centry = null;
+      })
+  }
+
+
+
   ctrl.init();
 }
 
