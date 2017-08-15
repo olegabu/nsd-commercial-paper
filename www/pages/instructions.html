@@ -79,9 +79,9 @@
 
 <!-- Modal Structure -->
 <div id="transferInstruction" class="modal modal-fixed-footer">
-  <div class="modal-content">
-    <h4>{{inst.side=='transferer'?'Transfer':'Receive'}} Instruction</h4>
-    <form name="form" class="form-horizontal">
+  <form name="form" class="form-horizontal" novalidate>
+    <div class="modal-content">
+      <h4>{{inst.side=='transferer'?'Transfer':'Receive'}} Instruction</h4>
 
         <!-- transferer/From -->
         <div class="row">
@@ -201,12 +201,10 @@
             <label for="a_created">Document date</label>
           </div>
         </div>
-
-    </form>
-
-  </div>
-  <div class="modal-footer">
-    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction()">Ok</a>
-    <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelInstruction()">Cancel</a>
-  </div>
+    </div>
+    <div class="modal-footer">
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction()" value="Ok"/>
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="ctl.cancelInstruction()">Cancel</a>
+    </div>
+  </form>
 </div>
