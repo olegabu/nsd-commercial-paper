@@ -385,6 +385,21 @@ angular.module('nsd.app',[
         .filter(function(key){ return key.startsWith('peer'); });
     }
 
+    /**
+     *
+     */
+    function getOrgByAccountDivision(account, division){
+      var accountConfig = _config['account-config'] || {};
+      var orgArr = Object.keys(accountConfig);
+      for (var i = orgArr.length - 1; i >= 0; i--) {
+        var orgID = orgArr[i];
+        if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ){
+          return orgID;
+        }
+      }
+      return null;
+    }
+
 
     /////////
     return {
@@ -395,6 +410,7 @@ angular.module('nsd.app',[
       getPeers   : getPeers,
       getOrgs    : getOrgs,
 
+      getOrgByAccountDivision : getOrgByAccountDivision,
       getOrgByDepcode:getOrgByDepcode,
       getOrgPeerIds:getOrgPeerIds,
       get:function(){ return _config; }
