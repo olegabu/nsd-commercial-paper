@@ -27,7 +27,10 @@ function DialogService($document, $compile, $templateCache, $rootScope, $q, $log
   // var element = $(confirmForm).appendTo($document[0].body);
   // var compiledConfirmForm = $compile(element.contents());
 
-
+  /**
+   * Create confirmation dialog
+   * @return {Promise<boolean>} resolves with true value when user has confirmed an action
+   */
   DialogService.confirm = function(text, options){
     options = options || {};
 
