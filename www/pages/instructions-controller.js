@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, InstructionService, BookService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -176,14 +176,17 @@ function InstructionsController($scope, InstructionService, BookService, ConfigL
     if(!(date instanceof Date)){
       // assumind date is a string: '1 August, 2017'
       // TODO: we shouldn't rely on this
-      date = new Date(date)
+      date = new Date(date);
     }
     return date.format(DATE_FABRIC_FORMAT);
   }
 
 
-  ctrl.sendRedemption = function(redemption){
-    return BookService.redeem(redemption);
+  ctrl.sendRedemption = function(redemption, _confirmText){
+    return DialogService.confirm(_confirmText, {confirmBtn:'Yes, redeem it'})
+      .then(function(){
+        return BookService.redeem(redemption);
+      })
   }
 
 

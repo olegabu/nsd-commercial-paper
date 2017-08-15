@@ -275,7 +275,7 @@
                 link: function (scope, element, attrs) {
                     if (element.is("select")) {
 						//BugFix 139: In case of multiple enabled. Avoid the circular looping.
-                        function initSelect(newVal, oldVal) {                            
+                        function initSelect(newVal, oldVal) {
                             if(attrs.multiple){
                                 if(oldVal !== undefined && newVal !== undefined){
                                   if(oldVal.length === newVal.length){

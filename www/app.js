@@ -13,9 +13,10 @@ angular.module('nsd.controller', [
 
 angular.module('nsd.service', [
   'nsd.service.api',
-  'nsd.service.user',
+  'nsd.service.dialog',
   'nsd.service.channel',
   'nsd.service.socket',
+  'nsd.service.user',
   'nsd.service.instructions',
   'nsd.service.book',
   'nsd.service.positions',
@@ -38,7 +39,8 @@ angular.module('nsd.app',[
    'nsd.directive.form',
    'nsd.directive.certificate',
    'nsd.directive.blockchain',
-   'nsd.directive.role'
+   'nsd.directive.role',
+   'nsd.directive.nsd'
 ])
 .config(function($stateProvider) {
 
