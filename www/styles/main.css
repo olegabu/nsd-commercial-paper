@@ -5068,6 +5068,9 @@ a.waves-effect .waves-ripple {
 .modal .modal-close {
     cursor: pointer
 }
+.modal .modal-close:disabled {
+    cursor: initial;
+}
 
 .modal .modal-footer {
     border-radius: 0 0 2px 2px;
