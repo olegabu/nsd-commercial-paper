@@ -115,17 +115,17 @@ angular.module('nsd.app',[
         default: true
       }
     })
-    .state('app.explorer', {
-      url: '/admin',
-      templateUrl  : 'pages/explorer.html',
-      controller   : 'ExplorerController',
-      controllerAs : 'ctl',
-      data:{
-        absolute: true,
-        name: 'Explorer',
-        roles:'*'
-      }
-    })
+    // .state('app.explorer', {
+    //   url: '/admin',
+    //   templateUrl  : 'pages/explorer.html',
+    //   controller   : 'ExplorerController',
+    //   controllerAs : 'ctl',
+    //   data:{
+    //     absolute: true,
+    //     name: 'Explorer',
+    //     roles:'*'
+    //   }
+    // })
 
 })
 
