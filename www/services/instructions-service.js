@@ -97,6 +97,10 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
 
+    args.push(
+      JSON.stringify(instruction.reason)
+    );
+
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
   };
 
@@ -111,6 +115,10 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
 
+    args.push(
+      JSON.stringify(instruction.reason)
+    );
+
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
   };
 
@@ -123,7 +131,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var chaincodeID = InstructionService._getChaincodeID();
     var channelID   = InstructionService._getInstructionChannel(instruction);
     var peers       = InstructionService._getEndorsePeers(instruction);
-    var args        = InstructionService._instructionArguments(instruction, false);
+    var args        = InstructionService._instructionArguments(instruction);
 
     args.push(InstructionService.status.CANCELED);
 
@@ -142,7 +150,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var chaincodeID = InstructionService._getChaincodeID();
     var channelID   = InstructionService._getInstructionChannel(instruction);
     var peer        = InstructionService._getQueryPeer();
-    var args        = InstructionService._instructionArguments(instruction, false);
+    var args        = InstructionService._instructionArguments(instruction);
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args);
   }
@@ -150,9 +158,9 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
   /**
    * return basic fields for any instruction request
+   * @return {Array<string>}
    */
-  InstructionService._instructionArguments = function(instruction, _withReason) {
-    _withReason = typeof _withReason == "undefined" ? true : _withReason;
+  InstructionService._instructionArguments = function(instruction) {
     var args = [
       instruction.deponentFrom,        // 0: deponentFrom
       instruction.transferer.account,  // 1: accountFrom
@@ -167,15 +175,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.reference,           // 8: reference
       instruction.instructionDate,     // 9: instructionDate  (date format?)
       instruction.tradeDate,           // 10: tradeDate  (date format?)
-      // JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
     ];
-
-    if(_withReason){
-      args.push(
-        // HOTFIX
-        JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
-      );
-    }
 
     return args;
   }
