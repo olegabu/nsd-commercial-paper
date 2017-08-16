@@ -8,6 +8,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   // jshint shadow: true
   var InstructionService = this;
 
+  InstructionService.status = {
+      MATCHED : 'matched',
+      DECLINED: 'declined',
+      EXECUTED: 'executed',
+      CANCELED: 'canceled'
+  };
+
   /**
    *
    */
@@ -108,6 +115,25 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   };
 
   /**
+   *
+   */
+  InstructionService.cancelInstruction = function(instruction) {
+    $log.debug('InstructionService.cancelInstruction', instruction);
+
+    var chaincodeID = InstructionService._getChaincodeID();
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
+    var args        = InstructionService._instructionArguments(instruction, false);
+
+    args.push(InstructionService.status.CANCELED);
+
+    return ApiService.sc.invoke(channelID, chaincodeID, peers, 'status', args);
+  };
+
+
+
+
+  /**
    * Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate)
    */
   InstructionService.history = function(instruction){
@@ -123,7 +149,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
 
   /**
-   *
+   * return basic fields for any instruction request
    */
   InstructionService._instructionArguments = function(instruction, _withReason) {
     _withReason = typeof _withReason == "undefined" ? true : _withReason;

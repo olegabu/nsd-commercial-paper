@@ -83,13 +83,27 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
    */
   ctrl.getStatusClass = function(status){
     switch(status){
+      case 'matched' : return 'deep-purple-text';
       case 'declined': return 'red-text darken-4';
-      case 'matched': return 'deep-purple-text';
       case 'executed': return 'green-text darken-4';
+      case 'canceled': return 'grey-text';
       default: return '';
     }
+  }
+
+
+
+  ctrl.cancelInstruction = function(instruction){
+
+    return DialogService.confirm( 'Cancel '+instruction.deponentFrom+' -> '+instruction.deponentTo+' ?', {yesTitle:'Cancel it', yesKlass:'red white-text'})
+      .then(function(isConfirmed){
+        if(isConfirmed){
+          return InstructionService.cancelInstruction(instruction);
+        }
+      });
 
   }
+
 
   /**
    *
@@ -203,9 +217,6 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       .then(function(isConfirmed){
         if(isConfirmed){
           return BookService.redeem(redemption);
-        } else {
-          // user cancel input
-          return false;
         }
       })
       .then(function(){

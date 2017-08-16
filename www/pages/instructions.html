@@ -42,7 +42,7 @@
                 <th>Status</th>
                 <th>Initiator</th>
                 <th>Reason</th>
-                <!-- <th></th> -->
+                <th></th>
             </tr>
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
@@ -59,9 +59,9 @@
                 <td>{{::o.status}}</td>
                 <td>{{::o.initiator}}</td>
                 <td>{{::o.reason.transferer}} <i>TBD</i> </td>
-                <td hidden>
-                    <input type="button" class="btn btn-default" ng-click="ctl.verify(o)"  value="Verify"  ng-hide="o.status"/>
-                    <input type="button" class="btn btn-danger"  ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
+                <td>
+                    <input type="button" class="btn waves-effect waves-light red darken-2" value="Cancel"
+                      ng-show="o.status=='initiated'" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
             </tr>
 
