@@ -231,3 +231,64 @@
     </div>
   </form>
 </div>
+
+
+<!--
+  Redemption
+-->
+<div id="redemption" class="modal modal-fixed-footer">
+  <form name="form" class="form-horizontal" novalidate>
+    <div class="modal-content">
+      <h4>Create Redemption Instruction</h4>
+
+
+      <div class="row">
+        <div class="input-field col s12">
+          <input name="security" type="text" class="validate" ng-model="redemption.security" required>
+          <label for="security">ISIN</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">textsms</i>
+          <input name="reference" type="text" class="validate" ng-model="redemption.reference" required>
+          <label for="reference">Reference</label>
+        </div>
+      </div>
+
+      <div class="row">
+          <h5 class="col s12">Reason</h5>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">textsms</i>
+          <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="redemption.reason.description"></textarea>
+          <label for="a_description">Description</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s8">
+          <input id="a_document" name="a_document" type="text" class="validate" ng-model="redemption.reason.document">
+          <label for="a_document">Document number</label>
+        </div>
+        <div class="input-field col s4">
+          <i class="material-icons prefix">schedule</i>
+          <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="redemption.reason.created" input-date>
+          <label for="a_created">Document date</label>
+        </div>
+      </div>
+
+     </div>
+    <div class="modal-footer">
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat red white-text" ng-disabled="form.$invalid" ng-click="ctl.sendRedemption(redemption)" value="Ok"/>
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="redemption = null">Cancel</a>
+    </div>
+  </form>
+</div>
+
+
+
+<script type="text/ng-template" id="templateId.html">
+  <p>This is the content of the template</p>
+</script>
