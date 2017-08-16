@@ -46,7 +46,7 @@
             </tr>
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
-            <tr>
+            <tr class="odd-{{::$index % 2}}">
                 <th ng-if="o.initiator=='transferer'">16</th>
                 <th ng-if="o.initiator=='receiver'">16/1</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
@@ -65,7 +65,7 @@
                 </td>
             </tr>
 
-            <tr ng-if="::o.status!='initiated'">
+            <tr ng-if="::o.status!='initiated'" class="odd-{{::$index % 2}}">
                 <th ng-if="o.initiator=='transferer'">16/1</th>
                 <th ng-if="o.initiator=='receiver'">16</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>

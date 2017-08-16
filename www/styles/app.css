@@ -144,3 +144,7 @@ input.locked:disabled{
   height: initial;
   min-height: 250px;
 }
+
+.odd-0{
+  background-color: #f2f2f2;
+}
