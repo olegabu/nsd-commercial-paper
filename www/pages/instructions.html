@@ -45,7 +45,7 @@
                 <!-- <th></th> -->
             </tr>
         </thead>
-        <tbody ng-repeat="o in ctl.list|orderBy:'instructionDate':true|orderBy:'reference':true" ng-click="ctl.showHistory(o)">
+        <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
             <tr>
                 <th ng-if="o.initiator=='transferer'">16</th>
                 <th ng-if="o.initiator=='receiver'">16/1</th>
@@ -58,7 +58,7 @@
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.security}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.quantity}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.reference}}</td>
-                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.instructionDate|date}}</td>
+                <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.instructionDate}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.tradeDate|date}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}" class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</td>
                 <td rowspan="{{::o.status=='initiated'?'1':'2'}}">{{::o.initiator}}</td>
