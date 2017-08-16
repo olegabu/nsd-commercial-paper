@@ -61,7 +61,7 @@
                 <td>{{::o.reason.transferer}} <i>TBD</i> </td>
                 <td>
                     <input type="button" class="btn waves-effect waves-light red darken-2" value="Cancel"
-                      ng-show="o.status=='initiated'" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                      ng-show="o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
             </tr>
 
