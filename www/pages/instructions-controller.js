@@ -233,6 +233,31 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
   }
 
 
+  ctrl.getStub = function(transferSide){
+    return {
+      deponentFrom: 'CA9861913023',
+      deponentTo:   'DE000DB7HWY7',
+
+      security:'RU000ABC0001',
+      transferer:{
+        account: "902",
+        division: "05",
+      },
+      receiver:{
+        account: "903",
+        division: "09",
+      },
+      initiator: transferSide,
+      quantity: 1,
+      reference: 'test',
+      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
+      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
+      reason:{
+        created   : new Date()//.format(DATE_INPUT_FORMAT)
+      }
+    };
+  }
+
 
 
   //////////////

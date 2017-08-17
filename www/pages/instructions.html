@@ -81,7 +81,11 @@
                 <td> </td>
             </tr>
 
-            <tr ng-hide="ctl.list.length">
+        </tbody>
+
+
+        <tbody ng-hide="ctl.list.length">
+            <tr>
                 <td colspan="99" align="center">
                     <i>No items</i>
                 </td>
@@ -226,6 +230,8 @@
         </div>
     </div>
     <div class="modal-footer">
+      <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getStub(inst.initiator)" value="prefill a->b "/>
+
       <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction(inst)" value="Ok"/>
       <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null">Cancel</a>
     </div>
