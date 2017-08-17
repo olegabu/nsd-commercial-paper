@@ -28,6 +28,7 @@ const (
 
 	InstructionInitiated = "initiated"
 	InstructionMatched   = "matched"
+	InstructionSigned    = "signed"
 	InstructionExecuted  = "executed"
 	InstructionDeclined  = "declined"
 	InstructionCanceled  = "canceled"
@@ -480,7 +481,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	logger.Info(args)
 
 	instruction := Instruction{}
-	err := instruction.fillFromCompositeKeyParts(args)
+	err := instruction.fillFromArgs(args)
 	if err != nil {
 		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
@@ -491,9 +492,15 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
 	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
 
-	if callerIsTransferer {logger.Info("callerIsTransferer")}
-	if callerIsReceiver {logger.Info("callerIsReceiver")}
-	if callerIsNSD {logger.Info("callerIsNSD")}
+	if callerIsTransferer {
+		logger.Info("callerIsTransferer")
+	}
+	if callerIsReceiver {
+		logger.Info("callerIsReceiver")
+	}
+	if callerIsNSD {
+		logger.Info("callerIsNSD")
+	}
 
 	// TODO, REFACTORING: the following code is error prone as it tries to implements a state machine with a bunch of ifs
 	if (callerIsTransferer || callerIsReceiver) && status != InstructionCanceled {
@@ -675,17 +682,32 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 		return shim.Error(err.Error())
 	}
 
-	if authenticateCaller(stub, instruction.Transferer) {
+	callerIsTransferer := authenticateCaller(stub, instruction.Transferer)
+	callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
+
+	if !(callerIsTransferer || callerIsReceiver) {
+		return pb.Response{Status: 403}
+	}
+
+	if callerIsTransferer {
 		instruction.AlamedaSignatureFrom = signature
-		return shim.Success(nil)
 	}
 
-	if authenticateCaller(stub, instruction.Receiver) {
+	if callerIsReceiver {
 		instruction.AlamedaSignatureTo = signature
-		return shim.Success(nil)
 	}
 
-	return shim.Error("")
+	if instruction.AlamedaSignatureFrom != "" && instruction.AlamedaSignatureTo != "" {
+		instruction.Status = InstructionSigned
+	}
+
+	if err := instruction.upsertIn(stub); err != nil {
+		return shim.Error(err.Error())
+	}
+
+	instruction.setEvent(stub)
+
+	return shim.Success(nil)
 }
 
 // **** Security Methods **** //
