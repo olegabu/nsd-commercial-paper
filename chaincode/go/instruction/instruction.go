@@ -583,8 +583,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 
 		instruction := Instruction{}
 
-		err = instruction.fillFromLedgerValue(response.Value)
-		if err != nil {
+		if err := instruction.fillFromLedgerValue(response.Value); err != nil {
 			return shim.Error(err.Error())
 		}
 
@@ -592,13 +591,23 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		err = instruction.fillFromCompositeKeyParts(compositeKeyParts)
-		if err != nil {
+		if err := instruction.fillFromCompositeKeyParts(compositeKeyParts); err != nil {
 			return shim.Error(err.Error())
 		}
 
-		instructions = append(instructions, instruction)
+		callerIsTransferer := authenticateCaller(stub, instruction.Transferer)
+		callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
+		if !(callerIsTransferer || callerIsReceiver) {
+			continue
+		}
 
+		if (callerIsTransferer && instruction.Initiator == InitiatorIsTransferer) ||
+			(callerIsReceiver && instruction.Initiator == InitiatorIsReceiver) ||
+			(instruction.Status == InstructionMatched) ||
+			(instruction.Status == InstructionSigned) ||
+			(instruction.Status == InstructionDeclined) {
+			instructions = append(instructions, instruction)
+		}
 	}
 
 	result, err := json.Marshal(instructions)
