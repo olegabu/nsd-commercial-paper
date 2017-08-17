@@ -501,7 +501,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		}
 	}
 
-	if instruction.existsIn(stub) {
+	if instruction.existsIn(stub) && (callerIsNSD || instruction.Status == InstructionInitiated) {
 		if err := instruction.loadFrom(stub); err != nil {
 			return shim.Error(err.Error())
 		}
