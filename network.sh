@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+STARTTIME=$(date +%s)
 
 DOMAIN=nsd.ru
 ORG1=nsd
@@ -382,3 +383,7 @@ else
   printHelp
   exit 1
 fi
+
+# print spent time
+ENDTIME=$(date +%s)
+echo "Finished in $(($ENDTIME - $STARTTIME)) seconds"
