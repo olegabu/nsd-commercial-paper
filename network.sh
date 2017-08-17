@@ -209,7 +209,7 @@ function networkUp () {
   startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
 
   CHAINCODE_NAME=instruction
-  CHAINCODE_INIT='{"Args":["init"]}'
+  CHAINCODE_INIT='{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"902\",\"division\":\"05\"},{\"account\":\"902\",\"division\":\"06\"},{\"account\":\"904\",\"division\":\"07\"},{\"account\":\"904\",\"division\":\"08\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"903\",\"division\":\"09\"},{\"account\":\"903\",\"division\":\"10\"},{\"account\":\"905\",\"division\":\"11\"},{\"account\":\"905\",\"division\":\"12\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"906\",\"division\":\"13\"},{\"account\":\"906\",\"division\":\"14\"},{\"account\":\"908\",\"division\":\"15\"},{\"account\":\"908\",\"division\":\"16\"}]}]"]}'
 
   startChannel "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
   startChannel "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
