@@ -403,6 +403,9 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	if function == "history" {
 		return t.history(stub, args)
 	}
+	if function == "sign" {
+		return t.sign(stub, args)
+	}
 
 	// for debugging only
 	if function == "check" {
@@ -420,7 +423,7 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
-		"receive, transfer, query, history, status. But got: %v", args[0])
+		"receive, transfer, query, history, status, sign. But got: %v", args[0])
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -473,6 +476,9 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 }
 
 func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	logger.Info("########### InstructionChaincode status ###########")
+	logger.Info(args)
+
 	instruction := Instruction{}
 	err := instruction.fillFromCompositeKeyParts(args)
 	if err != nil {
@@ -485,6 +491,10 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
 	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
 
+	if callerIsTransferer {logger.Info("callerIsTransferer")}
+	if callerIsReceiver {logger.Info("callerIsReceiver")}
+	if callerIsNSD {logger.Info("callerIsNSD")}
+
 	// TODO, REFACTORING: the following code is error prone as it tries to implements a state machine with a bunch of ifs
 	if (callerIsTransferer || callerIsReceiver) && status != InstructionCanceled {
 		return pb.Response{Status: 403}
@@ -492,18 +502,19 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	if callerIsNSD && (status != InstructionDeclined || status != InstructionExecuted) {
 		return pb.Response{Status: 403}
 	}
-	if instruction.Status == InstructionInitiated {
-		if callerIsTransferer && instruction.Initiator != InitiatorIsTransferer {
-			return pb.Response{Status: 403}
-		}
-		if callerIsReceiver && instruction.Initiator != InitiatorIsReceiver {
-			return pb.Response{Status: 403}
-		}
-	}
 
 	if instruction.existsIn(stub) && (callerIsNSD || instruction.Status == InstructionInitiated) {
 		if err := instruction.loadFrom(stub); err != nil {
 			return shim.Error(err.Error())
+		}
+
+		if instruction.Status == InstructionInitiated {
+			if callerIsTransferer && instruction.Initiator != InitiatorIsTransferer {
+				return pb.Response{Status: 403}
+			}
+			if callerIsReceiver && instruction.Initiator != InitiatorIsReceiver {
+				return pb.Response{Status: 403}
+			}
 		}
 
 		instruction.Status = status
@@ -679,10 +690,12 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 
 // **** Security Methods **** //
 func getOrganization(certificate []byte) string {
+	logger.Info("########### InstructionChaincode getOrganization ###########")
 	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
 	cert, _ := x509.ParseCertificate(block.Bytes)
 	organization := cert.Issuer.Organization[0]
+	logger.Info("getOrganization: " + organization)
 
 	return organization
 }
