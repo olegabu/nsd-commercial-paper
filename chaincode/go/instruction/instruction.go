@@ -503,6 +503,9 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	// TODO, REFACTORING: the following code is error prone as it tries to implements a state machine with a bunch of ifs
+	if !(callerIsTransferer || callerIsReceiver || callerIsNSD) {
+		return pb.Response{Status: 403}
+	}
 	if (callerIsTransferer || callerIsReceiver) && status != InstructionCanceled {
 		return pb.Response{Status: 403}
 	}
@@ -510,7 +513,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		return pb.Response{Status: 403}
 	}
 
-	if instruction.existsIn(stub) && (callerIsNSD || instruction.Status == InstructionInitiated) {
+	if instruction.existsIn(stub) {
 		if err := instruction.loadFrom(stub); err != nil {
 			return shim.Error(err.Error())
 		}
