@@ -6,7 +6,6 @@ angular.module('nsd.controller', [
   'nsd.controller.login',
   'nsd.controller.book',
   'nsd.controller.positions',
-  'nsd.controller.explorer',
   'nsd.controller.instructions',
   'nsd.controller.login',
   'nsd.controller.security'
@@ -14,9 +13,10 @@ angular.module('nsd.controller', [
 
 angular.module('nsd.service', [
   'nsd.service.api',
-  'nsd.service.user',
+  'nsd.service.dialog',
   'nsd.service.channel',
   'nsd.service.socket',
+  'nsd.service.user',
   'nsd.service.instructions',
   'nsd.service.book',
   'nsd.service.positions',
@@ -39,7 +39,8 @@ angular.module('nsd.app',[
    'nsd.directive.form',
    'nsd.directive.certificate',
    'nsd.directive.blockchain',
-   'nsd.directive.role'
+   'nsd.directive.role',
+   'nsd.directive.nsd'
 ])
 .config(function($stateProvider) {
 
@@ -114,17 +115,17 @@ angular.module('nsd.app',[
         default: true
       }
     })
-    .state('app.explorer', {
-      url: '/admin',
-      templateUrl  : 'pages/explorer.html',
-      controller   : 'ExplorerController',
-      controllerAs : 'ctl',
-      data:{
-        absolute: true,
-        name: 'Explorer',
-        roles:'*'
-      }
-    })
+    // .state('app.explorer', {
+    //   url: '/admin',
+    //   templateUrl  : 'pages/explorer.html',
+    //   controller   : 'ExplorerController',
+    //   controllerAs : 'ctl',
+    //   data:{
+    //     absolute: true,
+    //     name: 'Explorer',
+    //     roles:'*'
+    //   }
+    // })
 
 })
 
@@ -344,11 +345,11 @@ angular.module('nsd.app',[
     }
 
     /**
-     * @param {string} [orgID]
+     * @param {string} orgID
      */
     function getAccount(orgID){
       var accountConfig = _config['account-config'] || {};
-      return accountConfig[orgID||_config.org];
+      return accountConfig[orgID];
     }
 
     function getOrg(){
@@ -384,6 +385,21 @@ angular.module('nsd.app',[
         .filter(function(key){ return key.startsWith('peer'); });
     }
 
+    /**
+     *
+     */
+    function getOrgByAccountDivision(account, division){
+      var accountConfig = _config['account-config'] || {};
+      var orgArr = Object.keys(accountConfig);
+      for (var i = orgArr.length - 1; i >= 0; i--) {
+        var orgID = orgArr[i];
+        if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ){
+          return orgID;
+        }
+      }
+      return null;
+    }
+
 
     /////////
     return {
@@ -394,6 +410,7 @@ angular.module('nsd.app',[
       getPeers   : getPeers,
       getOrgs    : getOrgs,
 
+      getOrgByAccountDivision : getOrgByAccountDivision,
       getOrgByDepcode:getOrgByDepcode,
       getOrgPeerIds:getOrgPeerIds,
       get:function(){ return _config; }

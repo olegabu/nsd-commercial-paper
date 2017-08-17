@@ -136,3 +136,15 @@ input.locked:disabled{
     margin-right: 15px;
     color: rgba(0,0,0,0.26);
 }
+.nowrap{
+  white-space: nowrap;
+}
+
+.modal.modal-dialog {
+  height: initial;
+  min-height: 250px;
+}
+
+.odd-0{
+  background-color: #f2f2f2;
+}

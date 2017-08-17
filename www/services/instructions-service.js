@@ -8,6 +8,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   // jshint shadow: true
   var InstructionService = this;
 
+  InstructionService.status = {
+      MATCHED : 'matched',
+      DECLINED: 'declined',
+      EXECUTED: 'executed',
+      CANCELED: 'canceled'
+  };
+
   /**
    *
    */
@@ -24,8 +31,8 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  InstructionService.list = function() {
-    $log.debug('InstructionService.list');
+  InstructionService.listAll = function() {
+    $log.debug('InstructionService.listAll');
 
     var chaincodeID = InstructionService._getChaincodeID();
     var peer = InstructionService._getQueryPeer();
@@ -33,7 +40,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return ApiService.channels.list().then(function(channelList){
       return $q.all( channelList
         .map(function(channel){ return channel.channel_id; })
-        .filter(function(channelID){ return _isBilateralChannel(channelID); })
+        .filter(function(channelID){ return InstructionService.isBilateralChannel(channelID); })
         .sort()
         .map(function(channelID){
           // promise for each channel:
@@ -47,11 +54,11 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
                 channel: channelID,
                 result: []
               };
-            })
+            });
 
       }));
     }).then(function(results){
-      // join array of array into one array (flatten)
+      // join array of results into one array (groupedList)
       return results.reduce(function(result, singleResult){
         result[singleResult.channel] = singleResult.result;
         return result;
@@ -73,7 +80,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return data;
   }
 
-  function _isBilateralChannel(channelID){
+  InstructionService.isBilateralChannel = function(channelID){
     return channelID.indexOf('-') > 0 && !channelID.startsWith('nsd-');
   }
 
@@ -86,11 +93,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('InstructionService.transfer', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
-    var opponent    = InstructionService._getOpponentID(instruction);
-    var channelID   = InstructionService._getOpponentChannel(opponent);
-    var peers       = InstructionService._getEndorsePeers(opponent);
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
 
+    args.push(
+      JSON.stringify(instruction.reason)
+    );
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
   };
@@ -102,79 +111,117 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('InstructionService.receive', instruction);
 
     var chaincodeID = InstructionService._getChaincodeID();
-    var opponent    = InstructionService._getOpponentID(instruction);
-    var channelID   = InstructionService._getOpponentChannel(opponent);
-    var peers       = InstructionService._getEndorsePeers(opponent);
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
 
+    args.push(
+      JSON.stringify(instruction.reason)
+    );
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
   };
 
-
   /**
    *
    */
-  InstructionService._instructionArguments = function(instruction) {
-    return [
-      instruction.transferer.dep,     // 0: deponentFrom
-      instruction.transferer.acc,     // 1: accountFrom
-      instruction.transferer.div,     // 2: divisionFrom
+  InstructionService.cancelInstruction = function(instruction) {
+    $log.debug('InstructionService.cancelInstruction', instruction);
 
-      instruction.receiver.dep,       // 3: deponentTo
-      instruction.receiver.acc,       // 4: accountTo
-      instruction.receiver.div,       // 5: divisionTo
+    var chaincodeID = InstructionService._getChaincodeID();
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
+    var args        = InstructionService._instructionArguments(instruction);
 
-      instruction.security,           // 6: security
-      ''+instruction.quantity,        // 7: quantity // TODO: fix: string parameters
-      instruction.reference,          // 8: reference
-      instruction.instruction_date,   // 9: instructionDate  (date format?)
-      instruction.trade_date,         // 10: tradeDate  (date format?)
-      JSON.stringify(instruction.reason)  // 11: reason (TODO: complex field)
-    ];
+    args.push(InstructionService.status.CANCELED);
+
+    return ApiService.sc.invoke(channelID, chaincodeID, peers, 'status', args);
+  };
+
+
+
+
+  /**
+   * Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate)
+   */
+  InstructionService.history = function(instruction){
+    $log.debug('InstructionService.history', instruction);
+
+    var chaincodeID = InstructionService._getChaincodeID();
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peer        = InstructionService._getQueryPeer();
+    var args        = InstructionService._instructionArguments(instruction);
+
+    return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args);
   }
 
 
   /**
-   * get instruction opponent ID.
-   * It would be transfererID when you are receiver and vise a versa
-   * @param {Instruction} instruction
-   * @return {string} orgID
+   * return basic fields for any instruction request
+   * @return {Array<string>}
    */
-  InstructionService._getOpponentID = function(instruction) {
-    var opponentDep = instruction.side == 'transferer' ? instruction.receiver.dep : instruction.transferer.dep;
-    if(!opponentDep){
-      throw new Error("Deponent not set");
+  InstructionService._instructionArguments = function(instruction) {
+    var args = [
+      instruction.deponentFrom,        // 0: deponentFrom
+      instruction.transferer.account,  // 1: accountFrom
+      instruction.transferer.division, // 2: divisionFrom
+
+      instruction.deponentTo,          // 3: deponentTo
+      instruction.receiver.account,    // 4: accountTo
+      instruction.receiver.division,   // 5: divisionTo
+
+      instruction.security,            // 6: security
+      ''+instruction.quantity,         // 7: quantity // TODO: fix: string parameters
+      instruction.reference,           // 8: reference
+      instruction.instructionDate,     // 9: instructionDate  (date format?)
+      instruction.tradeDate,           // 10: tradeDate  (date format?)
+    ];
+
+    return args;
+  }
+
+
+  /**
+   * get instruction opponents ID.
+   * @param {Instruction} instruction
+   * @return {Array<string>} multiple (two actually) orgID
+   */
+  InstructionService._getInstructionOrgs = function(instruction) {
+    var org1 = ConfigLoader.getOrgByDepcode(instruction.deponentFrom);
+    if(!org1){
+      throw new Error("Deponent owner not found: " + instruction.deponentFrom);
     }
-    var opponent = ConfigLoader.getOrgByDepcode(opponentDep);
-    if(!opponent){
-      throw new Error("Deponent owner not found: "+opponentDep);
+    var org2 = ConfigLoader.getOrgByDepcode(instruction.deponentTo);
+    if(!org2){
+      throw new Error("Deponent owner not found: " + instruction.deponentTo);
     }
-    return opponent;
+    return [org1, org2];
   }
 
   /**
    * get name of bi-lateral channel for opponent and the organisation
    */
-  InstructionService._getOpponentChannel = function(opponent) {
+  InstructionService._getInstructionChannel = function(instruction) {
+    var orgArr = InstructionService._getInstructionOrgs(instruction);
     // make channel name as '<org1_ID>-<org2_ID>'.
     // Please, pay attention to the orgs order - ot should be sorted
-    return [ConfigLoader.getOrg(), opponent].sort().join('-');
+    return orgArr.sort().join('-');
   };
 
   /**
    * get orgPeerIDs of endorsers, which should endose the transaction
+   * @return {Array<string>}
    */
-  InstructionService._getEndorsePeers = function(opponent) {
+  InstructionService._getEndorsePeers = function(instruction) {
+    var endorserOrgs = InstructionService._getInstructionOrgs(instruction);
+
+    // root endorser
     var config = ConfigLoader.get();
-
-    var endorsersOrg = [config.org, opponent];
-
     var rootEndorsers = config.endorsers || [];
-    endorsersOrg.push.apply(endorsersOrg, rootEndorsers);
+    endorserOrgs.push.apply(endorserOrgs, rootEndorsers);
 
     //
-    var peers = endorsersOrg.reduce(function(result, org){
+    var peers = endorserOrgs.reduce(function(result, org){
       var peers = ConfigLoader.getOrgPeerIds(org);
       result.push( org+'/'+peers[0] ); // orgPeerID  // endorse by the first peer
       return result;

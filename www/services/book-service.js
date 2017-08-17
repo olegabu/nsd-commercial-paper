@@ -20,7 +20,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     return chaincodeID;
   };
 
-  BookService._getChannelID = function() {
+  BookService.getChannelID = function() {
     return 'depository';
   };
 
@@ -33,7 +33,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('BookService.list');
 
     var chaincodeID = BookService._getChaincodeID();
-    var channelID = BookService._getChannelID();
+    var channelID = BookService.getChannelID();
     var peer = BookService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
@@ -64,6 +64,20 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     return config.org+'/'+peers[0];
   };
 
+
+
+  BookService.redeem = function(redemption){
+    $log.debug('BookService.redeem', redemption);
+
+    throw new Error('Redemption is incomplete');
+
+    // var chaincodeID = BookService._getChaincodeID();
+    // var channelID = BookService.getChannelID();
+    // var peer = BookService._getQueryPeer();
+
+    // // We can safely use here the result of _getQueryPeer() fn.
+    // return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'redeem', redemption);
+  }
 
   return BookService;
 }

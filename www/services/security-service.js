@@ -23,7 +23,7 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
     return chaincodeID;
   };
 
-  SecurityService._getChannelID = function() {
+  SecurityService.getChannelID = function() {
     return 'common';
   };
 
@@ -36,11 +36,26 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
     $log.debug('SecurityService.list');
 
     var chaincodeID = SecurityService._getChaincodeID();
-    var channelID = SecurityService._getChannelID();
+    var channelID = SecurityService.getChannelID();
     var peer = SecurityService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
         .then(function(data){ return parseJson(data.result); });
+  };
+
+  /**
+   *
+   */
+  SecurityService.addCalendarEntry = function(cEntry) {
+    $log.debug('SecurityService.addCalendarEntry');
+
+    throw new Error("addCalendarEntry incomplete");
+    // var chaincodeID = SecurityService._getChaincodeID();
+    // var channelID = SecurityService.getChannelID();
+    // var peer = SecurityService._getQueryPeer();
+
+    // return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
+    //     .then(function(data){ return parseJson(data.result); });
   };
 
   /**

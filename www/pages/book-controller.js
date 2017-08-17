@@ -13,7 +13,7 @@ function BookController($scope, BookService, ConfigLoader) {
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock-ch-'+ BookService.getChannelID(), ctrl.reload);
       ctrl.reload();
   }
 
@@ -24,6 +24,11 @@ function BookController($scope, BookService, ConfigLoader) {
     ctrl.invokeInProgress = true;
     return BookService.list()
       .then(function(list){
+        // add 'org' and 'deponent' to the result, based on account+division
+        list.forEach(function(item){
+          item.org = ConfigLoader.getOrgByAccountDivision(item.balance.account, item.balance.division);
+          item.deponent = (ConfigLoader.getAccount(item.org) || {}).dep;
+        })
         ctrl.list = list;
       })
       .finally(function(){

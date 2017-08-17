@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, InstructionService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -25,7 +25,11 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock', function(e, block){
+        if( InstructionService.isBilateralChannel(block.getChannel()) ){
+          ctrl.reload();
+        }
+      });
       ctrl.reload();
   }
 
@@ -34,9 +38,15 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return InstructionService.list()
-      .then(function(list){
-        ctrl.list = list;
+    return InstructionService.listAll()
+      .then(function(groupedList){
+
+        // flattern: combine all group element into single array
+        ctrl.list = Object.keys(groupedList).reduce(function(result, channel){
+          result.push.apply(result, groupedList[channel]);
+          return result;
+        }, []);
+
       })
       .finally(function(){
         ctrl.invokeInProgress = false;
@@ -47,76 +57,104 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
   /**
    * @return {Instruction}
    */
-  ctrl._getDefaultinstruction = function(transferSide, opponentID){
+  ctrl._getDefaultInstruction = function(transferSide, opponentID){
     var orgID = ctrl.org;
     return {
-      transferer:{
-        dep: ConfigLoader.getAccount( transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID).dep
-      },
-      receiver:{
-        dep: ConfigLoader.getAccount( transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID).dep
-      },
-      side: transferSide, // deprecate?
+      deponentFrom: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID),
+      deponentTo:   ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID),
+
       initiator: transferSide,
-      // quantity: 0,
-      trade_date    : new Date(),//.format(DATE_INPUT_FORMAT),
-      instruction_date : new Date(),//.format(DATE_INPUT_FORMAT),
+      // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
+      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
+      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
       reason:{
         created   : new Date()//.format(DATE_INPUT_FORMAT)
       }
     };
   }
 
-  ctrl._fillAccount = function(transferSide, opponentID){
-      if(transferSide == TRANSFER_SIDE_TRANSFERER){
-        ctrl.accountFrom = ConfigLoader.getAccount();
-        ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-      } else {
-        ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-        ctrl.accountTo = ConfigLoader.getAccount();
-      }
-  };
+  ctrl._getDeponentCode = function(orgID){
+    var account = ConfigLoader.getAccount(orgID) || {};
+    return account.dep;
+  }
+
+  /**
+   *
+   */
+  ctrl.getStatusClass = function(status){
+    switch(status){
+      case 'matched' : return 'deep-purple-text';
+      case 'declined': return 'red-text darken-4';
+      case 'executed': return 'green-text darken-4';
+      case 'canceled': return 'grey-text';
+      default: return '';
+    }
+  }
+
+
+
+  ctrl.cancelInstruction = function(instruction){
+
+    return DialogService.confirm( 'Cancel '+instruction.deponentFrom+' -> '+instruction.deponentTo+' ?', {yesTitle:'Cancel it', yesKlass:'red white-text'})
+      .then(function(isConfirmed){
+        if(isConfirmed){
+          return InstructionService.cancelInstruction(instruction);
+        }
+      });
+
+  }
 
 
   /**
    *
    */
   ctrl.newInstructionTransfer = function(transferSide, _channel){
-    if(!$scope.inst || $scope.inst.side != transferSide){
+    if(!$scope.inst || $scope.inst.initiator != transferSide){
         // preset values
 
         var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
-        $scope.inst = ctrl._getDefaultinstruction(transferSide, opponentOrgID);
+        $scope.inst = ctrl._getDefaultInstruction(transferSide, opponentOrgID);
 
         // preset
         ctrl._fillAccount(transferSide, opponentOrgID);
     }
   };
 
+  ctrl._fillAccount = function(transferSide, opponentID){
+    if(transferSide == TRANSFER_SIDE_TRANSFERER){
+      ctrl.accountFrom = ConfigLoader.getAccount(ctrl.org);
+      ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
+    } else {
+      ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
+      ctrl.accountTo = ConfigLoader.getAccount(ctrl.org);
+    }
+  };
+
+
 
   /**
    *
    */
   ctrl._getOrgIDByChannel = function(channelID){
+    if(!channelID) return null;
     return channelID.split('-').filter(function(org){ return org != ctrl.org; })[0];
   }
 
   /**
    *
    */
-  ctrl.sendInstruction = function(){
-    var instruction = $scope.inst;
+  ctrl.sendInstruction = function(instruction){
 
-    // FIXME here date can come in two different formats: 
+    // FIXME here date can come in two different formats:
     //  Date object when we change form value
     //  String (like '1 August, 2017') when we not change form value
     // Now we use formatDate() to transform both of it into ISO
-    instruction.trade_date        = formatDate(instruction.trade_date);
-    instruction.instruction_date  = formatDate(instruction.instruction_date);
-    instruction.reason.created    = formatDate(instruction.reason.created);
+    instruction.tradeDate        = formatDate(instruction.tradeDate);
+    instruction.instructionDate  = formatDate(instruction.instructionDate);
+    instruction.reason.created   = formatDate(instruction.reason.created);
 
     var p;
-    switch(instruction.side){
+    switch(instruction.initiator){
       case TRANSFER_SIDE_TRANSFERER:
         p = InstructionService.transfer(instruction);
         break;
@@ -124,7 +162,7 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
         p = InstructionService.receive(instruction);
         break;
       default:
-        throw new Error('Unknpown transfer side: ' + instruction.side);
+        throw new Error('Unknpown transfer side: ' + instruction.initiator);
     }
 
 
@@ -147,18 +185,55 @@ function InstructionsController($scope, InstructionService, ConfigLoader /*, Soc
 
     if(!(date instanceof Date)){
       // assumind date is a string: '1 August, 2017'
-      // TODO: we shouldn't rely on this 
-      date = new Date(date)
-    } 
+      // TODO: we shouldn't rely on this
+      date = new Date(date);
+    }
     return date.format(DATE_FABRIC_FORMAT);
   }
+
 
   /**
    *
    */
-  ctrl.cancelInstruction = function(){
-    $scope.inst = null;
-  };
+  ctrl.newRedemption = function(){
+    $scope.redemption = $scope.redemption || ctrl._getDefaultRedemption();
+  }
+  /**
+   * @return {Redemption}
+   */
+  ctrl._getDefaultRedemption = function(){
+    return {
+      reason:{
+        created   : new Date()//.format(DATE_INPUT_FORMAT)
+      }
+    };
+  }
+
+  /**
+   * @param {Redemption} redemption
+   */
+  ctrl.sendRedemption = function(redemption){
+    return DialogService.confirm( 'Redeem '+redemption.security+' ?', {yesTitle:'Yes, redeem it', yesKlass:'red white-text'})
+      .then(function(isConfirmed){
+        if(isConfirmed){
+          return BookService.redeem(redemption);
+        }
+      })
+      .then(function(){
+        $scope.redemption = null;
+      });
+  }
+
+
+  /**
+   * @param {Instruction} instruction
+   */
+  ctrl.showHistory = function(instruction){
+    return InstructionService.history(instruction);
+  }
+
+
+
 
   //////////////
 

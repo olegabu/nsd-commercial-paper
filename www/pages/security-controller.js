@@ -13,7 +13,8 @@ function SecurityController($scope, SecurityService) {
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', ctrl.reload);
+      // $scope.$on('chainblock', ctrl.reload);
+      $scope.$on('chainblock-ch-'+ SecurityService.getChannelID(), ctrl.reload);
       ctrl.reload();
   }
 
@@ -30,6 +31,21 @@ function SecurityController($scope, SecurityService) {
         ctrl.invokeInProgress = false;
       });
   }
+
+
+  ctrl.newCalendarEntry = function(){
+    $scope.centry = $scope.centry || {
+      date: new Date()
+    };
+  }
+
+  ctrl.sendCEntry = function(centry){
+    return SecurityService.addCalendarEntry(centry)
+      .then(function(){
+        $scope.centry = null;
+      })
+  }
+
 
 
   ctrl.init();

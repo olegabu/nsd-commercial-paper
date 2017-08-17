@@ -60,10 +60,12 @@
         <!-- main menu -->
         <ul class="menu hide-on-med-and-down" ng-cloak>
           <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
-            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active" 
-                href="{{::state.url}}" target="{{::state.data.absolute?'_blank':''}}">
+            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">
               {{::state.data.name||state.name}}
             </a>
+          </li>
+          <li>
+            <a href="/admin" target="_blank">Explorer</a>
           </li>
 
           <li ng-show="ctrl.authorized()">
@@ -87,7 +89,7 @@
   <aside class="sidebar-left" side-bar="">
     <ul class="side-nav fixed clearfix left" id="nav-mobile">
       <div ng-show="ctrl.authorized()">
-        <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
+        <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem" >
           <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">{{::state.data.name||state.name}}</a>
         </li>
         <li>
@@ -200,7 +202,6 @@
 <script src="pages/main-controller.js"></script>
 <script src="pages/book-controller.js"></script>
 <script src="pages/positions-controller.js"></script>
-<script src="pages/explorer-controller.js"></script>
 <script src="pages/instructions-controller.js"></script>
 <script src="pages/login-controller.js"></script>
 <script src="pages/security-controller.js"></script>
@@ -208,8 +209,9 @@
 <!-- services -->
 <script src="services/env-service.js"></script>
 <script src="services/user-service.js"></script>
-<script src="services/channel-service.js"></script>
 <script src="services/api-service.js"></script>
+<script src="services/channel-service.js"></script>
+<script src="services/dialog-service.js"></script>
 <script src="services/socket-service.js"></script>
 <script src="services/instructions-service.js"></script>
 <script src="services/book-service.js"></script>
@@ -220,6 +222,7 @@
 <script src="components/certificate-directive.js"></script>
 <script src="components/blockchain-directive.js"></script>
 <script src="components/role-directive.js"></script>
+<script src="components/nsd-directive.js"></script>
 <!-- endbuild -->
 
 </body>
