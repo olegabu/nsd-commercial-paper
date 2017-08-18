@@ -4,7 +4,7 @@
 
   <h6>Owner</h6>
   <ul>
-    <li ng-repeat="prop in certInfo.fields">
+    <li ng-repeat="prop in certInfo.fields|filter:{key:{value:'2.5.4.3'}}">
       <b>{{::prop.key.oid.d||prop.key.value}}</b> {{::prop.val.value}}
     </li>
   </ul>
