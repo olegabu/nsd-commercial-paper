@@ -57,12 +57,26 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
             });
 
       }));
-    }).then(function(results){
+    })
+    .then(function(results){
       // join array of results into one array (groupedList)
       return results.reduce(function(result, singleResult){
         result[singleResult.channel] = singleResult.result;
         return result;
       }, {});
+    })
+    .then(function(groupedList){
+      // flattern: combine all group element into single array
+      return Object.keys(groupedList).reduce(function(result, channel){
+        result.push.apply(result, groupedList[channel]);
+        return result;
+      }, []);
+    })
+    .then(function(results){
+      // join key and value
+      return results.map(function(singleResult){
+        return Object.assign({}, singleResult.key, singleResult.value);
+      });
     });
   };
 
@@ -155,8 +169,16 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var channelID   = InstructionService._getInstructionChannel(instruction);
     var peer        = InstructionService._getQueryPeer();
     var args        = InstructionService._instructionArguments(instruction);
+    var instructionKey = InstructionService._instructionKey(instruction);
 
-    return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args);
+    return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args)
+      .then(function(result){ return result.result; })
+      .then(function(result){
+        // get pure value
+        return result.map(function(singleValue){
+          return Object.assign(singleValue.value, instructionKey);
+        });
+      });
   }
 
 
@@ -165,7 +187,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    * @return {Array<string>}
    */
   InstructionService._instructionArguments = function(instruction) {
-    var args = [
+    return [
       instruction.transferer.account,  // 0: accountFrom
       instruction.transferer.division, // 1: divisionFrom
 
@@ -178,9 +200,30 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.instructionDate,     // 7: instructionDate  (ISO)
       instruction.tradeDate,           // 8: tradeDate  (ISO)
     ];
-
-    return args;
   }
+
+
+  /**
+   * return basic fields for any instruction request
+   * @return {Array<string>}
+   */
+  InstructionService._instructionKey = function(instruction) {
+    return {
+      transferer:{
+        account  : instruction.transferer.account,
+        division : instruction.transferer.division
+      },
+      receiver:{
+        account  : instruction.receiver.account,
+        division : instruction.receiver.division
+      },
+      security  : instruction.security,
+      quantity  : instruction.quantity,
+      reference : instruction.reference,
+      instructionDate : instruction.instructionDate,
+      tradeDate : instruction.tradeDate
+    };
+  };
 
 
   /**
