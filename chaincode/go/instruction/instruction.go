@@ -39,19 +39,28 @@ type InstructionChaincode struct {
 
 // Instruction is the main data type stored in ledger
 type Instruction struct {
+	Key   InstructionKey   `json:"key"`
+	Value InstructionValue `json:"value"`
+}
+
+type InstructionKey struct {
 	Transferer Balance `json:"transferer"`
 	Receiver   Balance `json:"receiver"`
 	Security   string  `json:"security"`
 	//TODO should be int like everywhere
-	Quantity             string `json:"quantity"`
-	Reference            string `json:"reference"`
-	InstructionDate      string `json:"instructionDate"`
-	TradeDate            string `json:"tradeDate"`
+	Quantity        string `json:"quantity"`
+	Reference       string `json:"reference"`
+	InstructionDate string `json:"instructionDate"`
+	TradeDate       string `json:"tradeDate"`
+}
+
+type InstructionValue struct {
 	DeponentFrom         string `json:"deponentFrom"`
 	DeponentTo           string `json:"deponentTo"`
 	Status               string `json:"status"`
 	Initiator            string `json:"initiator"`
-	Reason               Reason `json:"reason"`
+	ReasonFrom           Reason `json:"reasonFrom"`
+	ReasonTo             Reason `json:"reasonTo"`
 	AlamedaFrom          string `json:"alamedaFrom"`
 	AlamedaTo            string `json:"alamedaTo"`
 	AlamedaSignatureFrom string `json:"alamedaSignatureFrom"`
@@ -64,9 +73,9 @@ type Balance struct {
 }
 
 type Reason struct {
+	DocumentDate string `json:"created"`
 	Document     string `json:"document"`
 	Description  string `json:"description"`
-	DocumentDate string `json:"documentDate"`
 }
 
 // required for history
@@ -77,35 +86,42 @@ type KeyModificationValue struct {
 	IsDelete  bool             `json:"isDelete"`
 }
 
-// required for history
-type InstructionValue struct {
-	DeponentFrom         string `json:"deponentFrom"`
-	DeponentTo           string `json:"deponentTo"`
-	Status               string `json:"status"`
-	Initiator            string `json:"initiator"`
-	AlamedaFrom          string `json:"alamedaFrom"`
-	AlamedaTo            string `json:"alamedaTo"`
-	AlamedaSignatureFrom string `json:"alamedaSignatureFrom"`
-	AlamedaSignatureTo   string `json:"alamedaSignatureTo"`
-}
-
 // **** Instruction Methods **** //
-func (this *Instruction) toStringArray() []string {
-	return []string{
-		this.Transferer.Account,
-		this.Transferer.Division,
-		this.Receiver.Account,
-		this.Receiver.Division,
-		this.Security,
-		this.Quantity,
-		this.Reference,
-		this.InstructionDate,
-		this.TradeDate,
+func (this *Instruction) toCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
+	keyParts := []string{
+		this.Key.Transferer.Account,
+		this.Key.Transferer.Division,
+		this.Key.Receiver.Account,
+		this.Key.Receiver.Division,
+		this.Key.Security,
+		this.Key.Quantity,
+		this.Key.Reference,
+		this.Key.InstructionDate,
+		this.Key.TradeDate,
 	}
+	return stub.CreateCompositeKey(instructionIndex, keyParts)
 }
 
-func (this *Instruction) toCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
-	return stub.CreateCompositeKey(instructionIndex, this.toStringArray())
+func (this *Instruction) fillFromCompositeKeyParts(compositeKeyParts []string) error {
+	if len(compositeKeyParts) < 9 {
+		return errors.New("Composite key parts array length must be at least 9.")
+	}
+
+	this.Key.Transferer.Account = compositeKeyParts[0]
+	this.Key.Transferer.Division = compositeKeyParts[1]
+	this.Key.Receiver.Account = compositeKeyParts[2]
+	this.Key.Receiver.Division = compositeKeyParts[3]
+	this.Key.Security = compositeKeyParts[4]
+	this.Key.Quantity = compositeKeyParts[5]
+	this.Key.Reference = compositeKeyParts[6]
+	this.Key.InstructionDate = compositeKeyParts[7]
+	this.Key.TradeDate = compositeKeyParts[8]
+
+	return nil
+}
+
+func (this *Instruction) fillFromArgs(args []string) error {
+	return this.fillFromCompositeKeyParts(args)
 }
 
 func (this *Instruction) existsIn(stub shim.ChaincodeStubInterface) bool {
@@ -114,8 +130,7 @@ func (this *Instruction) existsIn(stub shim.ChaincodeStubInterface) bool {
 		return false
 	}
 
-	bytes, _ := stub.GetState(compositeKey)
-	if bytes == nil {
+	if _, err := stub.GetState(compositeKey); err != nil {
 		return false
 	}
 
@@ -128,12 +143,12 @@ func (this *Instruction) loadFrom(stub shim.ChaincodeStubInterface) error {
 		return err
 	}
 
-	bytes, err := stub.GetState(compositeKey)
+	data, err := stub.GetState(compositeKey)
 	if err != nil {
 		return err
 	}
 
-	return this.fillFromLedgerValue(bytes)
+	return this.fillFromLedgerValue(data)
 }
 
 func (this *Instruction) upsertIn(stub shim.ChaincodeStubInterface) error {
@@ -147,8 +162,7 @@ func (this *Instruction) upsertIn(stub shim.ChaincodeStubInterface) error {
 		return err
 	}
 
-	err = stub.PutState(compositeKey, value)
-	if err != nil {
+	if err = stub.PutState(compositeKey, value); err != nil {
 		return err
 	}
 
@@ -156,13 +170,12 @@ func (this *Instruction) upsertIn(stub shim.ChaincodeStubInterface) error {
 }
 
 func (this *Instruction) setEvent(stub shim.ChaincodeStubInterface) error {
-	bytes, err := this.toJSON()
+	data, err := this.toJSON()
 	if err != nil {
 		return err
 	}
 
-	err = stub.SetEvent(instructionIndex+"."+this.Status, bytes)
-	if err != nil {
+	if err = stub.SetEvent(instructionIndex+"."+this.Value.Status, data); err != nil {
 		return err
 	}
 
@@ -170,34 +183,31 @@ func (this *Instruction) setEvent(stub shim.ChaincodeStubInterface) error {
 }
 
 func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
-	err := this.loadFrom(stub)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err := this.loadFrom(stub); err != nil {
+		return pb.Response{Status: 404, Message: "Instruction not found."}
 	}
 
-	if this.Initiator != desiredInitiator {
-		return pb.Response{Status: 400, Message: "Instruction is already created by " + this.Initiator}
+	if this.Value.Initiator != desiredInitiator {
+		return pb.Response{Status: 400, Message: "Instruction is already created by " + this.Value.Initiator}
 	}
 
-	if this.Status != InstructionInitiated {
+	if this.Value.Status != InstructionInitiated {
 		return pb.Response{Status: 400, Message: "Instruction status is not " + InstructionInitiated}
 	}
 
-	this.Status = InstructionMatched
+	this.Value.Status = InstructionMatched
 
-	this.AlamedaFrom, this.AlamedaTo = this.createAlamedaXMLs()
+	this.Value.AlamedaFrom, this.Value.AlamedaTo = this.createAlamedaXMLs()
 
-	err = this.upsertIn(stub)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err := this.upsertIn(stub); err != nil {
+		return pb.Response{Status: 520, Message: "Persistence failure."}
 	}
 
-	err = this.setEvent(stub)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err := this.setEvent(stub); err != nil {
+		return pb.Response{Status: 520, Message: "Event emission failure."}
 	}
 
-	return shim.Success([]byte("Instruction was successfully matched."))
+	return shim.Success(nil)
 }
 
 func (this *Instruction) initiateIn(stub shim.ChaincodeStubInterface) pb.Response {
@@ -206,13 +216,13 @@ func (this *Instruction) initiateIn(stub shim.ChaincodeStubInterface) pb.Respons
 		return shim.Error(err.Error())
 	}
 
-	this.Status = InstructionInitiated
-	bytes, err := this.toLedgerValue()
+	this.Value.Status = InstructionInitiated
+	data, err := this.toLedgerValue()
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	err = stub.PutState(compositeKey, bytes)
+	err = stub.PutState(compositeKey, data)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -220,50 +230,8 @@ func (this *Instruction) initiateIn(stub shim.ChaincodeStubInterface) pb.Respons
 	return shim.Success([]byte("Instruction was successfully initiated."))
 }
 
-func (this *Instruction) fillFromCompositeKeyParts(compositeKeyParts []string) error {
-	if len(compositeKeyParts) < 9 {
-		return errors.New("Composite key parts array length must be at least 9.")
-	}
-
-	this.Transferer.Account = compositeKeyParts[0]
-	this.Transferer.Division = compositeKeyParts[1]
-	this.Receiver.Account = compositeKeyParts[2]
-	this.Receiver.Division = compositeKeyParts[3]
-	this.Security = compositeKeyParts[4]
-	this.Quantity = compositeKeyParts[5]
-	this.Reference = compositeKeyParts[6]
-	this.InstructionDate = compositeKeyParts[7]
-	this.TradeDate = compositeKeyParts[8]
-
-	return nil
-}
-
-func (this *Instruction) fillFromArgs(args []string) error {
-	if len(args) < 11 {
-		return errors.New("Incorrect number of arguments. Expecting >= 11.")
-	}
-
-	this.DeponentFrom = args[0]
-	this.Transferer.Account = args[1]
-	this.Transferer.Division = args[2]
-	this.DeponentTo = args[3]
-	this.Receiver.Account = args[4]
-	this.Receiver.Division = args[5]
-	this.Security = args[6]
-	this.Quantity = args[7]
-	this.Reference = args[8]
-	this.InstructionDate = args[9]
-	this.TradeDate = args[10]
-	//this.Reason					= args[11]
-
-	return nil
-}
-
 func (this *Instruction) toLedgerValue() ([]byte, error) {
-	return json.Marshal([]string{
-		this.DeponentFrom, this.DeponentTo, this.Status, this.Initiator,
-		this.AlamedaFrom, this.AlamedaTo, this.AlamedaSignatureFrom, this.AlamedaSignatureTo,
-	})
+	return json.Marshal(this.Value)
 }
 
 func (this *Instruction) toJSON() ([]byte, error) {
@@ -271,22 +239,11 @@ func (this *Instruction) toJSON() ([]byte, error) {
 }
 
 func (this *Instruction) fillFromLedgerValue(bytes []byte) error {
-	var str []string
-	err := json.Unmarshal(bytes, &str)
-	if err != nil {
+	if err := json.Unmarshal(bytes, &this.Value); err != nil {
 		return err
+	} else {
+		return nil
 	}
-
-	this.DeponentFrom = str[0]
-	this.DeponentTo = str[1]
-	this.Status = str[2]
-	this.Initiator = str[3]
-	this.AlamedaFrom = str[4]
-	this.AlamedaTo = str[5]
-	this.AlamedaSignatureFrom = str[6]
-	this.AlamedaSignatureTo = str[7]
-
-	return nil
 }
 
 func (this *Instruction) createAlamedaXMLs() (string, string) {
@@ -334,7 +291,7 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 	instructionWrapper := InstructionWrapper{
 		Instruction:    *this,
 		Depositary:     "DEPOSITARY_CODE",
-		Initiator:      this.DeponentFrom,
+		Initiator:      this.Value.DeponentFrom,
 		InstructionID:  "42",
 		OperationCode:  "16",
 		ExpirationDate: "+24h",
@@ -348,7 +305,7 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 
 	buf.Reset()
 	instructionWrapper.OperationCode = "16/1"
-	instructionWrapper.Initiator = this.DeponentTo
+	instructionWrapper.Initiator = this.Value.DeponentTo
 
 	t.Execute(buf, instructionWrapper)
 	alamedaTo := buf.String()
@@ -431,48 +388,51 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := Instruction{}
-	err := instruction.fillFromArgs(args)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err := instruction.fillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
 	}
 
-	if authenticateCaller(stub, instruction.Receiver) == false {
-		return shim.Error("TODO")
+	if authenticateCaller(stub, instruction.Key.Receiver) == false {
+		return pb.Response{Status: 403, Message: "Caller must be receiver."}
 	}
 
 	if instruction.existsIn(stub) {
 		return instruction.matchIf(stub, InitiatorIsTransferer)
 	} else {
-		instruction.Initiator = InitiatorIsReceiver
-		instruction.Status = InstructionInitiated
+		instruction.Value.DeponentFrom = args[9]
+		instruction.Value.DeponentTo = args[10]
+		instruction.Value.Initiator = InitiatorIsReceiver
+		instruction.Value.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
-			return shim.Error("Instruction initialization error.")
+			return pb.Response{Status: 520, Message: "Persistence failure."}
+
 		}
-		return shim.Success([]byte("Instruction created."))
+		return shim.Success(nil)
 	}
 }
 
 func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := Instruction{}
-	err := instruction.fillFromArgs(args)
-	if err != nil {
-		//TODO change from 500 to bad request 400
-		return shim.Error(err.Error())
+	if err := instruction.fillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
 	}
 
-	if authenticateCaller(stub, instruction.Transferer) == false {
-		return shim.Error("TODO")
+	if authenticateCaller(stub, instruction.Key.Transferer) == false {
+		return pb.Response{Status: 403, Message: "Caller must be transferer."}
 	}
 
 	if instruction.existsIn(stub) {
 		return instruction.matchIf(stub, InitiatorIsReceiver)
 	} else {
-		instruction.Initiator = InitiatorIsTransferer
-		instruction.Status = InstructionInitiated
+		instruction.Value.DeponentFrom = args[9]
+		instruction.Value.DeponentTo = args[10]
+		instruction.Value.Initiator = InitiatorIsTransferer
+		instruction.Value.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
-			return shim.Error("Instruction initialization error.")
+			return pb.Response{Status: 520, Message: "Persistence failure."}
+
 		}
-		return shim.Success([]byte("Instruction created."))
+		return shim.Success(nil)
 	}
 }
 
@@ -481,15 +441,14 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	logger.Info(args)
 
 	instruction := Instruction{}
-	err := instruction.fillFromArgs(args)
-	if err != nil {
+	if err := instruction.fillFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
 	status := args[len(args)-1]
 
-	callerIsTransferer := authenticateCaller(stub, instruction.Transferer)
-	callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
+	callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
+	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
 	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
 
 	if callerIsTransferer {
@@ -502,39 +461,29 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		logger.Info("callerIsNSD")
 	}
 
-	// TODO, REFACTORING: the following code is error prone as it tries to implements a state machine with a bunch of ifs
 	if !(callerIsTransferer || callerIsReceiver || callerIsNSD) {
-		return pb.Response{Status: 403}
-	}
-	if (callerIsTransferer || callerIsReceiver) && status != InstructionCanceled {
-		return pb.Response{Status: 403}
-	}
-	if callerIsNSD && (status != InstructionDeclined || status != InstructionExecuted) {
-		return pb.Response{Status: 403}
+		return pb.Response{Status: 403, Message: "Instruction status can be changed either by transferer, receiver or NSD."}
 	}
 
-	if instruction.existsIn(stub) {
-		if err := instruction.loadFrom(stub); err != nil {
-			return shim.Error(err.Error())
+	if err := instruction.loadFrom(stub); err != nil {
+		return pb.Response{Status: 404, Message: "Instruction not found."}
+	}
+
+	switch {
+	case callerIsNSD && status == InstructionDeclined, callerIsNSD && status == InstructionExecuted:
+		instruction.Value.Status = status
+		if err := instruction.upsertIn(stub); err != nil {
+			return pb.Response{Status: 520, Message: "Persistence failure."}
 		}
-
-		if instruction.Status == InstructionInitiated {
-			if callerIsTransferer && instruction.Initiator != InitiatorIsTransferer {
-				return pb.Response{Status: 403}
-			}
-			if callerIsReceiver && instruction.Initiator != InitiatorIsReceiver {
-				return pb.Response{Status: 403}
+	case (callerIsTransferer || callerIsReceiver) && instruction.Value.Status == InstructionInitiated && status == InstructionCanceled:
+		if (callerIsTransferer && instruction.Value.Initiator == InitiatorIsTransferer) || (callerIsReceiver && instruction.Value.Initiator == InitiatorIsReceiver) {
+			instruction.Value.Status = status
+			if err := instruction.upsertIn(stub); err != nil {
+				return pb.Response{Status: 520, Message: "Persistence failure."}
 			}
 		}
-
-		instruction.Status = status
-
-		err = instruction.upsertIn(stub)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-	} else {
-		return pb.Response{Status: 404, Message: "instruction not found"}
+	default:
+		return pb.Response{Status: 406, Message: "Instruction status or caller identity is wrong."}
 	}
 
 	return shim.Success(nil)
@@ -595,17 +544,17 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			return shim.Error(err.Error())
 		}
 
-		callerIsTransferer := authenticateCaller(stub, instruction.Transferer)
-		callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
+		callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
+		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
 		if !(callerIsTransferer || callerIsReceiver) {
 			continue
 		}
 
-		if (callerIsTransferer && instruction.Initiator == InitiatorIsTransferer) ||
-			(callerIsReceiver && instruction.Initiator == InitiatorIsReceiver) ||
-			(instruction.Status == InstructionMatched) ||
-			(instruction.Status == InstructionSigned) ||
-			(instruction.Status == InstructionDeclined) {
+		if (callerIsTransferer && instruction.Value.Initiator == InitiatorIsTransferer) ||
+			(callerIsReceiver && instruction.Value.Initiator == InitiatorIsReceiver) ||
+			(instruction.Value.Status == InstructionMatched) ||
+			(instruction.Value.Status == InstructionSigned) ||
+			(instruction.Value.Status == InstructionDeclined) {
 			instructions = append(instructions, instruction)
 		}
 	}
@@ -618,16 +567,9 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 }
 
 func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 11 {
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, " +
-			"security, quantity, reference, instructionDate, tradeDate")
-	}
-
 	instruction := Instruction{}
-	err := instruction.fillFromArgs(args)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err := instruction.fillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
 	compositeKey, err := instruction.toCompositeKey(stub)
@@ -675,49 +617,40 @@ func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []
 }
 
 func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 12 {
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, " +
-			"security, quantity, reference, instructionDate, tradeDate, signature")
+	instruction := Instruction{}
+	if err := instruction.fillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
 	signature := args[len(args)-1]
 
-	instruction := Instruction{}
-	err := instruction.fillFromArgs(args)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err := instruction.loadFrom(stub); err != nil {
+		return pb.Response{Status: 404, Message: "Instruction not found."}
 	}
 
-	err = instruction.loadFrom(stub)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	callerIsTransferer := authenticateCaller(stub, instruction.Transferer)
-	callerIsReceiver := authenticateCaller(stub, instruction.Receiver)
+	callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
+	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
 
 	if !(callerIsTransferer || callerIsReceiver) {
 		return pb.Response{Status: 403}
 	}
 
 	if callerIsTransferer {
-		instruction.AlamedaSignatureFrom = signature
+		instruction.Value.AlamedaSignatureFrom = signature
 	}
 
 	if callerIsReceiver {
-		instruction.AlamedaSignatureTo = signature
+		instruction.Value.AlamedaSignatureTo = signature
 	}
 
-	if instruction.AlamedaSignatureFrom != "" && instruction.AlamedaSignatureTo != "" {
-		instruction.Status = InstructionSigned
+	if instruction.Value.AlamedaSignatureFrom != "" && instruction.Value.AlamedaSignatureTo != "" {
+		instruction.Value.Status = InstructionSigned
+		instruction.setEvent(stub)
 	}
 
 	if err := instruction.upsertIn(stub); err != nil {
 		return shim.Error(err.Error())
 	}
-
-	instruction.setEvent(stub)
 
 	return shim.Success(nil)
 }
@@ -755,7 +688,7 @@ func getMyOrganization() string {
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance Balance) bool {
 	keyParts := []string{callerBalance.Account, callerBalance.Division}
 	if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-		if bytes, err := stub.GetState(key); err == nil && getCreatorOrganization(stub) == string(bytes) {
+		if data, err := stub.GetState(key); err == nil && getCreatorOrganization(stub) == string(data) {
 			return true
 		}
 	}
