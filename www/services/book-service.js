@@ -12,12 +12,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
    *
    */
   BookService._getChaincodeID = function() {
-    var chaincodeID = ConfigLoader.get()['contracts'].book;
-    if(!chaincodeID){
-      // must be specified in network-config.json
-      throw new Error("No chaincode name for 'book' contract");
-    }
-    return chaincodeID;
+    return "book";
   };
 
   BookService.getChannelID = function() {
@@ -37,22 +32,17 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     var peer = BookService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
-        .then(function(data){ return parseJson(data.result); });
+      .then(function(data){ return data.result; })
+      .then(function(list){
+        // add 'org' and 'deponent' to the result, based on account+division
+        list.forEach(function(item){
+          item.org = ConfigLoader.getOrgByAccountDivision(item.balance.account, item.balance.division);
+          item.deponent = (ConfigLoader.getAccount(item.org) || {}).dep;
+        })
+        return list;
+      });
   };
 
-  /**
-   *
-   */
-  function parseJson(data){
-    if(typeof data == "string"){
-      try{
-        data = JSON.parse(data);
-      }catch(e){
-        $log.warn(e, data);
-      }
-    }
-    return data;
-  }
 
 
   /**
@@ -78,6 +68,17 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     // // We can safely use here the result of _getQueryPeer() fn.
     // return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'redeem', redemption);
   }
+
+
+  /**
+   *
+   */
+  BookService.history = function(book){
+    $log.debug('BookService.history', book);
+    // FIXME: this is a temp measure to test ui
+    return BookService.list();
+  }
+
 
   return BookService;
 }

@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function BookController($scope, BookService, ConfigLoader) {
+function BookController($scope, BookService, ConfigLoader, DialogService) {
 
   var ctrl = this;
 
@@ -35,6 +35,20 @@ function BookController($scope, BookService, ConfigLoader) {
         ctrl.invokeInProgress = false;
       });
   }
+
+
+
+  /**
+   * @param {Instruction} instruction
+   */
+  ctrl.showHistory = function(book){
+    return BookService.history(book)
+      .then(function(result){
+        var scope = {history: result};
+        return DialogService.dialog('book-history.html', scope);
+      });
+  }
+
 
 
   ctrl.init();

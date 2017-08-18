@@ -160,7 +160,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
 
   /**
-   * Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate)
+   *
    */
   InstructionService.history = function(instruction){
     $log.debug('InstructionService.history', instruction);
