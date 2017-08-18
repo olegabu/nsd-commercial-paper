@@ -98,6 +98,8 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var args        = InstructionService._instructionArguments(instruction);
 
     args.push(
+      instruction.deponentFrom,
+      instruction.deponentTo,
       JSON.stringify(instruction.reason)
     );
 
@@ -116,6 +118,8 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var args        = InstructionService._instructionArguments(instruction);
 
     args.push(
+      instruction.deponentFrom,
+      instruction.deponentTo,
       JSON.stringify(instruction.reason)
     );
 
@@ -162,19 +166,17 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    */
   InstructionService._instructionArguments = function(instruction) {
     var args = [
-      instruction.deponentFrom,        // 0: deponentFrom
-      instruction.transferer.account,  // 1: accountFrom
-      instruction.transferer.division, // 2: divisionFrom
+      instruction.transferer.account,  // 0: accountFrom
+      instruction.transferer.division, // 1: divisionFrom
 
-      instruction.deponentTo,          // 3: deponentTo
-      instruction.receiver.account,    // 4: accountTo
-      instruction.receiver.division,   // 5: divisionTo
+      instruction.receiver.account,    // 2: accountTo
+      instruction.receiver.division,   // 3: divisionTo
 
-      instruction.security,            // 6: security
-      ''+instruction.quantity,         // 7: quantity // TODO: fix: string parameters
-      instruction.reference,           // 8: reference
-      instruction.instructionDate,     // 9: instructionDate  (date format?)
-      instruction.tradeDate,           // 10: tradeDate  (date format?)
+      instruction.security,            // 4: security
+      ''+instruction.quantity,         // 5: quantity // TODO: fix: string parameters
+      instruction.reference,           // 6: reference
+      instruction.instructionDate,     // 7: instructionDate  (ISO)
+      instruction.tradeDate,           // 8: tradeDate  (ISO)
     ];
 
     return args;
