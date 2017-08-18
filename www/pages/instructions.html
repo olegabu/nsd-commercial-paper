@@ -42,7 +42,6 @@
                 <th>Status</th>
                 <th>Initiator</th>
                 <th>Reason</th>
-                <th></th>
             </tr>
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
@@ -56,13 +55,13 @@
                 <td>{{::o.reference}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
-                <td class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</td>
+                <td class="center">
+                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</div>
+                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2" value="Cancel"
+                      ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                </td>
                 <td>{{::o.initiator}}</td>
                 <td>{{::o.reason.transferer}} <i>TBD</i> </td>
-                <td>
-                    <input type="button" class="btn waves-effect waves-light red darken-2" value="Cancel"
-                      ng-show="o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
-                </td>
             </tr>
 
             <tr ng-if="::o.status!='initiated'" class="odd-{{::$index % 2}}">
@@ -75,10 +74,11 @@
                 <td>{{::o.reference}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
-                <td class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</td>
+                <td class="center">
+                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</div>
+                </td>
                 <td>{{::o.initiator}}</td>
                 <td>{{::o.reason.receiver}} <i>TBD</i> </td>
-                <td> </td>
             </tr>
 
         </tbody>
