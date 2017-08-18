@@ -318,9 +318,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="odd-{{::$index % 2}}" ng-repeat="o in $options.history|orderBy:['-instructionDate', '-reference']" >
-                    <th ng-if="o.initiator=='transferer'">16</th>
-                    <th ng-if="o.initiator=='receiver'">16/1</th>
+                <tr ng-repeat="o in $options.history|orderBy:['instructionDate']" >
+                    <th ng-if="o.initiator=='transferer'">{{::$index+1}}</th>
                     <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                     <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                     <td>{{::o.security}}</td>
@@ -336,7 +335,6 @@
                 </tr>
 
             </tbody>
-
 
             <tbody ng-hide="$options.history.length">
                 <tr>
