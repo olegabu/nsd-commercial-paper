@@ -64,7 +64,7 @@
                 <td>{{::o.reason.transferer}} <i>TBD</i> </td>
             </tr>
 
-            <tr ng-if="::o.status!='initiated'" class="odd-{{::$index % 2}}">
+            <tr ng-if="::o.status!='initiated' && o.status!='canceled'" class="odd-{{::$index % 2}}">
                 <th ng-if="o.initiator=='transferer'">16/1</th>
                 <th ng-if="o.initiator=='receiver'">16</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
@@ -294,7 +294,64 @@
 </div>
 
 
+<!-- -->
+<script type="text/ng-template" id="balance-history.html">
+  <div class="modal modal-large modal-fixed-footer">
+    <form name="form" class="form-horizontal" novalidate>
+      <div class="modal-content">
+        <h4>Instruction History</h4>
 
-<script type="text/ng-template" id="templateId.html">
-  <p>This is the content of the template</p>
+            <table class="table-bordered highlight responsive-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Transferer</th>
+                    <th>Receiver</th>
+                    <th>Security</th>
+                    <th>Quantity</th>
+                    <th>Reference</th>
+                    <th>Instruction Date</th>
+                    <th>Trade Date</th>
+                    <th>Status</th>
+                    <th>Initiator</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="odd-{{::$index % 2}}" ng-repeat="o in $options.history|orderBy:['-instructionDate', '-reference']" >
+                    <th ng-if="o.initiator=='transferer'">16</th>
+                    <th ng-if="o.initiator=='receiver'">16/1</th>
+                    <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
+                    <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
+                    <td>{{::o.security}}</td>
+                    <td>{{::o.quantity}}</td>
+                    <td>{{::o.reference}}</td>
+                    <td>{{::o.instructionDate|date}}</td>
+                    <td>{{::o.tradeDate|date}}</td>
+                    <td class="center">
+                      <div class="{{::$options.getStatusClass(o.status)}}">{{::o.status}}</div>
+                    </td>
+                    <td>{{::o.initiator}}</td>
+                    <td>{{::o.reason.transferer}} <i>TBD</i> </td>
+                </tr>
+
+            </tbody>
+
+
+            <tbody ng-hide="$options.history.length">
+                <tr>
+                    <td colspan="99" align="center">
+                        <i>No items</i>
+                    </td>
+                </tr>
+            </tbody>
+          </table>
+
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()">Close</a>
+      </div>
+    </form>
+  </div>
+
 </script>

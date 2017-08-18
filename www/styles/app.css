@@ -145,6 +145,11 @@ input.locked:disabled{
   min-height: 250px;
 }
 
+.modal.modal-large{
+  width: 90%;
+}
+
+
 .odd-0{
   background-color: #f2f2f2;
 }

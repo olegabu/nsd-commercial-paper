@@ -39,14 +39,8 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
     return InstructionService.listAll()
-      .then(function(groupedList){
-
-        // flattern: combine all group element into single array
-        ctrl.list = Object.keys(groupedList).reduce(function(result, channel){
-          result.push.apply(result, groupedList[channel]);
-          return result;
-        }, []);
-
+      .then(function(list){
+        ctrl.list = list;
       })
       .finally(function(){
         ctrl.invokeInProgress = false;
@@ -94,8 +88,6 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
 
   ctrl.cancelInstruction = function(instruction){
-
-
 
     return DialogService.confirm( 'Cancel '+instruction.deponentFrom+' -> '+instruction.deponentTo+' ?', {yesTitle:'Cancel it', yesKlass:'red white-text'})
       .then(function(isConfirmed){
@@ -235,7 +227,11 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
    * @param {Instruction} instruction
    */
   ctrl.showHistory = function(instruction){
-    return InstructionService.history(instruction);
+    return InstructionService.history(instruction)
+      .then(function(result){
+        var scope = {history: result, getStatusClass: ctrl.getStatusClass};
+        return DialogService.dialog('balance-history.html', scope);
+      });
   }
 
 
