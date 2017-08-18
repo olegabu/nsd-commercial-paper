@@ -95,12 +95,18 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
   ctrl.cancelInstruction = function(instruction){
 
+
+
     return DialogService.confirm( 'Cancel '+instruction.deponentFrom+' -> '+instruction.deponentTo+' ?', {yesTitle:'Cancel it', yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){
-          return InstructionService.cancelInstruction(instruction);
+          ctrl.invokeInProgress = true;
+          return InstructionService.cancelInstruction(instruction)
+            .finally(function(){
+              ctrl.invokeInProgress = false;
+            });
         }
-      });
+      })
 
   }
 
