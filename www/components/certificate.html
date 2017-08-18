@@ -11,9 +11,11 @@
 
   <h6>CA</h6>
   <ul>
-    <li ng-repeat="prop in certInfo.authority">
+    <li ng-repeat="prop in certInfo.authority|filter:{key:{value:'2.5.4.3'}}">
       <b>{{::prop.key.oid.d||prop.key.value}}</b> {{::prop.val.value}}
     </li>
   </ul>
+
+  <!-- <json-formatter open="2" json="certInfo"></json-formatter> -->
 
 </div>
