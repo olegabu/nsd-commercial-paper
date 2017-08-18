@@ -1,40 +1,58 @@
+/**
+ *
+ */
+
+const helper = require('./helper');
+const ConfigHelper = require('./helper').ConfigHelper;
+
 module.exports = function (require) {
 
   let log4js = require('log4js');
   let logger = log4js.getLogger('orchestrator');
 
-  const TYPE_ENDORSER_TRANSACTION = 'ENDORSER_TRANSACTION';
-
   // TODO: move somewhere =)
   const ORG = process.env.ORG || null;
-  var config = require('../config.json');
-  //TODO get peer url from network config
-  const peers = ['peer0.nsd.nsd.ru:7051']
-
-  //TODO user with login 'admin' has to be logged to the web gui, use admin identity that api server operates under
-  const USERNAME = config.user.username;
-
   if (ORG !== 'nsd') {
     logger.info('enabled for nsd only');
     return;
   }
 
+  var tools = require('../lib/tools');
+  let hfc = require('../lib-fabric/hfc.js');
+  var config = hfc.getConfigSetting('config');
+  var configHelper = new ConfigHelper(config);
+  var networkConfig = configHelper.networkConfig;
+
+  var endorsePeerId = Object.keys(networkConfig[ORG]||{}).filter(k=>k.startsWith('peer'))[0];
+  var endorsePeerHost = tools.getHost(networkConfig[ORG][endorsePeerId].requests);
+
+  //TODO user with login 'admin' has to be logged to the web gui, use admin identity that api server operates under
+  var config = require('../config.json');
+  const USERNAME = config.user.username;
+
+
   logger.info('**************    ORCHESTRATOR     ******************');
-  logger.info('Admin     : ' + USERNAME);
-  logger.info('Org name  : ' + ORG);
+  logger.info('Admin   \t: ' + USERNAME);
+  logger.info('Org name\t: ' + ORG);
+  logger.info('Endorse peer\t: (%s) %s', endorsePeerId, endorsePeerHost);
+  logger.info('**************                     ******************');
 
   let invoke = require('../lib-fabric/invoke-transaction.js');
-  let query = require('../lib-fabric/query.js');
+  let query  = require('../lib-fabric/query.js');
   let peerListener = require('../lib-fabric/peer-listener.js');
 
-  logger.info('registering for block events');
 
+  const TYPE_ENDORSER_TRANSACTION = 'ENDORSER_TRANSACTION';
+
+  ///////////////////////////////////////////
+  /// main activity
+  logger.info('registering for block events');
   peerListener.registerBlockEvent(function (block) {
     try {
       block.data.data.forEach(blockData => {
 
-      let type = getTransactionType(blockData);
-      let channel = getTransactionChannel(blockData);
+      let type = helper.getTransactionType(blockData);
+      let channel = helper.getTransactionChannel(blockData);
 
       logger.info(`got block no. ${block.header.number}: ${type} on channel ${channel}`);
 
@@ -53,7 +71,9 @@ module.exports = function (require) {
             }
 
             if(event.event_name === 'Instruction.executed') {
-              updateInstructionStatus(JSON.parse(event.payload.toString()));
+              var instruction = JSON.parse(event.payload.toString());
+              // TODO: does it make sense at all?
+              updateInstructionStatus(instruction, instruction.status);
             }
           }); // thru action elements
 
@@ -68,143 +88,97 @@ module.exports = function (require) {
       }); // thru block data elements
     }
     catch(e) {
-      logger.error('caught while processing block event', e);
+      logger.error('Caught while processing block event', e);
     }
 
   });
 
-  function getTransactionType(blockData) {
-    return blockData.payload.header.channel_header.type;
-  }
 
-  function getTransactionChannel(blockData) {
-    return blockData.payload.header.channel_header.channel_id;
-  }
-
-  //TODO read account to org map from config
-  function getOrg(o) {
-    let ret = null;
-
-    if (o.account === '902') {
-      ret = 'a';
-    }
-    else if (o.account === '903') {
-      ret = 'b';
-    }
-
-    return ret;
-  }
-
+  /**
+   *
+   */
   function moveByInstruction(instruction) {
-    logger.info(`invoking book to move ${instruction.quantity} of ${instruction.security} from ${instruction.transferer.account}/${instruction.transferer.division} to ${instruction.receiver.account}/${instruction.receiver.division}`);
+    logger.debug('invoking book move %s for %s', instruction.quantity, helper.instruction2string(instruction));
 
-    invoke.invokeChaincode(peers, 'depository', 'book', 'move',
-      [
-        instruction.transferer.account,
-        instruction.transferer.division,
-        instruction.receiver.account,
-        instruction.receiver.division,
-        instruction.security,
-        instruction.quantity,
-        instruction.reference,
-        instruction.instructionDate,
-        instruction.tradeDate
-      ],
-      USERNAME, ORG)
-    .then(function (transactionId) {
-      logger.debug('move success', transactionId);
-    })
-    .catch(function(e) {
-      logger.error('cannot move', e);
-
-      instruction.status = 'declined';
-      updateInstructionStatus(instruction);
-    })
+    //
+    var args = helper.instructionArguments(instruction);
+    return invoke.invokeChaincode([endorsePeerHost], 'depository', 'book', 'move', args, USERNAME, ORG)
+      .then(function (/*transactionId*/) {
+        logger.info('Move book record success', helper.instruction2string(instruction));
+      })
+      .catch(function(e) {
+        logger.error('Move book record error', helper.instruction2string(instruction), e);
+        return updateInstructionStatus(instruction, 'declined');
+      });
   }
 
-  function updateInstructionStatus(instruction) {
-    let orgTransferer = getOrg(instruction.transferer);
-    let orgReceiver = getOrg(instruction.receiver);
+  /**
+   *
+   */
+  function updateInstructionStatus(instruction, status) {
+    logger.debug('set instruction status: %s for %s', status, helper.instruction2string(instruction));
 
-    if(!orgTransferer) {
-      logger.error('cannot find orgTransferer', instruction);
-      return;
-    }
+    let channel = configHelper.getInstructionChannel(instruction);
+    logger.debug('got channel %s for %s', channel, helper.instruction2string(instruction));
 
-    if(!orgReceiver) {
-      logger.error('cannot find orgReceiver', instruction);
-      return;
-    }
-
-    let orgs = [orgTransferer, orgReceiver].sort();
-    let channel = orgs[0] + '-' + orgs[1];
-
-    logger.info(`invoking instruction on ${channel} to set status ${instruction.status}`, instruction);
-
-    invoke.invokeChaincode(peers, channel, 'instruction', 'status',
-      [
-        instruction.transferer.account,
-        instruction.transferer.division,
-        instruction.receiver.account,
-        instruction.receiver.division,
-        instruction.security,
-        instruction.quantity,
-        instruction.reference,
-        instruction.instructionDate,
-        instruction.tradeDate,
-        instruction.status
-      ],
-      USERNAME, ORG)
-    .then(function (transactionId) {
-      logger.debug('update instruction status success', transactionId);
-    })
-    .catch(function (e) {
-      logger.error('cannot update instruction status', e);
-    });
+    //
+    var args = helper.instructionArguments(instruction);
+    args.push(status);
+    return invoke.invokeChaincode([endorsePeerHost], channel, 'instruction', 'status', args, USERNAME, ORG)
+      .then(function(/*transactionId*/) {
+        logger.info('Update instruction status success', helper.instruction2string(instruction));
+      })
+      .catch(function (e) {
+        logger.error('Cannot update instruction status', helper.instruction2string(instruction), e);
+      });
   }
 
+  /**
+   * Copy balance from 'book' cc to 'position' cc, so it'll be visible for the owner, not only for nsd
+   */
   function putPositionsFromBook() {
-    logger.info('querying book to update all positions');
+    logger.debug('Query book to update all positions');
 
     //TODO peer0 is inconsistent with explicit peer url in invoke.invokeChaincode. This caused Oleg pain.
-    query.queryChaincode('peer0', 'depository', 'book', [], 'query', USERNAME, ORG)
-    .then(function (res) {
-      logger.debug('query success', res);
+    return query.queryChaincode(endorsePeerId, 'depository', 'book', [], 'query', USERNAME, ORG)
+      .then(response=>response.result)
+      .then(function (result) {
+        logger.debug('Query book success', JSON.stringify(result));
 
-      res.result.forEach(position => {
-        logger.debug('position', position);
+        result.forEach(position => {
+          logger.trace('Update position', JSON.stringify(position));
 
-        let org = getOrg(position.balance);
+          let org = configHelper.getOrgByAccount(position.balance.account, position.balance.division);
+          if(!org) {
+            logger.error('Cannot find org for position', JSON.stringify(position));
+            return;
+          }
 
-        if(!org) {
-          logger.error('cannot find org for position', position);
-          return;
-        }
+          //  TODO: rename this bilateral channel
+          let channel = 'nsd-' + org;
+          logger.debug(`invoking position on ${channel} to put ${position.quantity} of ${position.security} to ${position.balance.account}/${position.balance.division}`);
 
-        let channel = ORG + '-' + org;
+          //
+          var args = [
+              position.balance.account,
+              position.balance.division,
+              position.security,
+              '' + position.quantity
+           ];
+          return invoke.invokeChaincode([endorsePeerHost], channel, 'position', 'put', args, USERNAME, ORG)
+            .then(function (/*transactionId*/) {
+              logger.info('Put position success', helper.position2string(position));
+            })
+            .catch(function (e) {
+              logger.error('Put position error', helper.position2string(position), e);
+              throw e;
+            });
 
-        logger.info(`invoking position on ${channel} to put ${position.quantity} of ${position.security} to ${position.balance.account}/${position.balance.division}`);
-
-        invoke.invokeChaincode(peers, channel, 'position', 'put',
-          [
-            position.balance.account,
-            position.balance.division,
-            position.security,
-            '' + position.quantity
-          ],
-          USERNAME, ORG)
-        .then(function (transactionId) {
-          logger.debug('put position success', transactionId);
-        })
-        .catch(function (e) {
-          logger.error('cannot put position', e);
         });
-
+      })
+      .catch(function (e) {
+        logger.error('Cannot query books', e);
       });
-    })
-    .catch(function (e) {
-      logger.error('cannot query book', e);
-    });
   }
 
 };
