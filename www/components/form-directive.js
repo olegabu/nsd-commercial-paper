@@ -62,8 +62,6 @@ angular.module('nsd.directive.form', [])
     return {
       restrict:'E',
       scope: false,
-      require: '?ngModel',
-      // link: function(scope, elm, attrs, ctrl) {
       controller: function($scope, $attrs, $templateCache, $http, $log) {
         if($attrs['type'] != "text/ng-template" || !$attrs['src']){
           return;

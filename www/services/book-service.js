@@ -75,6 +75,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
    */
   BookService.history = function(book){
     $log.debug('BookService.history', book);
+    $log.warn('BookService.history STUB!');
     // FIXME: this is a temp measure to test ui
     return BookService.list();
   }

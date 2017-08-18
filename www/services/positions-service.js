@@ -35,23 +35,19 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
     var peer = PositionsService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
-        .then(function(data){ return parseJson(data.result); });
+        .then(function(data){ return data.result; });
   };
+
 
   /**
    *
    */
-  function parseJson(data){
-    if(typeof data == "string"){
-      try{
-        data = JSON.parse(data);
-      }catch(e){
-        $log.warn(e, data);
-      }
-    }
-    return data;
+  PositionsService.history = function(book){
+    $log.debug('PositionsService.history', book);
+    $log.warn('PositionsService.history STUB!');
+    // FIXME: this is a temp measure to test ui
+    return PositionsService.list();
   }
-
 
   /**
    *

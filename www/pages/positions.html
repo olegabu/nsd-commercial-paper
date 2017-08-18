@@ -15,14 +15,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in ctl.list">
-                <td>{{::o.balance.account}} / {{::o.balance.division}}</td>
+            <tr ng-repeat="o in ctl.list" ng-click="ctl.showHistory(o)">
+                <td>{{::o.deponent}} / {{::o.balance.account}} / {{::o.balance.division}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
-                <!-- <td>
-                    <input type="button" class="btn btn-default" ng-click="ctl.verify(o)" value="Verify" ng-hide="o.status"/>
-                    <input type="button" class="btn btn-danger" ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
-                </td> -->
             </tr>
 
             <tr ng-hide="ctl.list.length">
@@ -33,6 +29,4 @@
         </tbody>
       </table>
   </div>
-
 </div>
-
