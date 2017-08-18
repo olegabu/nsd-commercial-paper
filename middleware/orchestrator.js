@@ -51,10 +51,10 @@ module.exports = function (require) {
     try {
       block.data.data.forEach(blockData => {
 
-      let type = helper.getTransactionType(blockData);
-      let channel = helper.getTransactionChannel(blockData);
+        let type = helper.getTransactionType(blockData);
+        let channel = helper.getTransactionChannel(blockData);
 
-      logger.info(`got block no. ${block.header.number}: ${type} on channel ${channel}`);
+        logger.info(`got block no. ${block.header.number}: ${type} on channel ${channel}`);
 
         if (type === TYPE_ENDORSER_TRANSACTION) {
 
@@ -64,16 +64,22 @@ module.exports = function (require) {
             if(!event.event_name) {
               return;
             }
-            logger.info(`event ${event.event_name}`);
+            logger.trace(`event ${event.event_name}`);
 
             if(event.event_name === 'Instruction.matched') {
-              moveByInstruction(JSON.parse(event.payload.toString()));
+              // instruction is matched, so we should move the values within 'book' cc
+              var instruction = JSON.parse(event.payload.toString());
+              logger.trace('Instruction.matched', JSON.stringify(instruction));
+              instruction = helper.normalizeInstruction(instruction);
+              moveBookByInstruction(instruction);
             }
 
             if(event.event_name === 'Instruction.executed') {
+              // instruction is executed, however stil has 'matched' status in ledger (but 'executed' in the event)
               var instruction = JSON.parse(event.payload.toString());
-              // TODO: does it make sense at all?
-              updateInstructionStatus(instruction, instruction.status);
+              logger.trace('Instruction.executed', JSON.stringify(instruction));
+              instruction = helper.normalizeInstruction(instruction);
+              updateInstructionStatus(instruction, instruction.status /* 'executed' */);
             }
           }); // thru action elements
 
@@ -81,9 +87,8 @@ module.exports = function (require) {
           //TODO this updates all positions on any new block on book channel. Better if this is done only on startup.
           // Book can emit move event with payload of updated Positions, then you don't have to query Book
           if(channel === 'depository') {
-            putPositionsFromBook();
+            updatePositionsFromBook();
           }
-
         }
       }); // thru block data elements
     }
@@ -97,7 +102,7 @@ module.exports = function (require) {
   /**
    *
    */
-  function moveByInstruction(instruction) {
+  function moveBookByInstruction(instruction) {
     logger.debug('invoking book move %s for %s', instruction.quantity, helper.instruction2string(instruction));
 
     //
@@ -136,7 +141,7 @@ module.exports = function (require) {
   /**
    * Copy balance from 'book' cc to 'position' cc, so it'll be visible for the owner, not only for nsd
    */
-  function putPositionsFromBook() {
+  function updatePositionsFromBook() {
     logger.debug('Query book to update all positions');
 
     //TODO peer0 is inconsistent with explicit peer url in invoke.invokeChaincode. This caused Oleg pain.

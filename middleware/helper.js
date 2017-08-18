@@ -14,6 +14,7 @@ module.exports = {
   position2string     : position2string,
   instructionFilename : instructionFilename,
   instructionArguments: instructionArguments,
+  normalizeInstruction: normalizeInstruction,
 
   ConfigHelper : ConfigHelper
 }
@@ -21,6 +22,17 @@ module.exports = {
 
 const TYPE_ENDORSER_TRANSACTION = 'ENDORSER_TRANSACTION';
 
+
+/**
+ * convert new instruction format (key, value) into old one. Multiple calls has no effect
+ * @param {Instruction}
+ */
+function normalizeInstruction(instruction){
+  if(instruction.key && instruction.value){
+    instruction = Object.assign({}, instruction.key, instruction.value);
+  }
+  return instruction;
+}
 
 /**
  *
