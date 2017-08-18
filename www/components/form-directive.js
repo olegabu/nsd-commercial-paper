@@ -56,4 +56,28 @@ angular.module('nsd.directive.form', [])
         // }
       }
     };
-  });
+  })
+
+  .directive('script', function() {
+    return {
+      restrict:'E',
+      scope: false,
+      require: '?ngModel',
+      // link: function(scope, elm, attrs, ctrl) {
+      controller: function($scope, $attrs, $templateCache, $http, $log) {
+        if($attrs['type'] != "text/ng-template" || !$attrs['src']){
+          return;
+        }
+
+        var id = $attrs['id'] || $attrs['src'];
+        var src = $attrs['src'];
+        $log.debug('Loading %s template from %s', id, src);
+
+        $http.get(src).then(function(response){
+          $log.debug('Loaded template %s', id);
+          $templateCache.put(id, response.data);
+        });
+      }
+    };
+  })
+
