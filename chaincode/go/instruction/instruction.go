@@ -134,7 +134,7 @@ func (this *Instruction) existsIn(stub shim.ChaincodeStubInterface) bool {
 		return false
 	}
 
-	if _, err := stub.GetState(compositeKey); err != nil {
+	if data, err := stub.GetState(compositeKey); err != nil || data == nil {
 		return false
 	}
 
