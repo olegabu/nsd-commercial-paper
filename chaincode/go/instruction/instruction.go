@@ -107,6 +107,10 @@ func (this *Instruction) fillFromCompositeKeyParts(compositeKeyParts []string) e
 		return errors.New("Composite key parts array length must be at least 9.")
 	}
 
+	if _, err := strconv.Atoi(compositeKeyParts[5]); err != nil {
+		return errors.New("Quantity must be int.")
+	}
+
 	this.Key.Transferer.Account = compositeKeyParts[0]
 	this.Key.Transferer.Division = compositeKeyParts[1]
 	this.Key.Receiver.Account = compositeKeyParts[2]
@@ -401,6 +405,9 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
+		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
+			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
 		instruction.Value.Initiator = InitiatorIsReceiver
 		instruction.Value.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
@@ -426,6 +433,9 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
+		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
+			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
 		instruction.Value.Initiator = InitiatorIsTransferer
 		instruction.Value.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
