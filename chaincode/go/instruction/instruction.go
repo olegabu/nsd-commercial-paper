@@ -17,11 +17,7 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-var logger = shim.NewLogger("InstructionChaincode")
-
-const instructionIndex = `Instruction`
-const authenticationIndex = `Authentication`
-
+// ************************************** TODO: TO BE MOVED TO COMMON PACKAGE ************************************** //
 const (
 	InitiatorIsTransferer = "transferer"
 	InitiatorIsReceiver   = "receiver"
@@ -34,8 +30,7 @@ const (
 	InstructionCanceled  = "canceled"
 )
 
-type InstructionChaincode struct {
-}
+const instructionIndex = `Instruction`
 
 // Instruction is the main data type stored in ledger
 type Instruction struct {
@@ -79,14 +74,13 @@ type Reason struct {
 }
 
 // required for history
-type KeyModificationValue struct {
+type InstructionHistoryValue struct {
 	TxId      string           `json:"txId"`
 	Value     InstructionValue `json:"value"`
 	Timestamp string           `json:"timestamp"`
 	IsDelete  bool             `json:"isDelete"`
 }
 
-// **** Instruction Methods **** //
 func (this *Instruction) toCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
 	keyParts := []string{
 		this.Key.Transferer.Account,
@@ -186,6 +180,33 @@ func (this *Instruction) setEvent(stub shim.ChaincodeStubInterface) error {
 	return nil
 }
 
+func (this *Instruction) toLedgerValue() ([]byte, error) {
+	return json.Marshal(this.Value)
+}
+
+func (this *Instruction) toJSON() ([]byte, error) {
+	return json.Marshal(this)
+}
+
+func (this *Instruction) fillFromLedgerValue(bytes []byte) error {
+	if err := json.Unmarshal(bytes, &this.Value); err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
+
+// ***************************************************************************************************************** //
+
+var logger = shim.NewLogger("InstructionChaincode")
+
+const authenticationIndex = `Authentication`
+
+type InstructionChaincode struct {
+}
+
+// **** Instruction Methods **** //
+
 func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
 	if err := this.loadFrom(stub); err != nil {
 		return pb.Response{Status: 404, Message: "Instruction not found."}
@@ -232,22 +253,6 @@ func (this *Instruction) initiateIn(stub shim.ChaincodeStubInterface) pb.Respons
 	}
 
 	return shim.Success([]byte("Instruction was successfully initiated."))
-}
-
-func (this *Instruction) toLedgerValue() ([]byte, error) {
-	return json.Marshal(this.Value)
-}
-
-func (this *Instruction) toJSON() ([]byte, error) {
-	return json.Marshal(this)
-}
-
-func (this *Instruction) fillFromLedgerValue(bytes []byte) error {
-	if err := json.Unmarshal(bytes, &this.Value); err != nil {
-		return err
-	} else {
-		return nil
-	}
 }
 
 func (this *Instruction) createAlamedaXMLs() (string, string) {
@@ -596,7 +601,7 @@ func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []
 	}
 	defer it.Close()
 
-	modifications := []KeyModificationValue{}
+	modifications := []InstructionHistoryValue{}
 
 	for it.HasNext() {
 		response, err := it.Next()
@@ -604,7 +609,7 @@ func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []
 			return shim.Error(err.Error())
 		}
 
-		var entry KeyModificationValue
+		var entry InstructionHistoryValue
 
 		entry.TxId = response.GetTxId()
 		entry.IsDelete = response.GetIsDelete()
