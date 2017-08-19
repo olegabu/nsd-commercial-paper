@@ -187,7 +187,6 @@
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
             <input name="reference" type="text" class="validate" ng-model="inst.reference" required>
             <label for="reference">Reference</label>
           </div>
@@ -212,7 +211,6 @@
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
             <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
             <label for="a_description">Description</label>
           </div>
@@ -255,20 +253,25 @@
         </div>
       </div>
 
+      <div class="row" hidden>
+        <div class="input-field col s12">
+          <input name="reference" type="text" class="validate" ng-model="inst.instructionNum">
+          <label for="reference">Instruction ID</label>
+        </div>
+      </div>
+<!--
       <div class="row">
         <div class="input-field col s12">
-          <i class="material-icons prefix">textsms</i>
           <input name="reference" type="text" class="validate" ng-model="redemption.reference" required>
           <label for="reference">Reference</label>
         </div>
       </div>
-
+-->
       <div class="row">
           <h5 class="col s12">Reason</h5>
       </div>
       <div class="row">
         <div class="input-field col s12">
-          <i class="material-icons prefix">textsms</i>
           <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="redemption.reason.description"></textarea>
           <label for="a_description">Description</label>
         </div>
