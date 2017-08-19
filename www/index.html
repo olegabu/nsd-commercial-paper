@@ -64,7 +64,7 @@
               {{::state.data.name||state.name}}
             </a>
           </li>
-          <li>
+          <li ng-show="ctrl.authorized()">
             <a href="/admin" target="_blank">Explorer</a>
           </li>
 
