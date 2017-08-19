@@ -400,14 +400,15 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		return pb.Response{Status: 403, Message: "Caller must be receiver."}
 	}
 
+	if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
 	if instruction.existsIn(stub) {
 		return instruction.matchIf(stub, InitiatorIsTransferer)
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
-		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong arguments."}
-		}
 		instruction.Value.Initiator = InitiatorIsReceiver
 		instruction.Value.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
@@ -428,14 +429,15 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		return pb.Response{Status: 403, Message: "Caller must be transferer."}
 	}
 
+	if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
 	if instruction.existsIn(stub) {
 		return instruction.matchIf(stub, InitiatorIsReceiver)
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
-		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong arguments."}
-		}
 		instruction.Value.Initiator = InitiatorIsTransferer
 		instruction.Value.Status = InstructionInitiated
 		if instruction.upsertIn(stub) != nil {
