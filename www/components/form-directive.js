@@ -24,40 +24,6 @@ angular.module('nsd.directive.form', [])
     };
   })
 
-
-  .directive('input', function() {
-    return {
-      restrict:'E',
-      require: '?ngModel',
-      link: function(scope, elm, attrs, ctrl) {
-        var inputName = elm.attr('name') || elm.attr('ng-model');
-        if(!elm.attr('name')){
-          elm.attr('name', inputName);
-        }
-        if(!elm.attr('id')){
-          elm.attr('id', inputName);
-        }
-        // TODO: form name hardcoded
-
-        // scope.$watch('form.'+inputName+'.$invalid && form.'+inputName+'.$dirty', function(val){
-        //   if(val){
-        //     elm.addClass('invalid');
-        //   } else {
-        //     elm.removeClass('invalid');
-        //   }
-        // });
-
-
-        // // only apply the validator if ngModel is present and AngularJS has added the email validator
-        // if (ctrl && ctrl.$validators) {
-
-        //   scope.
-
-        // }
-      }
-    };
-  })
-
   .directive('script', function() {
     return {
       restrict:'E',
@@ -79,3 +45,47 @@ angular.module('nsd.directive.form', [])
     };
   })
 
+  .directive('input', function() {
+    return {
+      restrict:'E',
+      scope: false,
+      require: '?ngModel',
+      link: _inputLinkController
+    };
+  })
+  .directive('textarea', function() {
+    return {
+      restrict:'E',
+      scope: false,
+      require: '?ngModel',
+      link: _inputLinkController
+    };
+  });
+  /**
+   *
+   */
+  function _inputLinkController(scope, elm, attrs, ctrl) {
+
+    // SET input id the same as name
+    var inputName = elm.attr('name') || elm.attr('ng-model');
+    if(!elm.attr('name')){
+      elm.attr('name', inputName);
+    }
+    if(!elm.attr('id')){
+      elm.attr('id', inputName);
+    }
+
+    /*
+    // SET ng-filled/ng-empty classes
+    if (ctrl && ctrl.$validators && elm.attr('ng-model')) {
+      // only apply the validator if ngModel is present
+      scope.$watch( elm.attr('ng-model'), function(val){
+        if( val ){
+          elm.addClass('ng-filled').removeClass('ng-empty');
+        } else {
+          elm.removeClass('ng-filled').addClass('ng-empty');
+        }
+      });
+    }
+    */
+  }
