@@ -563,6 +563,8 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 
 		callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
+		callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+
 		if !(callerIsTransferer || callerIsReceiver) {
 			continue
 		}
@@ -572,7 +574,8 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == InstructionMatched) ||
 			(instruction.Value.Status == InstructionSigned) ||
 			(instruction.Value.Status == InstructionExecuted) ||
-			(instruction.Value.Status == InstructionDeclined) {
+			(instruction.Value.Status == InstructionDeclined) ||
+			callerIsNSD {
 			instructions = append(instructions, instruction)
 		}
 	}
