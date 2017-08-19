@@ -112,6 +112,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
         var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
         $scope.inst = ctrl._getDefaultInstruction(transferSide, opponentOrgID);
+        $scope.formInstruction.$setPristine();
 
         // preset
         ctrl._fillAccount(transferSide, opponentOrgID);

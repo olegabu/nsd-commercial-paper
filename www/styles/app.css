@@ -153,3 +153,26 @@ input.locked:disabled{
 .odd-0{
   background-color: #f2f2f2;
 }
+
+
+
+/*
+.ng-invalid{ outline: 1px solid red !important; }
+.ng-valid{ outline: 1px solid green !important; }
+*/
+
+input.ng-dirty.ng-valid,
+select.ng-dirty.ng-valid,
+.select-wrapper.ng-dirty.ng-valid .select-dropdown,
+textarea.ng-dirty.ng-valid{
+    box-shadow: 0 1px 0 0 #26a69a;
+    border-bottom: 1px solid #26a69a;
+}
+
+input.ng-dirty.ng-invalid,
+select.ng-dirty.ng-invalid,
+.select-wrapper.ng-dirty.ng-invalid .select-dropdown,
+textarea.ng-dirty.ng-invalid{
+    box-shadow: 0 1px 0 0 #F44336;
+    border-bottom: 1px solid #F44336;
+}
