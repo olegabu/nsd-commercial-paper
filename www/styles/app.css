@@ -231,3 +231,22 @@ textarea.ng-dirty.ng-invalid-required:not(:focus) + label:after,
 .select-wrapper.ng-dirty.ng-invalid-required + label:after{
   top: 65px;
 }
+
+
+
+/* compaction fix */
+html {
+  font-size: 12px;
+}
+.row{
+  margin-bottom: 5px;
+}
+h2{
+  font-size: 3rem;
+}
+td, th, .clock, .endpoint {
+  font-size: small;
+}
+td, th{
+  padding: 5px 3px;
+}

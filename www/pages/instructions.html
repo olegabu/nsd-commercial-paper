@@ -46,8 +46,8 @@
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
             <tr class="odd-{{::$index % 2}}">
-                <th ng-if="o.initiator=='transferer'">16</th>
-                <th ng-if="o.initiator=='receiver'">16/1</th>
+                <th ng-if="::o.initiator=='transferer'">16</th>
+                <th ng-if="::o.initiator=='receiver'">16/1</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -61,12 +61,13 @@
                       ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
                 <td>{{::o.initiator}}</td>
-                <td>{{::o.reason.transferer}} <i>TBD</i> </td>
+                <td ng-if="::o.initiator=='transferer'">{{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}</td>
+                <td ng-if="::o.initiator=='receiver'">{{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</td>
             </tr>
 
             <tr ng-if="::o.status!='initiated' && o.status!='canceled'" class="odd-{{::$index % 2}}">
-                <th ng-if="o.initiator=='transferer'">16/1</th>
-                <th ng-if="o.initiator=='receiver'">16</th>
+                <th ng-if="::o.initiator=='receiver'">16</th>
+                <th ng-if="::o.initiator=='transferer'">16/1</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -78,7 +79,8 @@
                   <div class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</div>
                 </td>
                 <td>{{::o.initiator}}</td>
-                <td>{{::o.reason.receiver}} <i>TBD</i> </td>
+                <td ng-if="::o.initiator=='receiver'">{{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}</td>
+                <td ng-if="::o.initiator=='transferer'">{{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</td>
             </tr>
 
         </tbody>
@@ -93,7 +95,6 @@
         </tbody>
       </table>
   </div>
-
 
 </div>
 <!-- <div ng-hide="ctl.list.length">
@@ -338,7 +339,11 @@
                   <td class="center">
                     <div class="{{::$options.getStatusClass(o.status)}}">{{::o.status}}</div>
                   </td>
-                  <td>{{::o.reason.transferer}} <i>TBD</i> </td>
+                  <td>
+                    {{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}
+                    <br/>
+                    {{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}
+                  </td>
               </tr>
 
           </tbody>
