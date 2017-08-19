@@ -503,6 +503,10 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		return pb.Response{Status: 406, Message: "Instruction status or caller identity is wrong."}
 	}
 
+	if err := instruction.setEvent(stub); err != nil {
+		return pb.Response{Status: 520, Message: "Event emission failure."}
+	}
+
 	return shim.Success(nil)
 }
 

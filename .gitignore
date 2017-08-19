@@ -18,4 +18,4 @@ build
 /artifacts/network-config-dev.json
 /artifacts-dev
 /ledger/docker-compose.yaml
-
+/ledger/docker-compose-*.yaml

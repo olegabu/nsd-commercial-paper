@@ -74,8 +74,8 @@ module.exports = function (require) {
               moveBookByInstruction(instruction);
             }
 
-            if(event.event_name === 'Instruction.executed') {
-              // instruction is executed, however stil has 'matched' status in ledger (but 'executed' in the event)
+            if(channel === 'depository' && event.event_name === 'Instruction.executed') {
+              // instruction is executed, however still has 'matched' status in ledger (but 'executed' in the event)
               var instruction = JSON.parse(event.payload.toString());
               logger.trace('Instruction.executed', JSON.stringify(instruction));
               instruction = helper.normalizeInstruction(instruction);
