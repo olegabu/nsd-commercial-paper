@@ -645,7 +645,7 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
 
 	if !(callerIsTransferer || callerIsReceiver) {
-		return pb.Response{Status: 403}
+		return pb.Response{Status: 403, Message: "Caller must be either transferer or receiver."}
 	}
 
 	if callerIsTransferer {
@@ -662,7 +662,7 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	if err := instruction.upsertIn(stub); err != nil {
-		return shim.Error(err.Error())
+		return pb.Response{Status: 520, Message: "Persistence failure."}
 	}
 
 	return shim.Success(nil)
