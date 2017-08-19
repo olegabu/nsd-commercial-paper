@@ -156,6 +156,7 @@ input.locked:disabled{
 
 
 
+
 /*
 .ng-invalid{ outline: 1px solid red !important; }
 .ng-valid{ outline: 1px solid green !important; }
@@ -163,16 +164,70 @@ input.locked:disabled{
 
 input.ng-dirty.ng-valid,
 select.ng-dirty.ng-valid,
-.select-wrapper.ng-dirty.ng-valid .select-dropdown,
-textarea.ng-dirty.ng-valid{
+textarea.ng-dirty.ng-valid,
+.select-wrapper.ng-dirty.ng-valid input.select-dropdown{
     box-shadow: 0 1px 0 0 #26a69a;
     border-bottom: 1px solid #26a69a;
 }
 
 input.ng-dirty.ng-invalid,
 select.ng-dirty.ng-invalid,
-.select-wrapper.ng-dirty.ng-invalid .select-dropdown,
-textarea.ng-dirty.ng-invalid{
+textarea.ng-dirty.ng-invalid,
+.select-wrapper.ng-dirty.ng-invalid input.select-dropdown{
     box-shadow: 0 1px 0 0 #F44336;
     border-bottom: 1px solid #F44336;
+}
+
+input.ng-invalid + label:after,
+select.ng-invalid + label:after,
+textarea.ng-invalid + label:after,
+.select-wrapper.ng-invalid + label:after{
+  content: attr(data-error);
+  color: #F44336;
+
+  position: absolute;
+  top: 65px;
+  left: 0px;
+  opacity: 0;
+  transition: .2s opacity ease-out, .2s color ease-out, .2s top ease-out;
+  font-size: 0.9rem;
+  text-transform: lowercase;
+}
+
+input.ng-dirty.ng-invalid + label:after,
+select.ng-dirty.ng-invalid + label:after,
+textarea.ng-dirty.ng-invalid + label:after,
+.select-wrapper.ng-dirty.ng-invalid + label:after{
+  opacity: 1;
+}
+
+
+
+input.ng-invalid-required + label:before,
+select.ng-invalid-required + label:before,
+textarea.ng-invalid-required + label:before,
+.select-wrapper.ng-invalid-required + label:before,
+
+input.ng-valid-required + label:before,
+select.ng-valid-required + label:before,
+textarea.ng-valid-required + label:before,
+.select-wrapper.ng-valid-required + label:before{
+  content: '* ';
+  color: #F44336;
+  font-size: 0.9rem;
+}
+
+
+/* special style for 'required' */
+input.ng-dirty.ng-invalid-required:not(:focus) + label:after,
+select.ng-dirty.ng-invalid-required:not(:focus) + label:after,
+textarea.ng-dirty.ng-invalid-required:not(:focus) + label:after,
+.select-wrapper.ng-dirty.ng-invalid-required + label:after{
+  content: 'Required';
+  top: 32px;
+  opacity: 1;
+}
+
+.select-wrapper.ng-dirty.ng-invalid-required + label:after{
+  top: 65px;
 }

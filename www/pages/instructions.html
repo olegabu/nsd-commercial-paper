@@ -174,7 +174,7 @@
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="security" type="text" class="" ng-model="inst.security" required>
+            <input name="security" type="text" class="" ng-model="inst.security" required data-error="required">
             <label for="security">ISIN</label>
           </div>
         </div>
@@ -230,8 +230,11 @@
     <div class="modal-footer">
       <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getStub(inst.initiator)" value="prefill a->b "/>
 
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction(inst)" value="Ok"/>
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null">Cancel</a>
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat"
+             ng-click="ctl.sendInstruction(inst)"
+             ng-disabled="formInstruction.$invalid"
+             value="Ok"/>
+      <input type="reset" class="modal-action modal-close waves-effect waves-red btn-flat red lighten-4" ng-click="inst = null" value="Cancel"/>
     </div>
   </form>
 </div>
