@@ -90,7 +90,7 @@ function generatePeerArtifacts() {
     ORG=$1
     API_PORT=$2
 
-    echo "Creating peer yaml files with $DOMAIN, $ORG"
+    echo "Creating peer yaml files with $DOMAIN, $ORG, $API_PORT"
 
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-peer.yaml
@@ -361,7 +361,7 @@ function printHelp () {
 }
 
 # Parse commandline args
-while getopts "h?m:o:apiport:" opt; do
+while getopts "h?m:o:a:" opt; do
   case "$opt" in
     h|\?)
       printHelp
@@ -371,7 +371,7 @@ while getopts "h?m:o:apiport:" opt; do
     ;;
     o)  ORG=$OPTARG
     ;;
-    apiport)  API_PORT=$OPTARG
+    a)  API_PORT=$OPTARG
     ;;
   esac
 done
