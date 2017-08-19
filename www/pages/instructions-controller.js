@@ -243,12 +243,12 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
       security:'RU000ABC0001',
       transferer:{
-        account: "902",
-        division: "05",
+        account: "AC0689654902",
+        division: "87680000045800005",
       },
       receiver:{
-        account: "903",
-        division: "09",
+        account: "WD0D00654903",
+        division: "58680002816000009",
       },
       initiator: transferSide,
       quantity: 1,

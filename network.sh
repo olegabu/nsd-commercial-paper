@@ -235,7 +235,7 @@ function startDepository () {
       joinChannel ${ORG1} ${CHANNEL_NAME}
     done
 
-  installInstantiateWarmUp book depository '{"Args":["init","902","05","RU000ABC0001","100"]}'
+  installInstantiateWarmUp book depository '{"Args":["init","AC0689654902","87680000045800005","RU000ABC0001","100"]}'
 
   installInstantiateWarmUp security common '{"Args":["init","RU000ABC0001","active"]}'
 
@@ -243,7 +243,7 @@ function startDepository () {
 
   for CHANNEL_NAME in "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4"
     do
-      instantiateWarmUp instruction ${CHANNEL_NAME} '{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"902\",\"division\":\"05\"},{\"account\":\"902\",\"division\":\"06\"},{\"account\":\"904\",\"division\":\"07\"},{\"account\":\"904\",\"division\":\"08\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"903\",\"division\":\"09\"},{\"account\":\"903\",\"division\":\"10\"},{\"account\":\"905\",\"division\":\"11\"},{\"account\":\"905\",\"division\":\"12\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"906\",\"division\":\"13\"},{\"account\":\"906\",\"division\":\"14\"},{\"account\":\"908\",\"division\":\"15\"},{\"account\":\"908\",\"division\":\"16\"}]}]"]}'
+      instantiateWarmUp instruction ${CHANNEL_NAME} '{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'
     done
 
   installChaincode ${ORG1} position
@@ -372,7 +372,7 @@ function devNetworkDown () {
 
 function devInstallInstantiate () {
 # docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0"
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"902\",\"05\",\"RU000ABC0001\",\"100\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"AC0689654902\",\"87680000045800005\",\"RU000ABC0001\",\"100\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
@@ -384,18 +384,18 @@ function devInstallInstantiate () {
 }
 
 function devInvoke () {
- # ["902","05","903","09","RU000ABC0001","10"]
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"902\",\"05\",\"903\",\"09\",\"RU000ABC0001\",\"10\"]}'"
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"902\",\"05\",\"903\",\"09\",\"RU000ABC0001\",\"10\",\"a\",\"2017-08-12\",\"2017-08-12\"]}'"
+ # ["AC0689654902","87680000045800005","WD0D00654903","58680002816000009","RU000ABC0001","10"]
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"AC0689654902\",\"87680000045800005\",\"WD0D00654903\",\"58680002816000009\",\"RU000ABC0001\",\"10\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"AC0689654902\",\"87680000045800005\",\"WD0D00654903\",\"58680002816000009\",\"RU000ABC0001\",\"10\",\"a\",\"2017-08-12\",\"2017-08-12\"]}'"
 
- # ["DE000DB7HWY7","902","05","CA9861913023","903","09","RU000ABC0001","10","reference1000","2017-08-08","2017-08-07","reason"]
+ # ["DE000DB7HWY7","AC0689654902","87680000045800005","CA9861913023","WD0D00654903","58680002816000009","RU000ABC0001","10","reference1000","2017-08-08","2017-08-07","reason"]
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"check\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n security -v 0 -C myc -c '{\"Args\":[\"put\",\"RU000ABC0001\",\"redeemed\"]}'"
 
- # ["902","05","RU000ABC0001","10"]
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n position -v 0 -C myc -c '{\"Args\":[\"put\",\"902\",\"05\",\"RU000ABC0001\",\"10\"]}'"
+ # ["AC0689654902","87680000045800005","RU000ABC0001","10"]
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n position -v 0 -C myc -c '{\"Args\":[\"put\",\"AC0689654902\",\"87680000045800005\",\"RU000ABC0001\",\"10\"]}'"
 }
 
 function devQuery () {
