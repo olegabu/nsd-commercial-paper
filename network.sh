@@ -9,8 +9,8 @@ ORG4=c
 
 CLI_TIMEOUT=10000
 COMPOSE_FILE=ledger/docker-compose.yaml
-COMPOSE_TEMPLATE=ledger/docker-compose-template.yaml
-COMPOSE_FILE_DEV=ledger/docker-compose-dev.yaml
+COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
+COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
 
 # Delete any images that were generated as a part of this setup
 # specifically the following images are often left behind:
@@ -27,7 +27,7 @@ function removeUnwantedImages() {
 
 function removeArtifacts() {
   echo "Removing generated artifacts"
-  rm ledger/docker-compose.yaml
+  rm ledger/docker-compose-*.yaml
   rm -rf artifacts/crypto-config
   rm -rf artifacts/channel
 }
@@ -53,34 +53,25 @@ function removeDockersWithDomain() {
   fi
 }
 
-function generateArtifacts() {
-    echo "Creating yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $ORG4"
+function generateOrdererArtifacts() {
+    echo "Creating orderer yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $ORG4"
+
+    COMPOSE_FILE="ledger/docker-compose-$DOMAIN.yaml"
+    COMPOSE_TEMPLATE=ledger/docker-composetemplate-orderer.yaml
+
     # configtx and cryptogen
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" artifacts/cryptogentemplate-orderer.yaml > artifacts/"cryptogen-$DOMAIN.yaml"
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG1/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG1.yaml"
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG2/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG2.yaml"
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG3/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG3.yaml"
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG4/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG4.yaml"
     # docker-compose.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
     # network-config.json
     #  fill environments                                                                                            |   remove comments
     sed -e "s/\DOMAIN/$DOMAIN/g" -e "s/\ORG1/$ORG1/g" -e "s/\ORG2/$ORG2/g" -e "s/\ORG3/$ORG3/g" -e "s/\ORG4/$ORG4/g" -e "s/^\s*\/\/.*$//g" artifacts/network-config-template.json > artifacts/network-config.json
-    # fabric-ca-server-config.yaml
-    sed -e "s/ORG/$ORG1/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG1.yaml"
-    sed -e "s/ORG/$ORG2/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG2.yaml"
-    sed -e "s/ORG/$ORG3/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG3.yaml"
-    sed -e "s/ORG/$ORG4/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG4.yaml"
 
     echo "Generating crypto material with cryptogen"
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$DOMAIN.yaml"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG1.yaml"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG2.yaml"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG3.yaml"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG4.yaml"
 
-    echo "Change cryptomaterial ownership"
+    echo "Change artifacts file ownership"
     GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
@@ -93,32 +84,57 @@ function generateArtifacts() {
         echo "Generating channel config transaction for $CHANNEL_NAME"
         docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$CHANNEL_NAME" -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
     done
-
-    echo "Adding generated CA private keys filenames to yaml"
-    CA1_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG1.$DOMAIN"/ca/*_sk`)
-    CA2_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG2.$DOMAIN"/ca/*_sk`)
-    CA3_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG3.$DOMAIN"/ca/*_sk`)
-    CA4_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG4.$DOMAIN"/ca/*_sk`)
-    [[ -z  ${CA1_PRIVATE_KEY}  ]] && echo "empty CA1 private key" && exit 1
-    [[ -z  ${CA2_PRIVATE_KEY}  ]] && echo "empty CA2 private key" && exit 1
-    [[ -z  ${CA3_PRIVATE_KEY}  ]] && echo "empty CA3 private key" && exit 1
-    [[ -z  ${CA4_PRIVATE_KEY}  ]] && echo "empty CA4 private key" && exit 1
-    sed -i -e "s/CA1_PRIVATE_KEY/${CA1_PRIVATE_KEY}/g" -e "s/CA2_PRIVATE_KEY/${CA2_PRIVATE_KEY}/g" -e "s/CA3_PRIVATE_KEY/${CA3_PRIVATE_KEY}/g" -e "s/CA4_PRIVATE_KEY/${CA4_PRIVATE_KEY}/g" ${COMPOSE_FILE}
 }
+
+function generatePeerArtifacts() {
+    ORG=$1
+    API_PORT=$2
+
+    echo "Creating peer yaml files with $DOMAIN, $ORG"
+
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+    COMPOSE_TEMPLATE=ledger/docker-composetemplate-peer.yaml
+
+    # cryptogen
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
+
+    # docker-compose.yaml
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+
+    # fabric-ca-server-config.yaml
+    sed -e "s/ORG/$ORG/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG.yaml"
+
+    echo "Generating crypto material with cryptogen"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG.yaml"
+
+    echo "Change artifacts ownership"
+    GID=$(id -g)
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+
+    echo "Adding generated CA private keys filenames to $COMPOSE_FILE"
+    CA_PRIVATE_KEY=$(basename `ls artifacts/crypto-config/peerOrganizations/"$ORG.$DOMAIN"/ca/*_sk`)
+    [[ -z  ${CA_PRIVATE_KEY}  ]] && echo "empty CA private key" && exit 1
+    sed -i -e "s/CA_PRIVATE_KEY/${CA_PRIVATE_KEY}/g" ${COMPOSE_FILE}
+}
+
 
 function createChannel () {
     CHANNEL_NAME=$1
-    info "creating channel $CHANNEL_NAME by $ORG1"
+    F="ledger/docker-compose-${ORG1}.yaml"
 
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG1.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $CHANNEL_NAME -f /etc/hyperledger/artifacts/channel/$CHANNEL_NAME.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    info "creating channel $CHANNEL_NAME by $ORG1 using $F"
+
+    docker-compose --file ${F} run --rm "cli.$ORG1.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $CHANNEL_NAME -f /etc/hyperledger/artifacts/channel/$CHANNEL_NAME.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 }
 
 function joinChannel() {
     ORG=$1
     CHANNEL_NAME=$2
-    info "joining channel $CHANNEL_NAME by $ORG"
+    F="ledger/docker-compose-${ORG}.yaml"
 
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer channel join -b $CHANNEL_NAME.block      && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer channel join -b $CHANNEL_NAME.block"
+    info "joining channel $CHANNEL_NAME by $ORG using $F"
+
+    docker-compose --file ${F} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer channel join -b $CHANNEL_NAME.block      && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer channel join -b $CHANNEL_NAME.block"
 }
 
 function instantiateChaincode () {
@@ -126,65 +142,41 @@ function instantiateChaincode () {
     CHANNEL_NAME=$2
     N=$3
     I=$4
-    info "instantiating chaincode $N on $CHANNEL_NAME by $ORG with $I"
+    F="ledger/docker-compose-${ORG}.yaml"
 
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode instantiate -n $N -v 1.0 -c '$I' -o orderer.$DOMAIN:7050 -C $CHANNEL_NAME --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    info "instantiating chaincode $N on $CHANNEL_NAME by $ORG with $I using $F"
+
+    docker-compose --file ${F} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode instantiate -n $N -v 1.0 -c '$I' -o orderer.$DOMAIN:7050 -C $CHANNEL_NAME --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 }
 
 function warmUpChaincode () {
     ORG=$1
     CHANNEL_NAME=$2
     N=$3
-    info "warming up chaincode $N on $CHANNEL_NAME on all peers of $ORG with query"
+    F="ledger/docker-compose-${ORG}.yaml"
 
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode query -n $N -v 1.0 -c '{\"Args\":[\"query\"]}' -C $CHANNEL_NAME"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode query -n $N -v 1.0 -c '{\"Args\":[\"query\"]}' -C $CHANNEL_NAME"
+    info "warming up chaincode $N on $CHANNEL_NAME on all peers of $ORG with query using $F"
+
+    docker-compose --file ${F} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode query -n $N -v 1.0 -c '{\"Args\":[\"query\"]}' -C $CHANNEL_NAME"
+    docker-compose --file ${F} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode query -n $N -v 1.0 -c '{\"Args\":[\"query\"]}' -C $CHANNEL_NAME"
 }
 
 function installChaincode() {
-    N=$1
+    ORG=$1
+    N=$2
     # chaincode path is the same as chaincode name by convention: code of chaincode instruction lives in ./chaincode/go/instruction mapped to docker path /opt/gopath/src/instruction
     P=${N}
+    F="ledger/docker-compose-${ORG}.yaml"
 
-    for ORG in ${@:2}
-    do
-        info "installing chaincode $N to peers of $ORG from ./chaincode/go/$P"
-        docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P"
-    done
+    info "installing chaincode $N to peers of $ORG from ./chaincode/go/$P using $F"
+
+    docker-compose --file ${F} run --rm "cli.$ORG.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P && CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode install -n $N -v 1.0 -p $P"
 }
 
-function startChannel() {
-    CHANNEL_NAME=$1
+function dockerComposeUp () {
+  COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-    createChannel ${CHANNEL_NAME}
-
-    for ORG in ${@:2}
-    do
-        joinChannel ${ORG} ${CHANNEL_NAME}
-    done
-}
-
-function startChaincode() {
-    CHAINCODE_NAME=$1
-    CHAINCODE_INIT=$2
-    CHANNEL_NAME=$3
-    ORG1=$4
-
-    instantiateChaincode ${ORG1} ${CHANNEL_NAME} ${CHAINCODE_NAME} ${CHAINCODE_INIT}
-
-    sleep 5
-
-    for ORG in ${@:4}
-    do
-        warmUpChaincode ${ORG} ${CHANNEL_NAME} ${CHAINCODE_NAME}
-    done
-}
-
-function networkUp () {
-  # generate artifacts if they don't exist
-  if [ ! -d "artifacts/crypto-config" ]; then
-    generateArtifacts
-  fi
+  info "starting docker instances from $COMPOSE_FILE"
 
   TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE} up -d 2>&1
   if [ $? -ne 0 ]; then
@@ -192,50 +184,86 @@ function networkUp () {
     logs
     exit 1
   fi
+}
 
-  CHANNEL_NAME=depository
-  CHAINCODE_NAME=book
-  CHAINCODE_INIT='{"Args":["init","902","05","RU000ABC0001","100"]}'
+function dockerComposeDown () {
+  COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-  startChannel ${CHANNEL_NAME} ${ORG1}
-  installChaincode ${CHAINCODE_NAME} ${ORG1}
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1}
+  info "stopping docker instances from $COMPOSE_FILE"
 
-  CHANNEL_NAME=common
-  CHAINCODE_NAME=security
-  CHAINCODE_INIT='{"Args":["init","RU000ABC0001","active"]}'
+  docker-compose -f ${COMPOSE_FILE} down
+}
 
-  startChannel ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
-  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} ${CHANNEL_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+function installInstantiateWarmUp() {
+  CHAINCODE_NAME=$1
+  CHANNEL_NAME=$2
+  CHAINCODE_INIT=$3
 
-  CHAINCODE_NAME=instruction
-  CHAINCODE_INIT='{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"902\",\"division\":\"05\"},{\"account\":\"902\",\"division\":\"06\"},{\"account\":\"904\",\"division\":\"07\"},{\"account\":\"904\",\"division\":\"08\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"903\",\"division\":\"09\"},{\"account\":\"903\",\"division\":\"10\"},{\"account\":\"905\",\"division\":\"11\"},{\"account\":\"905\",\"division\":\"12\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"906\",\"division\":\"13\"},{\"account\":\"906\",\"division\":\"14\"},{\"account\":\"908\",\"division\":\"15\"},{\"account\":\"908\",\"division\":\"16\"}]}]"]}'
+  installChaincode ${ORG1} ${CHAINCODE_NAME}
+  instantiateWarmUp ${CHAINCODE_NAME} ${CHANNEL_NAME} ${CHAINCODE_INIT}
+}
 
-  startChannel "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
-  startChannel "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
-  startChannel "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
+function instantiateWarmUp() {
+  CHAINCODE_NAME=$1
+  CHANNEL_NAME=$2
+  CHAINCODE_INIT=$3
 
-  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  instantiateChaincode ${ORG1} ${CHANNEL_NAME} ${CHAINCODE_NAME} ${CHAINCODE_INIT}
+  sleep 7
+  warmUpChaincode ${ORG1} ${CHANNEL_NAME} ${CHAINCODE_NAME}
+}
 
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG3" ${ORG1} ${ORG2} ${ORG3}
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG2-$ORG4" ${ORG1} ${ORG2} ${ORG4}
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG3-$ORG4" ${ORG1} ${ORG3} ${ORG4}
+function joinWarmUp() {
+  ORG=$1
+  CHAINCODE_NAME=$2
+  CHANNEL_NAME=$3
 
-  CHAINCODE_NAME=position
-  CHAINCODE_INIT='{"Args":["init"]}'
+  joinChannel ${ORG} ${CHANNEL_NAME}
+  sleep 7
+  warmUpChaincode ${ORG} ${CHANNEL_NAME} ${CHAINCODE_NAME}
+}
 
-  startChannel "$ORG1-$ORG2" ${ORG1} ${ORG2}
-  startChannel "$ORG1-$ORG3" ${ORG1} ${ORG3}
-  startChannel "$ORG1-$ORG4" ${ORG1} ${ORG4}
+function startDepository () {
+  for CHANNEL_NAME in depository common "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4" "$ORG1-$ORG2" "$ORG1-$ORG3" "$ORG1-$ORG4"
+    do
+      createChannel ${CHANNEL_NAME}
+      joinChannel ${ORG1} ${CHANNEL_NAME}
+    done
 
-  installChaincode ${CHAINCODE_NAME} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  installInstantiateWarmUp book depository '{"Args":["init","902","05","RU000ABC0001","100"]}'
 
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG2" ${ORG1} ${ORG2}
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG3" ${ORG1} ${ORG3}
-  startChaincode ${CHAINCODE_NAME} ${CHAINCODE_INIT} "$ORG1-$ORG4" ${ORG1} ${ORG4}
+  installInstantiateWarmUp security common '{"Args":["init","RU000ABC0001","active"]}'
 
-  #logs
+  installChaincode ${ORG1} instruction
+
+  for CHANNEL_NAME in "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4"
+    do
+      instantiateWarmUp instruction ${CHANNEL_NAME} '{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"902\",\"division\":\"05\"},{\"account\":\"902\",\"division\":\"06\"},{\"account\":\"904\",\"division\":\"07\"},{\"account\":\"904\",\"division\":\"08\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"903\",\"division\":\"09\"},{\"account\":\"903\",\"division\":\"10\"},{\"account\":\"905\",\"division\":\"11\"},{\"account\":\"905\",\"division\":\"12\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"906\",\"division\":\"13\"},{\"account\":\"906\",\"division\":\"14\"},{\"account\":\"908\",\"division\":\"15\"},{\"account\":\"908\",\"division\":\"16\"}]}]"]}'
+    done
+
+  installChaincode ${ORG1} position
+
+  for CHANNEL_NAME in "$ORG1-$ORG2" "$ORG1-$ORG3" "$ORG1-$ORG4"
+    do
+      instantiateWarmUp position ${CHANNEL_NAME} '{"Args":["init"]}'
+    done
+}
+
+function startMember () {
+  ORG=$1
+
+  installChaincode ${ORG} security
+  installChaincode ${ORG} instruction
+  installChaincode ${ORG} position
+
+  joinWarmUp ${ORG} security common
+
+  joinWarmUp ${ORG} position "${ORG1}-${ORG}"
+
+  for CHANNEL_NAME in ${@:2}
+    do
+      joinWarmUp ${ORG} instruction ${CHANNEL_NAME}
+    done
 }
 
 function devNetworkUp () {
@@ -305,14 +333,6 @@ function devLogs () {
     TIMEOUT=${CLI_TIMEOUT} COMPOSE_HTTP_TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE_DEV} logs -f
 }
 
-function networkDown () {
-  docker-compose -f ${COMPOSE_FILE} down
-  # Don't remove containers, images, etc if restarting
-  if [ "$MODE" != "restart" ]; then
-    clean
-  fi
-}
-
 function clean() {
   removeDockersFromCompose
   removeDockersWithDomain
@@ -341,7 +361,7 @@ function printHelp () {
 }
 
 # Parse commandline args
-while getopts "h?m:" opt; do
+while getopts "h?m:o:apiport:" opt; do
   case "$opt" in
     h|\?)
       printHelp
@@ -349,22 +369,58 @@ while getopts "h?m:" opt; do
     ;;
     m)  MODE=$OPTARG
     ;;
+    o)  ORG=$OPTARG
+    ;;
+    apiport)  API_PORT=$OPTARG
+    ;;
   esac
 done
 
 if [ "${MODE}" == "up" ]; then
-  networkUp
+  dockerComposeUp ${DOMAIN}
+  dockerComposeUp ${ORG1}
+  dockerComposeUp ${ORG2}
+  dockerComposeUp ${ORG3}
+  dockerComposeUp ${ORG4}
+  startDepository
+  startMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+  startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
+  startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "down" ]; then
-  networkDown
+  dockerComposeDown ${DOMAIN}
+  dockerComposeDown ${ORG1}
+  dockerComposeDown ${ORG2}
+  dockerComposeDown ${ORG3}
+  dockerComposeDown ${ORG4}
 elif [ "${MODE}" == "clean" ]; then
   clean
 elif [ "${MODE}" == "generate" ]; then
   clean
   removeArtifacts
-  generateArtifacts
-elif [ "${MODE}" == "restart" ]; then
-  networkDown
-  networkUp
+  generatePeerArtifacts ${ORG1} 4000
+  generatePeerArtifacts ${ORG2} 4001
+  generatePeerArtifacts ${ORG3} 4002
+  generatePeerArtifacts ${ORG4} 4003
+  generateOrdererArtifacts
+elif [ "${MODE}" == "generate-orderer" ]; then
+  generateOrdererArtifacts
+elif [ "${MODE}" == "generate-peer" ]; then
+  clean
+  removeArtifacts
+  generatePeerArtifacts ${ORG} ${API_PORT}
+elif [ "${MODE}" == "up-depository" ]; then
+  dockerComposeUp ${DOMAIN}
+  dockerComposeUp ${ORG1}
+  startDepository
+elif [ "${MODE}" == "up-2" ]; then
+  dockerComposeUp ${ORG2}
+  startMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+elif [ "${MODE}" == "up-3" ]; then
+  dockerComposeUp ${ORG3}
+  startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
+elif [ "${MODE}" == "up-4" ]; then
+  dockerComposeUp ${ORG4}
+  startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "logs" ]; then
   logs
 elif [ "${MODE}" == "devup" ]; then
