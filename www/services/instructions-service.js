@@ -176,7 +176,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       .then(function(result){
         // get pure value
         return result.map(function(singleValue){
-          return Object.assign(singleValue.value, instructionKey);
+          return Object.assign(singleValue.value, instructionKey, {_created:new Date(singleValue.timestamp) });
         });
       });
   }
