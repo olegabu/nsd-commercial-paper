@@ -175,8 +175,9 @@
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="i_security" type="text" class="" ng-model="inst.security" required data-error="required">
+            <input name="i_security" type="text" class="uppercase" ng-model="inst.security" required ng-length="12">
             <label for="i_security">ISIN</label>
+            <span class="input-error-message" ng-show="formInstruction.i_security.$error.length">Should be exactly 12 characters</span>
           </div>
         </div>
 
@@ -188,7 +189,7 @@
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <input name="i_reference" type="text" class="" ng-model="inst.reference" required>
+            <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16">
             <label for="i_reference">Reference</label>
           </div>
         </div>

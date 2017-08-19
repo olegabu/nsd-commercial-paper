@@ -45,6 +45,29 @@ angular.module('nsd.directive.form', [])
     };
   })
 
+  .directive('ngLength', function() {
+    return {
+      require: 'ngModel',
+      link: function(scope, elm, attrs, ctrl) {
+        var length = parseInt(attrs['ngLength']);
+        if(!length){
+          throw new Error('ngLength should have a value' );
+        }
+        ctrl.$validators.length = function(modelValue, viewValue) {
+          if (ctrl.$isEmpty(modelValue)) {
+            // consider empty models to be valid
+            return true;
+          }
+
+          return (''+viewValue).length == length;
+        };
+      }
+    };
+  })
+
+
+
+
   .directive('input', function() {
     return {
       restrict:'E',

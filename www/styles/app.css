@@ -194,6 +194,19 @@ textarea.ng-invalid + label:after,
   text-transform: lowercase;
 }
 
+.input-error-message{
+  color: #F44336;
+  transition: .2s opacity ease-out, .2s color ease-out, .2s top ease-out;
+  font-size: 0.9rem;
+  text-transform: lowercase;
+
+  top: -5px;
+  height: 0;
+  display: block;
+  position: relative;
+  line-height: 0;
+}
+
 input.ng-dirty.ng-invalid + label:after,
 select.ng-dirty.ng-invalid + label:after,
 textarea.ng-dirty.ng-invalid + label:after,
@@ -230,6 +243,10 @@ textarea.ng-dirty.ng-invalid-required:not(:focus) + label:after,
 
 .select-wrapper.ng-dirty.ng-invalid-required + label:after{
   top: 65px;
+}
+
+.uppercase{
+  text-transform: uppercase;
 }
 
 
