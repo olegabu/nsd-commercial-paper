@@ -564,6 +564,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(callerIsReceiver && instruction.Value.Initiator == InitiatorIsReceiver) ||
 			(instruction.Value.Status == InstructionMatched) ||
 			(instruction.Value.Status == InstructionSigned) ||
+			(instruction.Value.Status == InstructionExecuted) ||
 			(instruction.Value.Status == InstructionDeclined) {
 			instructions = append(instructions, instruction)
 		}
