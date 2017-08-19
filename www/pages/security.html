@@ -47,7 +47,7 @@
 
 <!-- Modal Structure -->
 <div id="newCalendarEntry" class="modal modal-fixed-footer">
-  <form name="form" class="form-horizontal" novalidate>
+  <form name="calendarEntryForm" class="form-horizontal" novalidate>
     <div class="modal-content">
       <h4>Calendar Entry</h4>
 
@@ -72,21 +72,19 @@
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">schedule</i>
-            <input name="ce_date" type="text" class="validate datepicker" ng-model="centry.date" input-date>
+            <input name="ce_date" type="text" class="datepicker" ng-model="centry.date" input-date required>
             <label for="ce_date">Calendar entry date</label>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
-            <input name="ce_reference" type="text" class="validate" ng-model="centry.code" required>
+            <input name="ce_reference" type="text" class="" ng-model="centry.code" required>
             <label for="ce_reference">Code</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
             <textarea id="ce_description" name="ce_description" class="materialize-textarea" ng-model="centry.description"></textarea>
             <label for="ce_description">Description</label>
           </div>
@@ -94,8 +92,12 @@
 
     </div>
     <div class="modal-footer">
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendCEntry()" value="Ok"/>
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="centry=null;">Cancel</a>
+
+      <input type="submit"
+            class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
+            ng-disabled="calendarEntryForm.$invalid"
+            ng-click="ctl.sendCEntry(redemption)" value="Ok"/>.
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="centry = null" value="Cancel"/>
     </div>
   </form>
 </div>

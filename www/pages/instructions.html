@@ -46,8 +46,8 @@
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
             <tr class="odd-{{::$index % 2}}">
-                <th ng-if="o.initiator=='transferer'">16</th>
-                <th ng-if="o.initiator=='receiver'">16/1</th>
+                <th ng-if="::o.initiator=='transferer'">16</th>
+                <th ng-if="::o.initiator=='receiver'">16/1</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -61,12 +61,13 @@
                       ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
                 <td>{{::o.initiator}}</td>
-                <td>{{::o.reason.transferer}} <i>TBD</i> </td>
+                <td ng-if="::o.initiator=='transferer'">{{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</td>
+                <td ng-if="::o.initiator=='receiver'">{{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}</td>
             </tr>
 
             <tr ng-if="::o.status!='initiated' && o.status!='canceled'" class="odd-{{::$index % 2}}">
-                <th ng-if="o.initiator=='transferer'">16/1</th>
-                <th ng-if="o.initiator=='receiver'">16</th>
+                <th ng-if="::o.initiator=='receiver'">16</th>
+                <th ng-if="::o.initiator=='transferer'">16/1</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -78,7 +79,8 @@
                   <div class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</div>
                 </td>
                 <td>{{::o.initiator}}</td>
-                <td>{{::o.reason.receiver}} <i>TBD</i> </td>
+                <td ng-if="::o.initiator=='receiver'">{{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</td>
+                <td ng-if="::o.initiator=='transferer'">{{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}</td>
             </tr>
 
         </tbody>
@@ -94,7 +96,6 @@
       </table>
   </div>
 
-
 </div>
 <!-- <div ng-hide="ctl.list.length">
   <i>No channels</i>
@@ -106,7 +107,7 @@
   Create transfer/receive instruction
   -->
 <div id="transferInstruction" class="modal modal-fixed-footer">
-  <form name="form" class="form-horizontal" novalidate>
+  <form name="formInstruction" class="form-horizontal" novalidate>
     <div class="modal-content">
       <h4>{{inst.initiator=='transferer'?'Transfer':'Receive'}} Instruction</h4>
 
@@ -115,29 +116,29 @@
           <div class="input-field col s5">
             <i class="material-icons prefix">call_made</i>
             <i class="material-icons postfix" ng-show="inst.initiator=='transferer'">lock</i>
-            <input name="t_dep" type="text" class="validate locked" ng-model="inst.deponentFrom" required ng-disabled="inst.initiator=='transferer'">
-            <label for="t_dep">Deponent code</label>
+            <input name="i_t_dep" type="text" class="locked" ng-model="inst.deponentFrom" required ng-disabled="inst.initiator=='transferer'">
+            <label for="i_t_dep">Deponent code</label>
           </div>
 
           <div class="input-field col s4" ng-show="inst.initiator=='transferer'">
-            <select ng-model="inst.transferer.account" name="t_acc" material-select watch class="validate"
+            <select ng-model="inst.transferer.account" name="i_t_acc" material-select watch class=""
                     ng-options="n as n for (n, o) in ctl.accountFrom.acc" placeholder="Account" required></select>
-            <label for="t_acc">Account</label>
+            <label for="i_t_acc">Account</label>
           </div>
           <div class="input-field col s4" ng-hide="inst.initiator=='transferer'">
-            <input name="t_acc" type="text" class="validate" ng-model="inst.transferer.account" required>
-            <label for="t_acc">Account</label>
+            <input name="i_t_acc" type="text" class="" ng-model="inst.transferer.account" required>
+            <label for="i_t_acc">Account</label>
           </div>
 
 
           <div class="input-field col s3" ng-show="inst.initiator=='transferer'">
-            <select ng-model="inst.transferer.division" name="t_acc" material-select watch class="validate"
+            <select ng-model="inst.transferer.division" name="i_t_acc" material-select watch class=""
                     ng-options="o for o in ctl.accountFrom.acc[inst.transferer.account]" placeholder="Division" required></select>
-            <label for="t_div">Division</label>
+            <label for="i_t_div">Division</label>
           </div>
           <div class="input-field col s3" ng-hide="inst.initiator=='transferer'">
-            <input name="t_div" type="text" class="validate" ng-model="inst.transferer.division" required>
-            <label for="t_div">Division</label>
+            <input name="i_t_div" type="text" class="" ng-model="inst.transferer.division" required>
+            <label for="i_t_div">Division</label>
           </div>
         </div>
 
@@ -146,64 +147,64 @@
            <div class="input-field col s5">
             <i class="material-icons prefix">call_received</i>
             <i class="material-icons postfix" ng-show="inst.initiator=='receiver'">lock</i>
-            <input name="t_dep" type="text" class="validate locked" ng-model="inst.deponentTo" required ng-disabled="inst.initiator=='receiver'">
-            <label for="t_dep">Deponent code</label>
+            <input name="i_r_dep" type="text" class=" locked" ng-model="inst.deponentTo" required ng-disabled="inst.initiator=='receiver'">
+            <label for="i_r_dep">Deponent code</label>
           </div>
 
           <div class="input-field col s4" ng-show="inst.initiator=='receiver'">
-            <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.account"
+            <select name="i_r_acc" material-select watch class="" ng-model="inst.receiver.account"
                     ng-options="n as n for (n, o) in ctl.accountTo.acc" placeholder="Account" required></select>
-            <label for="t_acc">Account</label>
+            <label for="i_r_acc">Account</label>
           </div>
           <div class="input-field col s4" ng-hide="inst.initiator=='receiver'">
-            <input name="t_acc" type="text" class="validate" ng-model="inst.receiver.account" required>
-            <label for="t_acc">Account</label>
+            <input name="i_r_acc" type="text" class="" ng-model="inst.receiver.account" required>
+            <label for="i_r_acc">Account</label>
           </div>
 
 
           <div class="input-field col s3" ng-show="inst.initiator=='receiver'">
-            <select name="t_acc" material-select watch class="validate" ng-model="inst.receiver.division"
+            <select name="i_r_div" material-select watch class="" ng-model="inst.receiver.division"
                     ng-options="o for o in ctl.accountTo.acc[inst.receiver.account]" placeholder="Division" required></select>
-            <label for="t_div">Division</label>
+            <label for="i_r_div">Division</label>
           </div>
           <div class="input-field col s3" ng-hide="inst.initiator=='receiver'">
-            <input name="t_div" type="text" class="validate" ng-model="inst.receiver.division" required>
-            <label for="t_div">Division</label>
+            <input name="i_r_div" type="text" class="" ng-model="inst.receiver.division" required>
+            <label for="i_r_div">Division</label>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="security" type="text" class="validate" ng-model="inst.security" required>
-            <label for="security">ISIN</label>
+            <input name="i_security" type="text" class="uppercase" ng-model="inst.security" required ng-length="12">
+            <label for="i_security">ISIN</label>
+            <span class="input-error-message" ng-show="formInstruction.i_security.$error.length">Should be exactly 12 characters</span>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="quantity" type="number" min="0" class="validate" ng-model="inst.quantity" required>
-            <label for="quantity">Quantity</label>
+            <input name="i_quantity" type="number" min="0" class="" ng-model="inst.quantity" required>
+            <label for="i_quantity">Quantity</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
-            <input name="reference" type="text" class="validate" ng-model="inst.reference" required>
-            <label for="reference">Reference</label>
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <i class="material-icons prefix">schedule</i>
-            <input name="trade_date" type="text" class="validate datepicker" ng-model="inst.tradeDate" input-date>
-            <label for="trade_date">Trade Date</label>
+            <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16">
+            <label for="i_reference">Reference</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
             <i class="material-icons prefix">schedule</i>
-            <input name="instruction_date" type="text" class="validate datepicker" ng-model="inst.instructionDate" input-date>
-            <label for="instruction_date">Instruction Date</label>
+            <input name="i_trade_date" type="text" class="datepicker" ng-model="inst.tradeDate" input-date>
+            <label for="i_trade_date">Trade Date</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <i class="material-icons prefix">schedule</i>
+            <input name="i_instruction_date" type="text" class="datepicker" ng-model="inst.instructionDate" input-date>
+            <label for="i_instruction_date">Instruction Date</label>
           </div>
         </div>
 
@@ -212,28 +213,30 @@
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">textsms</i>
-            <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
-            <label for="a_description">Description</label>
+            <textarea name="i_a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
+            <label for="i_a_description">Description</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s8">
-            <input id="a_document" name="a_document" type="text" class="validate" ng-model="inst.reason.document">
-            <label for="a_document">Document number</label>
+            <input name="i_a_document" type="text" class="" ng-model="inst.reason.document">
+            <label for="i_a_document">Document number</label>
           </div>
           <div class="input-field col s4">
             <i class="material-icons prefix">schedule</i>
-            <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="inst.reason.created" input-date>
-            <label for="a_created">Document date</label>
+            <input name="i_a_created" type="text" class="datepicker" ng-model="inst.reason.created" input-date>
+            <label for="i_a_created">Document date</label>
           </div>
         </div>
     </div>
     <div class="modal-footer">
       <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getStub(inst.initiator)" value="prefill a->b "/>
 
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="ctl.sendInstruction(inst)" value="Ok"/>
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null">Cancel</a>
+      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat"
+             ng-click="ctl.sendInstruction(inst)"
+             ng-disabled="formInstruction.$invalid"
+             value="Ok"/>
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" value="Cancel"/>
     </div>
   </form>
 </div>
@@ -243,52 +246,60 @@
   Redemption
 -->
 <div id="redemption" class="modal modal-fixed-footer">
-  <form name="form" class="form-horizontal" novalidate>
+  <form name="formRedemption" class="form-horizontal" novalidate>
     <div class="modal-content">
       <h4>Create Redemption Instruction</h4>
 
 
       <div class="row">
         <div class="input-field col s12">
-          <input name="security" type="text" class="validate" ng-model="redemption.security" required>
-          <label for="security">ISIN</label>
+          <input name="r_security" type="text" class="" ng-model="redemption.security" required>
+          <label for="r_security">ISIN</label>
         </div>
       </div>
 
+      <div class="row" hidden>
+        <div class="input-field col s12">
+          <input name="r_reference" type="text" class="" ng-model="inst.instructionNum">
+          <label for="r_reference">Instruction ID</label>
+        </div>
+      </div>
+<!--
       <div class="row">
         <div class="input-field col s12">
-          <i class="material-icons prefix">textsms</i>
-          <input name="reference" type="text" class="validate" ng-model="redemption.reference" required>
-          <label for="reference">Reference</label>
+          <input name="r_reference" type="text" class="" ng-model="redemption.reference" required>
+          <label for="r_reference">Reference</label>
         </div>
       </div>
-
+-->
       <div class="row">
           <h5 class="col s12">Reason</h5>
       </div>
       <div class="row">
         <div class="input-field col s12">
-          <i class="material-icons prefix">textsms</i>
-          <textarea id="a_description" name="a_description" class="materialize-textarea" ng-model="redemption.reason.description"></textarea>
-          <label for="a_description">Description</label>
+          <textarea name="r_a_description" class="materialize-textarea" ng-model="redemption.reason.description"></textarea>
+          <label for="r_a_description">Description</label>
         </div>
       </div>
       <div class="row">
         <div class="input-field col s8">
-          <input id="a_document" name="a_document" type="text" class="validate" ng-model="redemption.reason.document">
-          <label for="a_document">Document number</label>
+          <input name="r_a_document" type="text" class="" ng-model="redemption.reason.document">
+          <label for="r_a_document">Document number</label>
         </div>
         <div class="input-field col s4">
           <i class="material-icons prefix">schedule</i>
-          <input id="a_created" name="a_created" type="text" class="validate datepicker" ng-model="redemption.reason.created" input-date>
-          <label for="a_created">Document date</label>
+          <input name="r_a_created" type="text" class="datepicker" ng-model="redemption.reason.created" input-date>
+          <label for="r_a_created">Document date</label>
         </div>
       </div>
 
      </div>
     <div class="modal-footer">
-      <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat red white-text" ng-disabled="form.$invalid" ng-click="ctl.sendRedemption(redemption)" value="Ok"/>
-      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="redemption = null">Cancel</a>
+      <input type="submit"
+            class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
+            ng-disabled="formRedemption.$invalid"
+            ng-click="ctl.sendRedemption(redemption)" value="Ok"/>.
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" value="Cancel"/>
     </div>
   </form>
 </div>
@@ -304,7 +315,7 @@
           <table class="table-bordered highlight responsive-table">
           <thead>
               <tr>
-                  <th>#</th>
+                  <th>Created</th>
                   <th>Transferer</th>
                   <th>Receiver</th>
                   <th>Security</th>
@@ -313,13 +324,12 @@
                   <th>Instruction Date</th>
                   <th>Trade Date</th>
                   <th>Status</th>
-                  <th>Initiator</th>
                   <th>Reason</th>
               </tr>
           </thead>
           <tbody>
-              <tr ng-repeat="o in $options.history|orderBy:['instructionDate']" >
-                  <th ng-if="o.initiator=='transferer'">{{::$index+1}}</th>
+              <tr ng-repeat="o in $options.history|orderBy:['-_created']" >
+                  <td class="grey-text nowrap">{{::o._created|date:'M/d/yy H:mm:ss'}}</td>
                   <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                   <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                   <td>{{::o.security}}</td>
@@ -330,8 +340,11 @@
                   <td class="center">
                     <div class="{{::$options.getStatusClass(o.status)}}">{{::o.status}}</div>
                   </td>
-                  <td>{{::o.initiator}}</td>
-                  <td>{{::o.reason.transferer}} <i>TBD</i> </td>
+                  <td>
+                    {{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}
+                    <br/>
+                    {{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}
+                  </td>
               </tr>
 
           </tbody>
