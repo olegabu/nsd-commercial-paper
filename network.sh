@@ -264,6 +264,8 @@ function startMember () {
     do
       joinWarmUp ${ORG} instruction ${CHANNEL_NAME}
     done
+
+  logs ${ORG}
 }
 
 function makeCertDirs() {
@@ -272,21 +274,21 @@ function makeCertDirs() {
 
   for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
     do
-	# crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt
-	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
-	echo "mkdir -p ${D}"
-	mkdir -p ${D}
+        # crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt
+        D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+        echo "mkdir -p ${D}"
+        mkdir -p ${D}
     done
 }
 
 function copyMemberMSP() {
   for ORG in ${ORG2} ${ORG3} ${ORG4}
     do
-	# cp ../a/artifacts/crypto-config/peerOrganizations/a.nsd.ru/msp/ artifacts/crypto-config/peerOrganizations/a.nsd.ru
-	S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/"
-	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
-	echo "cp -r $S $D"
-        cp -r ${S} ${D}
+        # cp ../a/artifacts/crypto-config/peerOrganizations/a.nsd.ru/msp/ artifacts/crypto-config/peerOrganizations/a.nsd.ru
+        S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/"
+        D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
+        echo "cp -r $S $D"
+            cp -r ${S} ${D}
     done
 }
 
@@ -408,7 +410,9 @@ function info() {
 }
 
 function logs () {
-    TIMEOUT=${CLI_TIMEOUT} COMPOSE_HTTP_TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE} logs -f
+  COMPOSE_FILE="ledger/docker-compose-$1.yaml"
+
+  TIMEOUT=${CLI_TIMEOUT} COMPOSE_HTTP_TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE} logs -f
 }
 
 function devLogs () {
@@ -506,7 +510,7 @@ elif [ "${MODE}" == "up-3" ]; then
 elif [ "${MODE}" == "up-4" ]; then
   startMemberWithCopy ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "logs" ]; then
-  logs
+  logs ${ORG}
 elif [ "${MODE}" == "devup" ]; then
   devNetworkUp
 elif [ "${MODE}" == "devinit" ]; then
