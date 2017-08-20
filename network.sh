@@ -186,7 +186,7 @@ function dockerComposeUp () {
   TIMEOUT=${CLI_TIMEOUT} docker-compose -f ${COMPOSE_FILE} up -d 2>&1
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to start network"
-    logs
+    logs ${1}
     exit 1
   fi
 }
@@ -252,6 +252,8 @@ function startDepository () {
     do
       instantiateWarmUp position ${CHANNEL_NAME} '{"Args":["init"]}'
     done
+
+  logs ${DOMAIN}
 }
 
 function startMember () {
@@ -293,7 +295,7 @@ function copyMemberMSP() {
         S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/"
         D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
         echo "cp -r $S $D"
-            cp -r ${S} ${D}
+        cp -r ${S} ${D}
     done
 }
 

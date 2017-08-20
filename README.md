@@ -3,7 +3,7 @@
 Decentralized application manages instructions to transfer securities between members of NSD.
 See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2PjBoSN_M2hXXtBFyUv9HACu0Q-6WWqCv_TRcdIS8Y/edit?usp=sharing).
 
-# Chaincode Development
+# Chaincode development
 
 Use docker instances to support chaincode development and debugging in an IDE.
 
@@ -40,16 +40,16 @@ Watch the logs and shutdown:
 ./network.sh -m devdown
 ```
 
-# Local Deployment
+# Local deployment with all dockers run from the same folder
 
 Use docker instances to support four members on a local host.
 
 Generate crypto material, genesis block, config transactions and start a network for a consortium of four organizations:
 
-1. nsd
-1. issuer
-1. investor a
-1. investor b
+1. depository nsd
+1. member a issuer
+1. member b investor
+1. member c investor
 
 Each organization starts several docker instances:
 
@@ -60,10 +60,14 @@ Each organization starts several docker instances:
 
 Following channels are created, peers join them and chaincodes are installed and instantiated:
 
+1. common (*members*: nsd, a, b, c, chaincodes: [security](chaincode/go/security))
 1. depository (*members*: nsd, chaincodes: [book](chaincode/go/book))
-1. issuer-a (*members*: nsd, issuer, investor a, chaincode: instruction)
-1. issuer-b (*members*: nsd, issuer, investor b, chaincode: instruction)
-1. a-b (*members*: nsd, investor b, investor a, chaincode: instruction)
+1. a-b (*members*: nsd, a, b, chaincode: [instruction](chaincode/go/instruction))
+1. a-c (*members*: nsd, a, c, chaincode: [instruction](chaincode/go/instruction))
+1. b-c (*members*: nsd, b, c, chaincode: [instruction](chaincode/go/instruction))
+1. nsd-a (*members*: nsd, a, chaincode: [position](chaincode/go/position))
+1. nsd-b (*members*: nsd, b, chaincode: [position](chaincode/go/position))
+1. nsd-c (*members*: nsd, c, chaincode: [position](chaincode/go/position))
 
 Generate artifacts for the network and network-config file for the API server:
 
@@ -78,14 +82,85 @@ Start the network, watch the logs, shutdown.
 
 ```
 ./network.sh -m up
-./network.sh -m logs
+./network.sh -m logs -o nsd
+./network.sh -m logs -o a
+./network.sh -m logs -o b
 ./network.sh -m down
 ```
 
 Navigate to web interfaces of respective organizations at ports 4000-4003:
 
-1. [nsd](http://localhost:4000)
-1. [issuer](http://localhost:4001)
-1. [investor a](http://localhost:4002)
-1. [investor b](http://localhost:4003)
+1. [depository nsd](http://localhost:4000)
+1. [issuer a](http://localhost:4001)
+1. [investor b](http://localhost:4002)
+1. [investor c](http://localhost:4003)
+
+# Local deployment with run from separate folders
+
+Use to test artifacts generation and certificate exchange. Clone repo into separate directories imitating separate
+host servers. Docker instances still operate withing `ledger_default` network on the developer's host machine.
+
+Clone repo and copy into 4 folders representing host servers for orderer and depository and for each member:
+
+```bash
+mkdir tmp
+cd tmp
+git clone https://olegabu@github.com/olegabu/nsd-commercial-paper
+mv nsd-commercial-paper nsd
+cp -r nsd a
+cp -r nsd b
+cp -r nsd c
+```
+
+Generate artifacts for the depository and each member. Pass organization name with `-o` and api server port as mapped to
+the host machine with `-a`.
+
+```bash
+cd nsd
+./network.sh -m generate-peer -o nsd -a 4000
+cd ../a
+./network.sh -m generate-peer -o a -a 4001
+cd ../b
+./network.sh -m generate-peer -o b -a 4002
+cd ../c
+./network.sh -m generate-peer -o c -a 4003
+```
+
+Now each member has generated their crypto material. The orderer can gather member certificates and use them to generate
+genesis block files `artifacts/*.block` and channel config transaction files `artifacts/channel/*.tx`. The script will
+copy cert files from respective member directories `a`, `b`, `c` into the folder `nsd` shared by depository nsd
+and the orderer.
+
+```bash
+cd ../nsd
+./network.sh -m generate-orderer
+```
+
+Start the orderer and the depository peers: nsd. Will create and join channels, install and instantiate chaincodes
+on nsd peers:
+
+```bash
+./network.sh -m up-depository
+``` 
+
+Open terminal windows and start member instances. The script will copy cert files, channel block files received 
+at creation of channels in the previous step and network-config from `nsd/artifacts` folder into its own `artifacts`. 
+Will start the ca server, peers and api server and tail the their logs.
+
+```bash
+cd tmp/a
+./network.sh -m up-2
+``` 
+```bash
+cd tmp/b
+./network.sh -m up-3
+``` 
+```bash
+cd tmp/c
+./network.sh -m up-4
+``` 
+
+
+
+
 
