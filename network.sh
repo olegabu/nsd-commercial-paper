@@ -33,9 +33,9 @@ function removeArtifacts() {
 }
 
 function removeDockersFromCompose() {
-    for ORG in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+    for O in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
     do
-      COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+      COMPOSE_FILE="ledger/docker-compose-$O.yaml"
 
       if [ -f ${COMPOSE_FILE} ]; then
         echo "Removing docker containers listed in $COMPOSE_FILE"
