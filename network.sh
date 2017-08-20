@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 STARTTIME=$(date +%s)
 
 DOMAIN=nsd.ru
@@ -8,7 +9,6 @@ ORG3=b
 ORG4=c
 
 CLI_TIMEOUT=10000
-COMPOSE_FILE=ledger/docker-compose.yaml
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
 
@@ -33,13 +33,18 @@ function removeArtifacts() {
 }
 
 function removeDockersFromCompose() {
-  if [ -f ${COMPOSE_FILE} ]; then
-    echo "Removing docker containers listed in $COMPOSE_FILE"
-    docker-compose -f ${COMPOSE_FILE} kill
-    docker-compose -f ${COMPOSE_FILE} rm -f
-  else
-    echo "No generated $COMPOSE_FILE and no docker instances to remove"
-  fi;
+    for ORG in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+    do
+      COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+
+      if [ -f ${COMPOSE_FILE} ]; then
+        echo "Removing docker containers listed in $COMPOSE_FILE"
+        docker-compose -f ${COMPOSE_FILE} kill
+        docker-compose -f ${COMPOSE_FILE} rm -f
+      else
+        echo "No generated $COMPOSE_FILE and no docker instances to remove"
+      fi;
+    done
 }
 
 function removeDockersWithDomain() {
