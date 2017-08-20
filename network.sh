@@ -266,6 +266,27 @@ function startMember () {
     done
 }
 
+function makeCertDirs() {
+  # crypto-config/ordererOrganizations/nsd.ru/orderers/orderer.nsd.ru/tls/ca.crt"
+  mkdir -p "artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls"
+
+  for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+    do
+      # crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt
+      mkdir -p "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+    done
+}
+
+function copyMemberCerts() {
+  mkdir -p "artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls"
+
+  for ORG in ${ORG2} ${ORG3} ${ORG4}
+    do
+      # cp ../a/artifacts/crypto-config/peerOrganizations/a.nsd.ru/msp/ artifacts/crypto-config/peerOrganizations/a.nsd.ru
+      cp -r "../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/" "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
+    done
+}
+
 function devNetworkUp () {
   docker-compose -f ${COMPOSE_FILE_DEV} up -d 2>&1
   if [ $? -ne 0 ]; then
@@ -408,6 +429,12 @@ elif [ "${MODE}" == "generate-peer" ]; then
   clean
   removeArtifacts
   generatePeerArtifacts ${ORG} ${API_PORT}
+elif [ "${MODE}" == "copy-certs" ]; then
+  rm -rf artifacts/crypto-config/peerOrganizations/a.nsd.ru
+  rm -rf artifacts/crypto-config/peerOrganizations/b.nsd.ru
+  rm -rf artifacts/crypto-config/peerOrganizations/c.nsd.ru
+  makeCertDirs
+  copyMemberCerts
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
