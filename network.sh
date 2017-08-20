@@ -272,21 +272,80 @@ function makeCertDirs() {
 
   for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
     do
-      # crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt
-      D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
-      echo ${D}
-      mkdir -p ${D}
+	# crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt
+	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+	echo "mkdir -p ${D}"
+	mkdir -p ${D}
     done
 }
 
-function copyMemberCerts() {
-  mkdir -p "artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls"
-
+function copyMemberMSP() {
   for ORG in ${ORG2} ${ORG3} ${ORG4}
     do
-      # cp ../a/artifacts/crypto-config/peerOrganizations/a.nsd.ru/msp/ artifacts/crypto-config/peerOrganizations/a.nsd.ru
-      cp -r "../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/" "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
+	# cp ../a/artifacts/crypto-config/peerOrganizations/a.nsd.ru/msp/ artifacts/crypto-config/peerOrganizations/a.nsd.ru
+	S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/"
+	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
+	echo "cp -r $S $D"
+        cp -r ${S} ${D}
     done
+}
+
+function copyNetworkConfig() {
+    S="../$ORG1/artifacts/network-config.json"
+    D="artifacts"
+    echo "cp $S $D"
+    cp ${S} ${D}
+}
+
+function copyChannelBlockFiles() {
+    ORG=$1
+
+    for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
+    do
+      S="../$ORG1/artifacts/$CHANNEL_NAME.block"
+      D="artifacts"
+      echo "cp $S $D"
+      cp ${S} ${D}
+    done
+}
+
+function startMemberWithCopy() {
+    copyArtifactsMember ${@}
+    dockerComposeUp ${1}
+    startMember ${@}
+}
+
+function copyCerts() {
+    S="../$ORG1/artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
+    D="artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/"
+    echo "cp $S $D"
+    cp ${S} ${D}
+
+  for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+    do
+	S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls/ca.crt"
+	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+	echo "cp $S $D"
+        cp ${S} ${D}
+    done
+}
+
+function copyArtifactsMember() {
+  makeCertDirs
+  copyCerts
+  copyNetworkConfig
+  copyChannelBlockFiles ${@}
+}
+
+function copyArtifactsDepository() {
+    for ORG in ${ORG2} ${ORG3} ${ORG4}
+    do
+	rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
+    done
+
+  makeCertDirs
+  copyCerts
+  copyMemberMSP
 }
 
 function devNetworkUp () {
@@ -308,7 +367,7 @@ function devInstallInstantiate () {
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
- 
+
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p security -n security -v 0 && peer chaincode instantiate -n security -v 0 -C myc -c '{\"Args\":[\"init\",\"RU000ABC0001\",\"active\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n security -v 0 -C myc -c '{\"Args\":[\"init\",\"RU000ABC0001\",\"active\"]}'"
 
@@ -426,30 +485,26 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts ${ORG4} 4003
   generateOrdererArtifacts
 elif [ "${MODE}" == "generate-orderer" ]; then
+  copyArtifactsDepository
   generateOrdererArtifacts
 elif [ "${MODE}" == "generate-peer" ]; then
   clean
   removeArtifacts
   generatePeerArtifacts ${ORG} ${API_PORT}
-elif [ "${MODE}" == "copy-certs" ]; then
-  rm -rf artifacts/crypto-config/peerOrganizations/a.nsd.ru
-  rm -rf artifacts/crypto-config/peerOrganizations/b.nsd.ru
-  rm -rf artifacts/crypto-config/peerOrganizations/c.nsd.ru
-  makeCertDirs
-  copyMemberCerts
+elif [ "${MODE}" == "copy-artifacts-depository" ]; then
+  copyArtifactsDepository
+elif [ "${MODE}" == "copy-artifacts-member" ]; then
+  copyArtifactsMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
   startDepository
 elif [ "${MODE}" == "up-2" ]; then
-  dockerComposeUp ${ORG2}
-  startMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+  startMemberWithCopy ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-3" ]; then
-  dockerComposeUp ${ORG3}
-  startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
+  startMemberWithCopy ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "up-4" ]; then
-  dockerComposeUp ${ORG4}
-  startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+  startMemberWithCopy ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "logs" ]; then
   logs
 elif [ "${MODE}" == "devup" ]; then
