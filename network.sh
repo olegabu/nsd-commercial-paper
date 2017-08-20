@@ -253,7 +253,7 @@ function startDepository () {
       instantiateWarmUp position ${CHANNEL_NAME} '{"Args":["init"]}'
     done
 
-  logs ${DOMAIN}
+  #  logs ${ORG1}
 }
 
 function startMember () {
@@ -272,7 +272,7 @@ function startMember () {
       joinWarmUp ${ORG} instruction ${CHANNEL_NAME}
     done
 
-  logs ${ORG}
+#  logs ${ORG}
 }
 
 function makeCertDirs() {
