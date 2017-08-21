@@ -65,7 +65,7 @@ function generateOrdererArtifacts() {
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-orderer.yaml
 
     # configtx and cryptogen
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" artifacts/cryptogentemplate-orderer.yaml > artifacts/"cryptogen-$DOMAIN.yaml"
     # docker-compose.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
@@ -347,9 +347,9 @@ function copyArtifactsMember() {
 }
 
 function copyArtifactsDepository() {
-    for ORG in ${ORG2} ${ORG3} ${ORG4}
+  for ORG in ${ORG2} ${ORG3} ${ORG4}
     do
-	rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
+      rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
     done
 
   makeCertDirs

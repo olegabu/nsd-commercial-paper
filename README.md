@@ -60,14 +60,14 @@ Each organization starts several docker instances:
 
 Following channels are created, peers join them and chaincodes are installed and instantiated:
 
-1. common (*members*: nsd, a, b, c, chaincodes: [security](chaincode/go/security))
-1. depository (*members*: nsd, chaincodes: [book](chaincode/go/book))
-1. a-b (*members*: nsd, a, b, chaincode: [instruction](chaincode/go/instruction))
-1. a-c (*members*: nsd, a, c, chaincode: [instruction](chaincode/go/instruction))
-1. b-c (*members*: nsd, b, c, chaincode: [instruction](chaincode/go/instruction))
-1. nsd-a (*members*: nsd, a, chaincode: [position](chaincode/go/position))
-1. nsd-b (*members*: nsd, b, chaincode: [position](chaincode/go/position))
-1. nsd-c (*members*: nsd, c, chaincode: [position](chaincode/go/position))
+1. common (*members*: nsd, a, b, c; *chaincodes*: [security](chaincode/go/security))
+1. depository (*members*: nsd; *chaincodes*: [book](chaincode/go/book))
+1. a-b (*members*: nsd, a, b; *chaincodes*: [instruction](chaincode/go/instruction))
+1. a-c (*members*: nsd, a, c; *chaincodes*: [instruction](chaincode/go/instruction))
+1. b-c (*members*: nsd, b, c; *chaincodes*: [instruction](chaincode/go/instruction))
+1. nsd-a (*members*: nsd, a; *chaincodes*: [position](chaincode/go/position))
+1. nsd-b (*members*: nsd, b; *chaincodes*: [position](chaincode/go/position))
+1. nsd-c (*members*: nsd, c; *chaincodes*: [position](chaincode/go/position))
 
 Generate artifacts for the network and network-config file for the API server:
 
@@ -95,17 +95,17 @@ Navigate to web interfaces of respective organizations at ports 4000-4003:
 1. [investor b](http://localhost:4002)
 1. [investor c](http://localhost:4003)
 
-# Local deployment with run from separate folders
+# Local deployment with dockers run from separate folders
 
 Use to test artifacts generation and certificate exchange. Clone repo into separate directories imitating separate
-host servers. Docker instances still operate withing `ledger_default` network on the developer's host machine.
+host servers. Docker instances still operate within `ledger_default` network on the developer's host machine.
 
-Clone repo and copy into 4 folders representing host servers for orderer and depository and for each member:
+Clone repo and copy into 4 folders representing host machines for orderer and depository and for each member:
 
 ```bash
 mkdir tmp
 cd tmp
-git clone https://olegabu@github.com/olegabu/nsd-commercial-paper
+git clone https://github.com/olegabu/nsd-commercial-paper
 mv nsd-commercial-paper nsd
 cp -r nsd a
 cp -r nsd b
@@ -133,8 +133,11 @@ and the orderer.
 
 ```bash
 cd ../nsd
-./network.sh -m generate-orderer
+./network.sh -m generate-orderer && sleep 7m
 ```
+
+Note the `sleep` above: generated certificates have their start time off so we need to wait at least 7 minutes before
+starting up.
 
 Start the orderer and the depository peers: nsd. Will create and join channels, install and instantiate chaincodes
 on nsd peers:
@@ -142,10 +145,11 @@ on nsd peers:
 ```bash
 ./network.sh -m up-depository
 ``` 
+Ignore `WARNING: Found orphan containers`.
 
 Open terminal windows and start member instances. The script will copy cert files, channel block files received 
 at creation of channels in the previous step and network-config from `nsd/artifacts` folder into its own `artifacts`. 
-Will start the ca server, peers and api server and tail the their logs.
+Will start the ca server, peers and api server and tail their logs.
 
 ```bash
 cd tmp/a
