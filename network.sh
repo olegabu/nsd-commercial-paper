@@ -432,6 +432,11 @@ function clean() {
   removeUnwantedImages
 }
 
+function generateWait() {
+  echo "$(date --rfc-3339='seconds' -u) *** Wait for 7 minutes to make sure the certificates become active ***"
+  sleep 420
+}
+
 # Print the usage message
 function printHelp () {
   echo "Usage: "
@@ -495,6 +500,7 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts ${ORG3} 4002
   generatePeerArtifacts ${ORG4} 4003
   generateOrdererArtifacts
+  generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
   copyArtifactsDepository
   generateOrdererArtifacts
