@@ -208,10 +208,6 @@ type InstructionChaincode struct {
 // **** Instruction Methods **** //
 
 func (this *Instruction) matchIf(stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
-	if err := this.loadFrom(stub); err != nil {
-		return pb.Response{Status: 404, Message: "Instruction not found."}
-	}
-
 	if this.Value.Initiator != desiredInitiator {
 		return pb.Response{Status: 400, Message: "Instruction is already created by " + this.Value.Initiator}
 	}
@@ -264,28 +260,28 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 <deposit_c>{{.Depositary}}</deposit_c>
 <contrag_c>{{.Initiator}}</contrag_c>
 <contr_d_id>{{.InstructionID}}</contr_d_id>
-<createdate>{{.Instruction.InstructionDate}}</createdate>
+<createdate>{{.Instruction.Key.InstructionDate}}</createdate>
 <order_t_id>{{.OperationCode}}</order_t_id>
-<execute_dt>{{.Instruction.InstructionDate}}</execute_dt>
+<execute_dt>{{.Instruction.Key.InstructionDate}}</execute_dt>
 <expirat_dt>{{.ExpirationDate}}</expirat_dt>
 </ORDER_HEADER>
 <MF010>
-<dep_acc_c>{{.Instruction.Transferer.Account}}</dep_acc_c>
-<sec_c>{{.Instruction.Transferer.Division}}</sec_c>
-<deponent_c>{{.Instruction.DeponentFrom}}</deponent_c>
-<corr_acc_c>{{.Instruction.Receiver.Account}}</corr_acc_c>
-<corr_sec_c>{{.Instruction.Receiver.Division}}</corr_sec_c>
-<corr_code>{{.Instruction.DeponentTo}}</corr_code>
-<based_on>{{.Instruction.Reason.Description}}</based_on>
-<based_numb>{{.Instruction.Reason.Document}}</based_numb>
-<based_date>{{.Instruction.Reason.DocumentDate}}</based_date>
+<dep_acc_c>{{.Instruction.Key.Transferer.Account}}</dep_acc_c>
+<sec_c>{{.Instruction.Key.Transferer.Division}}</sec_c>
+<deponent_c>{{.Instruction.Value.DeponentFrom}}</deponent_c>
+<corr_acc_c>{{.Instruction.Key.Receiver.Account}}</corr_acc_c>
+<corr_sec_c>{{.Instruction.Key.Receiver.Division}}</corr_sec_c>
+<corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>
+<based_on>{{.Reason}}</based_on>
+<based_numb>{{.Reason.Document}}</based_numb>
+<based_date>{{.Reason.DocumentDate}}</based_date>
 <securities><security>
-<security_c>{{.Instruction.Security}}</security_c>
-<security_q>{{.Instruction.Quantity}}</security_q>
+<security_c>{{.Instruction.Key.Security}}</security_c>
+<security_q>{{.Instruction.Key.Quantity}}</security_q>
 </security>
 </securities>
-<deal_reference>{{.Instruction.Reference}}</deal_reference>
-<date_deal>{{.Instruction.TradeDate}}</date_deal>
+<deal_reference>{{.Instruction.Key.Reference}}</deal_reference>
+<date_deal>{{.Instruction.Key.TradeDate}}</date_deal>
 </MF010>
 `
 	type InstructionWrapper struct {
@@ -295,15 +291,21 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 		InstructionID  string //TODO: remove this
 		OperationCode  string
 		ExpirationDate string
+		Reason         Reason
 	}
+
+	dateLayout := "2006-01-02"
+	expirationDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
+	expirationDate = expirationDate.Truncate(time.Hour*24).Add(time.Hour*47 + time.Minute*59 + time.Second*59)
 
 	instructionWrapper := InstructionWrapper{
 		Instruction:    *this,
-		Depositary:     "DEPOSITARY_CODE",
+		Depositary:     "NDC000000000",
 		Initiator:      this.Value.DeponentFrom,
-		InstructionID:  "42",
+		InstructionID:  "5",
 		OperationCode:  "16",
-		ExpirationDate: "+24h",
+		ExpirationDate: expirationDate.Format("2006-01-02 15:04:05"),
+		Reason: this.Value.ReasonFrom,
 	}
 
 	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
@@ -315,6 +317,7 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 	buf.Reset()
 	instructionWrapper.OperationCode = "16/1"
 	instructionWrapper.Initiator = this.Value.DeponentTo
+	instructionWrapper.Reason = this.Value.ReasonTo
 
 	t.Execute(buf, instructionWrapper)
 	alamedaTo := buf.String()
@@ -405,17 +408,28 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		return pb.Response{Status: 403, Message: "Caller must be receiver."}
 	}
 
-	if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
-		return pb.Response{Status: 400, Message: "Wrong arguments."}
-	}
-
 	if instruction.existsIn(stub) {
+		if err := instruction.loadFrom(stub); err != nil {
+			return pb.Response{Status: 404, Message: "Instruction not found."}
+		}
+
+		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
+			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
+
+		if instruction.upsertIn(stub) != nil {
+			return pb.Response{Status: 520, Message: "Persistence failure."}
+
+		}
 		return instruction.matchIf(stub, InitiatorIsTransferer)
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
 		instruction.Value.Initiator = InitiatorIsReceiver
 		instruction.Value.Status = InstructionInitiated
+		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
+			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
 		if instruction.upsertIn(stub) != nil {
 			return pb.Response{Status: 520, Message: "Persistence failure."}
 
@@ -434,17 +448,28 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		return pb.Response{Status: 403, Message: "Caller must be transferer."}
 	}
 
-	if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
-		return pb.Response{Status: 400, Message: "Wrong arguments."}
-	}
-
 	if instruction.existsIn(stub) {
+		if err := instruction.loadFrom(stub); err != nil {
+			return pb.Response{Status: 404, Message: "Instruction not found."}
+		}
+
+		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
+			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
+
+		if instruction.upsertIn(stub) != nil {
+			return pb.Response{Status: 520, Message: "Persistence failure."}
+
+		}
 		return instruction.matchIf(stub, InitiatorIsReceiver)
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
 		instruction.Value.Initiator = InitiatorIsTransferer
 		instruction.Value.Status = InstructionInitiated
+		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
+			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
 		if instruction.upsertIn(stub) != nil {
 			return pb.Response{Status: 520, Message: "Persistence failure."}
 
