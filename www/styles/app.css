@@ -207,6 +207,10 @@ textarea.ng-invalid + label:after,
   line-height: 0;
 }
 
+.input-field .prefix ~ .input-error-message{
+  margin-left: 3rem;
+}
+
 input.ng-dirty.ng-invalid + label:after,
 select.ng-dirty.ng-invalid + label:after,
 textarea.ng-dirty.ng-invalid + label:after,
