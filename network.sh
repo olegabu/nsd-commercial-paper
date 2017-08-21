@@ -634,11 +634,11 @@ elif [ "${MODE}" == "up-depository" ]; then
   startDepository
   serveOrdererArtifacts
 elif [ "${MODE}" == "up-2" ]; then
-  startMemberWithCopy ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+  startMemberWithDownload ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-3" ]; then
-  startMemberWithCopy ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
+  startMemberWithDownload ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "up-4" ]; then
-  startMemberWithCopy ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+  startMemberWithDownload ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "logs" ]; then
   logs ${ORG}
 elif [ "${MODE}" == "devup" ]; then
