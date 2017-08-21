@@ -97,4 +97,4 @@ services:
     extends:
       file: base.yaml
       service: www-base
-    container_name: http.ORG.DOMAIN
+    container_name: www.ORG.DOMAIN

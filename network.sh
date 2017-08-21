@@ -142,6 +142,24 @@ function servePeerArtifacts() {
     docker-compose --file ${COMPOSE_FILE} up -d "www.$ORG.$DOMAIN"
 }
 
+function serveOrdererArtifacts() {
+    COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
+
+    D="artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls"
+    echo "Copying generated orderer TLS cert files from $D to be served by www.$ORG1.$DOMAIN"
+    mkdir -p "www/${D}"
+    cp "${D}/ca.crt" "www/${D}"
+
+    D="artifacts"
+    echo "Copying generated network config file from $D to be served by www.$ORG1.$DOMAIN"
+    cp "${D}/network-config.json" "www/${D}"
+
+    echo "Copying channel block files from $D to be served by www.$ORG1.$DOMAIN"
+    cp "${D}/*.block" "www/${D}"
+
+    docker-compose --file ${COMPOSE_FILE} up -d "www.$ORG1.$DOMAIN"
+}
+
 function createChannel () {
     CHANNEL_NAME=$1
     F="ledger/docker-compose-${ORG1}.yaml"
@@ -316,11 +334,31 @@ function copyMemberMSP() {
     done
 }
 
+function downloadMemberMSP() {
+    COMPOSE_FILE="ledger/docker-compose-$DOMAIN.yaml"
+
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+
+    echo "Change artifacts file ownership"
+    GID=$(id -g)
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+}
+
 function copyNetworkConfig() {
     S="../$ORG1/artifacts/network-config.json"
     D="artifacts"
     echo "cp $S $D"
     cp ${S} ${D}
+}
+
+function downloadNetworkConfig() {
+    COMPOSE_FILE="ledger/docker-compose-$1.yaml"
+
+    C="wget --verbose http://www.$ORG1.$DOMAIN:$HTTP_PORT/network-config.json && chown -R $UID:$GID ."
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 }
 
 function copyChannelBlockFiles() {
@@ -335,8 +373,26 @@ function copyChannelBlockFiles() {
     done
 }
 
+function downloadChannelBlockFiles() {
+    ORG=$1
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+
+    for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
+    do
+      C="wget --verbose http://www.$ORG1.$DOMAIN:$HTTP_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
+      echo ${C}
+      docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+    done
+}
+
 function startMemberWithCopy() {
     copyArtifactsMember ${@}
+    dockerComposeUp ${1}
+    startMember ${@}
+}
+
+function startMemberWithDownload() {
+    downloadArtifactsMember ${@}
     dockerComposeUp ${1}
     startMember ${@}
 }
@@ -357,18 +413,19 @@ function copyCerts() {
 }
 
 function downloadCerts() {
-    S="http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
-    D="artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/"
-    echo "from $S to $D"
-    wget --verbose --directory-prefix ${D} ${S}
+    COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-  for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
-    do
-	S="http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls/ca.crt"
-	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
-	echo "from $S to $D"
-        wget --verbose --directory-prefix ${D} ${S}
-    done
+    C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+
+    echo "Change artifacts file ownership"
+    GID=$(id -g)
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 }
 
 function copyArtifactsMember() {
@@ -376,6 +433,13 @@ function copyArtifactsMember() {
   copyCerts
   copyNetworkConfig
   copyChannelBlockFiles ${@}
+}
+
+function downloadArtifactsMember() {
+  makeCertDirs
+  downloadCerts
+  downloadNetworkConfig
+  downloadChannelBlockFiles ${@}
 }
 
 function copyArtifactsDepository() {
@@ -387,6 +451,17 @@ function copyArtifactsDepository() {
   makeCertDirs
   copyCerts
   copyMemberMSP
+}
+
+function downloadArtifactsDepository() {
+  for ORG in ${ORG2} ${ORG3} ${ORG4}
+    do
+      rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
+    done
+
+  makeCertDirs
+  downloadCerts ${DOMAIN}
+  downloadMemberMSP
 }
 
 function devNetworkUp () {
@@ -538,7 +613,7 @@ elif [ "${MODE}" == "generate" ]; then
   generateOrdererArtifacts
   generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
-  copyArtifactsDepository
+  downloadArtifactsDepository
   generateOrdererArtifacts
 elif [ "${MODE}" == "generate-peer" ]; then
   clean
@@ -547,12 +622,17 @@ elif [ "${MODE}" == "generate-peer" ]; then
   servePeerArtifacts ${ORG}
 elif [ "${MODE}" == "copy-artifacts-depository" ]; then
   copyArtifactsDepository
+elif [ "${MODE}" == "download-artifacts-depository" ]; then
+  downloadArtifactsDepository
+elif [ "${MODE}" == "download-certs" ]; then
+  downloadCerts ${ORG}
 elif [ "${MODE}" == "copy-artifacts-member" ]; then
   copyArtifactsMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
   startDepository
+  serveOrdererArtifacts
 elif [ "${MODE}" == "up-2" ]; then
   startMemberWithCopy ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-3" ]; then
