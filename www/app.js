@@ -156,14 +156,18 @@ angular.module('nsd.app',[
       isAllowed = true;
     }
 
-    console.log('$stateChangeStart access: authorized - %s, allowed - %s, login - %s', UserService.isAuthorized(), isAllowed, isLoginState);
+    $log.debug('$stateChangeStart access: state - %s, allowed - %s', toState.name, isAllowed);
     // prevent navigation to forbidden pages
     if ( !UserService.isAuthorized() && !isAllowed && !isLoginState){
       event.preventDefault(); // transitionTo() promise will be rejected with a 'transition prevented' error
       if(fromState.name == ""){
         // just enter the page - redirect to login page
+        $log.debug('Redirect to login page');
         goLogin();
         return
+      }else{
+        // we are at some page and try to go to forbidden one.
+        // just ignore this attempt
       }
     }
 

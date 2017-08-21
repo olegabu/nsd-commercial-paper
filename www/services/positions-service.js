@@ -42,16 +42,6 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  PositionsService.history = function(book){
-    $log.debug('PositionsService.history', book);
-    $log.warn('PositionsService.history STUB!');
-    // FIXME: this is a temp measure to test ui
-    return PositionsService.list();
-  }
-
-  /**
-   *
-   */
   PositionsService._getQueryPeer = function() {
     var config = ConfigLoader.get();
     var peers = ConfigLoader.getOrgPeerIds(config.org);
@@ -59,6 +49,60 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
   };
 
 
+  /**
+   *
+   */
+  PositionsService.history = function(book){
+    $log.debug('PositionsService.history', book);
+
+    var chaincodeID = PositionsService._getChaincodeID();
+    var channelID = PositionsService.getChannelID();
+    var peer = PositionsService._getQueryPeer();
+    var args = PositionsService._arguments(book);
+    var bookKey = PositionsService._bookKey(book);
+
+    return ApiService.sc.query(channelID, chaincodeID, peer, 'history', args)
+      .then(function(result){ return result.result; })
+      .then(function(list){
+        return list.map(function(singleValue){
+          return Object.assign(singleValue.value, bookKey, {_created:new Date(singleValue.timestamp) });
+        });
+      })
+      // .then(function(list){
+      //   list.forEach(BookService._processBookItem);
+      //   return list;
+      // });
+  };
+
+
+  /**
+   * return basic fields for any instruction request
+   * @return {Array<string>}
+   */
+  PositionsService._bookKey = function(book) {
+    return {
+      balance:{
+        account  : book.balance.account,
+        division : book.balance.division
+      },
+      security : book.security
+    };
+  };
+
+
+  /**
+   * Get basc book arguments for all book qury/invoke requests
+   * @retutn (Array<string>)
+   */
+  PositionsService._arguments = function(book){
+    return [
+      book.balance.account,
+      book.balance.division,
+      book.security
+    ];
+  };
+
+  //
   return PositionsService;
 }
 

@@ -92,7 +92,12 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
       return tokenData;
   }
 
-
+  /**
+   * Determine whether user can access the state.
+   * Note, that it doesn't specified whether the user is authorizerd or not.
+   * When user is not authorized, some states can be accessible.
+   * @return {boolean}
+   */
   UserService.canAccess = function(state){
     // check access
     var isAllowed = false;
