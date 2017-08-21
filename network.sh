@@ -15,6 +15,10 @@ COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
 # Delete any images that were generated as a part of this setup
 # specifically the following images are often left behind:
 # TODO list generated image naming patterns
+
+function removeUnwantedContainers() {
+  docker ps -a -q -f "name=dev-*"|xargs docker rm -f
+}
 function removeUnwantedImages() {
   DOCKER_IMAGE_IDS=$(docker images | grep "dev\|none\|test-vp\|peer[0-9]-" | awk '{print $3}')
   if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
@@ -490,6 +494,8 @@ elif [ "${MODE}" == "down" ]; then
   dockerComposeDown ${ORG2}
   dockerComposeDown ${ORG3}
   dockerComposeDown ${ORG4}
+  removeUnwantedContainers
+  removeUnwantedImages
 elif [ "${MODE}" == "clean" ]; then
   clean
 elif [ "${MODE}" == "generate" ]; then
