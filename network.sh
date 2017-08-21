@@ -11,6 +11,7 @@ ORG4=c
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
+HTTP_PORT=8080
 
 # Delete any images that were generated as a part of this setup
 # specifically the following images are often left behind:
@@ -19,6 +20,7 @@ COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
 function removeUnwantedContainers() {
   docker ps -a -q -f "name=dev-*"|xargs docker rm -f
 }
+
 function removeUnwantedImages() {
   DOCKER_IMAGE_IDS=$(docker images | grep "dev\|none\|test-vp\|peer[0-9]-" | awk '{print $3}')
   if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
@@ -45,8 +47,6 @@ function removeDockersFromCompose() {
         echo "Removing docker containers listed in $COMPOSE_FILE"
         docker-compose -f ${COMPOSE_FILE} kill
         docker-compose -f ${COMPOSE_FILE} rm -f
-      else
-        echo "No generated $COMPOSE_FILE and no docker instances to remove"
       fi;
     done
 }
@@ -126,6 +126,21 @@ function generatePeerArtifacts() {
     sed -i -e "s/CA_PRIVATE_KEY/${CA_PRIVATE_KEY}/g" ${COMPOSE_FILE}
 }
 
+function servePeerArtifacts() {
+    ORG=$1
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+    
+    echo "Copying generated TLS cert files to be served by www.$ORG.$DOMAIN"
+    D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+    mkdir -p "www/${D}"
+    cp "${D}/ca.crt" "www/${D}"
+
+    echo "Copying generated MSP cert files to be served by www.$ORG.$DOMAIN"
+    D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
+    cp -r "${D}/msp" "www/${D}"
+
+    docker-compose --file ${COMPOSE_FILE} up -d "www.$ORG.$DOMAIN"
+}
 
 function createChannel () {
     CHANNEL_NAME=$1
@@ -198,9 +213,11 @@ function dockerComposeUp () {
 function dockerComposeDown () {
   COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-  info "stopping docker instances from $COMPOSE_FILE"
+  if [ -f ${COMPOSE_FILE} ]; then
+      info "stopping docker instances from $COMPOSE_FILE"
+      docker-compose -f ${COMPOSE_FILE} down
+  fi;
 
-  docker-compose -f ${COMPOSE_FILE} down
 }
 
 function installInstantiateWarmUp() {
@@ -256,8 +273,6 @@ function startDepository () {
     do
       instantiateWarmUp position ${CHANNEL_NAME} '{"Args":["init"]}'
     done
-
-  #  logs ${ORG1}
 }
 
 function startMember () {
@@ -275,8 +290,6 @@ function startMember () {
     do
       joinWarmUp ${ORG} instruction ${CHANNEL_NAME}
     done
-
-#  logs ${ORG}
 }
 
 function makeCertDirs() {
@@ -340,6 +353,21 @@ function copyCerts() {
 	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
 	echo "cp $S $D"
         cp ${S} ${D}
+    done
+}
+
+function downloadCerts() {
+    S="http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
+    D="artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/"
+    echo "from $S to $D"
+    wget --verbose --directory-prefix ${D} ${S}
+
+  for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+    do
+	S="http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls/ca.crt"
+	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+	echo "from $S to $D"
+        wget --verbose --directory-prefix ${D} ${S}
     done
 }
 
@@ -478,7 +506,7 @@ while getopts "h?m:o:a:" opt; do
   esac
 done
 
-if [ "${MODE}" == "up" ]; then
+if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
   dockerComposeUp ${ORG2}
@@ -488,6 +516,8 @@ if [ "${MODE}" == "up" ]; then
   startMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
   startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
   startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+elif [ "${MODE}" == "up" ]; then
+  dockerComposeUp ${ORG}
 elif [ "${MODE}" == "down" ]; then
   dockerComposeDown ${DOMAIN}
   dockerComposeDown ${ORG1}
@@ -514,6 +544,7 @@ elif [ "${MODE}" == "generate-peer" ]; then
   clean
   removeArtifacts
   generatePeerArtifacts ${ORG} ${API_PORT}
+  servePeerArtifacts ${ORG}
 elif [ "${MODE}" == "copy-artifacts-depository" ]; then
   copyArtifactsDepository
 elif [ "${MODE}" == "copy-artifacts-member" ]; then

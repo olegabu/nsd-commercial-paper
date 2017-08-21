@@ -19,3 +19,4 @@ build
 /artifacts-dev
 /ledger/docker-compose.yaml
 /ledger/docker-compose-*.yaml
+/www/artifacts

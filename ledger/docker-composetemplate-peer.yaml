@@ -91,3 +91,10 @@ services:
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
+
+  # simple http server to disseminate certificates
+  www.ORG.DOMAIN:
+    extends:
+      file: base.yaml
+      service: www-base
+    container_name: http.ORG.DOMAIN
