@@ -147,7 +147,9 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
     // Now we use formatDate() to transform both of it into ISO
     instruction.tradeDate        = formatDate(instruction.tradeDate);
     instruction.instructionDate  = formatDate(instruction.instructionDate);
-    instruction.reason.created   = formatDate(instruction.reason.created);
+    if(instruction.reason && instruction.reason.created){
+      instruction.reason.created   = formatDate(instruction.reason.created);
+    }
 
     var p;
     switch(instruction.initiator){
