@@ -151,7 +151,7 @@ function ApiService($log, $http, env) {
     var payload = {
       peers:peers,
       fcn:fcn,
-      args:args||[]
+      args:ApiService.stringify(args)
     };
     return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractID, payload)
       .then(function(response){ return response.data; });
@@ -179,7 +179,12 @@ function ApiService($log, $http, env) {
   };
 
 
-
+ ApiService.stringify = function(args){
+  if(!args) return null;
+  return (args||[]).map(function(arg){
+    return ''+arg;
+  });
+ }
 
 
 

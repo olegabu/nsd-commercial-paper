@@ -115,7 +115,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.deponentFrom,
       instruction.deponentTo,
       instruction.memberInstructionId,
-      JSON.stringify(instruction.reason)
+      JSON.stringify(instruction.reason||{})
     );
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'transfer', args);
@@ -136,7 +136,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.deponentFrom,
       instruction.deponentTo,
       instruction.memberInstructionId,
-      JSON.stringify(instruction.reason)
+      JSON.stringify(instruction.reason||{})
     );
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
@@ -197,7 +197,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.receiver.division,   // 3: divisionTo
 
       instruction.security,            // 4: security
-      ''+instruction.quantity,         // 5: quantity // TODO: fix: string parameters
+      instruction.quantity,            // 5: quantity // TODO: fix: string parameters
       instruction.reference,           // 6: reference
       instruction.instructionDate,     // 7: instructionDate  (ISO)
       instruction.tradeDate,           // 8: tradeDate  (ISO)
