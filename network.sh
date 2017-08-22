@@ -11,7 +11,15 @@ ORG4=c
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
-HTTP_PORT=8080
+
+DEFAULT_ORDERER_PORT=7050
+DEFAULT_WWW_PORT=8080
+DEFAULT_API_PORT=4000
+DEFAULT_CA_PORT=7054
+DEFAULT_PEER0_PORT=7051
+DEFAULT_PEER0_EVENT_PORT=7053
+DEFAULT_PEER1_PORT=7056
+DEFAULT_PEER1_EVENT_PORT=7058
 
 GID=$(id -g)
 
@@ -65,7 +73,7 @@ function removeDockersWithDomain() {
 }
 
 function generateOrdererArtifacts() {
-    echo "Creating orderer yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $ORG4"
+    echo "Creating orderer yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $ORG4, $DEFAULT_ORDERER_PORT"
 
     COMPOSE_FILE="ledger/docker-compose-$DOMAIN.yaml"
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-orderer.yaml
@@ -74,7 +82,7 @@ function generateOrdererArtifacts() {
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" artifacts/cryptogentemplate-orderer.yaml > artifacts/"cryptogen-$DOMAIN.yaml"
     # docker-compose.yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORDERER_PORT/$DEFAULT_ORDERER_PORT/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
     # network-config.json
     #  fill environments                                                                                            |   remove comments
     sed -e "s/\DOMAIN/$DOMAIN/g" -e "s/\ORG1/$ORG1/g" -e "s/\ORG2/$ORG2/g" -e "s/\ORG3/$ORG3/g" -e "s/\ORG4/$ORG4/g" -e "s/^\s*\/\/.*$//g" artifacts/network-config-template.json > artifacts/network-config.json
@@ -98,9 +106,26 @@ function generateOrdererArtifacts() {
 
 function generatePeerArtifacts() {
     ORG=$1
-    API_PORT=$2
 
-    echo "Creating peer yaml files with $DOMAIN, $ORG, $API_PORT"
+    [[ -z  ${ORG} || ${#} == 0 ]] && echo "missing required argument ORG" && exit 1
+
+    API_PORT=$2
+    WWW_PORT=$3
+    CA_PORT=$4
+    PEER0_PORT=$5
+    PEER0_EVENT_PORT=$6
+    PEER1_PORT=$7
+    PEER1_EVENT_PORT=$8
+
+    : ${API_PORT:=${DEFAULT_API_PORT}}
+    : ${WWW_PORT:=${DEFAULT_WWW_PORT}}
+    : ${CA_PORT:=${DEFAULT_CA_PORT}}
+    : ${PEER0_PORT:=${DEFAULT_PEER0_PORT}}
+    : ${PEER0_EVENT_PORT:=${DEFAULT_PEER0_EVENT_PORT}}
+    : ${PEER1_PORT:=${DEFAULT_PEER1_PORT}}
+    : ${PEER1_EVENT_PORT:=${DEFAULT_PEER1_EVENT_PORT}}
+
+    echo "Creating peer yaml files with $DOMAIN, $ORG, $API_PORT, $WWW_PORT, $CA_PORT, $PEER0_PORT, $PEER0_EVENT_PORT, $PEER1_PORT, $PEER1_EVENT_PORT"
 
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-peer.yaml
@@ -109,7 +134,7 @@ function generatePeerArtifacts() {
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
 
     # docker-compose.yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
 
     # fabric-ca-server-config.yaml
     sed -e "s/ORG/$ORG/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG.yaml"
@@ -129,7 +154,7 @@ function generatePeerArtifacts() {
 function servePeerArtifacts() {
     ORG=$1
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
-    
+
     echo "Copying generated TLS cert files to be served by www.$ORG.$DOMAIN"
     D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
     mkdir -p "www/${D}"
@@ -340,7 +365,7 @@ function copyMemberMSP() {
 function downloadMemberMSP() {
     COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
@@ -358,7 +383,7 @@ function copyNetworkConfig() {
 function downloadNetworkConfig() {
     COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-    C="wget --verbose http://www.$ORG1.$DOMAIN:$HTTP_PORT/network-config.json && chown -R $UID:$GID ."
+    C="wget --verbose http://www.$ORG1.$DOMAIN:$WWW_PORT/network-config.json && chown -R $UID:$GID ."
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 }
@@ -381,7 +406,7 @@ function downloadChannelBlockFiles() {
 
     for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
     do
-      C="wget --verbose http://www.$ORG1.$DOMAIN:$HTTP_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
+      C="wget --verbose http://www.$ORG1.$DOMAIN:$WWW_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
       echo ${C}
       docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
     done
@@ -417,11 +442,11 @@ function copyCerts() {
 function downloadCerts() {
     COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-    C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
+    C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$WWW_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
@@ -543,7 +568,22 @@ function clean() {
 function generateWait() {
   echo "$(date --rfc-3339='seconds' -u) *** Wait for 7 minutes to make sure the certificates become active ***"
   sleep 7m
-  beep
+}
+
+function generatePeerArtifacts1() {
+  generatePeerArtifacts ${ORG1} 4000 8080 7054 7051 7053 7056 7058
+}
+
+function generatePeerArtifacts2() {
+  generatePeerArtifacts ${ORG2} 4001 8081 8054 8051 8053 8056 8058
+}
+
+function generatePeerArtifacts3() {
+  generatePeerArtifacts ${ORG3} 4002 8082 9054 9051 9053 9056 9058
+}
+
+function generatePeerArtifacts4() {
+  generatePeerArtifacts ${ORG4} 4003 8083 10054 10051 10053 10056 10058
 }
 
 # Print the usage message
@@ -568,7 +608,7 @@ function printHelp () {
 }
 
 # Parse commandline args
-while getopts "h?m:o:a:" opt; do
+while getopts "h?m:o:a:w:c:0:1:2:3:" opt; do
   case "$opt" in
     h|\?)
       printHelp
@@ -579,6 +619,18 @@ while getopts "h?m:o:a:" opt; do
     o)  ORG=$OPTARG
     ;;
     a)  API_PORT=$OPTARG
+    ;;
+    w)  WWW_PORT=$OPTARG
+    ;;
+    c)  CA_PORT=$OPTARG
+    ;;
+    0)  PEER0_PORT=$OPTARG
+    ;;
+    1)  PEER0_EVENT_PORT=$OPTARG
+    ;;
+    2)  PEER1_PORT=$OPTARG
+    ;;
+    3)  PEER1_EVENT_PORT=$OPTARG
     ;;
   esac
 done
@@ -608,10 +660,10 @@ elif [ "${MODE}" == "clean" ]; then
 elif [ "${MODE}" == "generate" ]; then
   clean
   removeArtifacts
-  generatePeerArtifacts ${ORG1} 4000
-  generatePeerArtifacts ${ORG2} 4001
-  generatePeerArtifacts ${ORG3} 4002
-  generatePeerArtifacts ${ORG4} 4003
+  generatePeerArtifacts1
+  generatePeerArtifacts2
+  generatePeerArtifacts3
+  generatePeerArtifacts4
   generateOrdererArtifacts
   generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
@@ -620,14 +672,19 @@ elif [ "${MODE}" == "generate-orderer" ]; then
 elif [ "${MODE}" == "generate-peer" ]; then
   clean
   removeArtifacts
-  generatePeerArtifacts ${ORG} ${API_PORT}
+  generatePeerArtifacts ${ORG} ${API_PORT} ${WWW_PORT} ${CA_PORT} ${PEER0_PORT} ${PEER0_EVENT_PORT} ${PEER1_PORT} ${PEER1_EVENT_PORT}
   servePeerArtifacts ${ORG}
-elif [ "${MODE}" == "download-artifacts-depository" ]; then
-  downloadArtifactsDepository
-elif [ "${MODE}" == "download-certs" ]; then
-  downloadCerts ${ORG}
-elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
-  serveOrdererArtifacts
+elif [ "${MODE}" == "generate-1" ]; then
+  generatePeerArtifacts1
+elif [ "${MODE}" == "generate-2" ]; then
+  generatePeerArtifacts2
+  servePeerArtifacts ${ORG2}
+elif [ "${MODE}" == "generate-3" ]; then
+  generatePeerArtifacts3
+  servePeerArtifacts ${ORG3}
+elif [ "${MODE}" == "generate-4" ]; then
+  generatePeerArtifacts4
+  servePeerArtifacts ${ORG4}
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}

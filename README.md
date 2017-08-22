@@ -112,21 +112,28 @@ cp -r nsd b
 cp -r nsd c
 ```
 
-Generate artifacts for the depository and each member. Pass organization name with `-o` and api server port as mapped to
-the host machine with `-a`.
+Generate artifacts for the depository and each member.
 
 ```bash
 cd nsd
-./network.sh -m generate-peer -o nsd -a 4000
+./network.sh -m generate-1
 cd ../a
-./network.sh -m generate-peer -o a -a 4001
+./network.sh -m generate-2
 cd ../b
-./network.sh -m generate-peer -o b -a 4002
+./network.sh -m generate-3
 cd ../c
-./network.sh -m generate-peer -o c -a 4003
+./network.sh -m generate-4
 ```
 
-Now each member has generated their crypto material. The orderer can gather member certificates and use them to generate
+These will create docker-compose files for four orgs nsd, a, b, c with sets of mapped ports that don't conflict 
+with each other on one host:
+
+1. 4000 8080 7054 7051 7053 7056 7058
+2. 4001 8081 8054 8051 8053 8056 8058
+3. 4002 8082 9054 9051 9053 9056 9058
+4. 4003 8083 10054 10051 10053 10056 10058
+
+Also each member has generated their crypto material. The orderer can gather member certificates and use them to generate
 genesis block files `artifacts/*.block` and channel config transaction files `artifacts/channel/*.tx`. The script will
 download cert files from members `a`, `b`, `c` www servers into the folder `nsd` shared by depository nsd
 and the orderer.
@@ -163,9 +170,64 @@ cd tmp/b
 ```bash
 cd tmp/c
 ./network.sh -m up-4
+```
+ 
+# Deployment with dockers run on separate hosts
+
+Real world deployment scenario with members deploying their CA server, peer, api and web servers as docker instances on
+one host. Members' host servers connect to each other over internet. 
+
+Each member clones the repo and generates artifacts. Pass organization name with `-o`. You can pass other ports as args
+`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3`, `-4` for the api, web, ca and peer ports. If omitted,default ones are used.
+
+```bash
+git clone https://github.com/olegabu/nsd-commercial-paper
+cd nsd-commercial-paper
+./network.sh -m generate -o nsd
+```
+
+```bash
+./network.sh -m generate -o a
+```
+```bash
+./network.sh -m generate -o b
+```
+```bash
+./network.sh -m generate -o c
+```
+
+These will create docker-compose files with default mapped ports that don't have to be different for each member as they
+run on separate hosts: 
+
+4000 8080 7054 7051 7053 7056 7058
+
+Each member has generated their crypto material and is now serving their cert files to be gathered during the orderer's
+generation process on depository host nsd:
+
+```bash
+./network.sh -m generate-orderer && sleep 7m
+```
+After that you can start the orderer and the depository peers: nsd. Will create and join channels, 
+install and instantiate chaincodes on nsd peers:
+
+```bash
+./network.sh -m up-depository
 ``` 
 
+Now the orderer has created channels, nsd peers instantiated chaincodes and other members can join channels by 
+downloading channel *.block files.
 
+Each member starts the ca server, peers and api servers:
+
+```bash
+./network.sh -m up-2
+``` 
+```bash
+./network.sh -m up-3
+``` 
+```bash
+./network.sh -m up-4
+```
 
 
 
