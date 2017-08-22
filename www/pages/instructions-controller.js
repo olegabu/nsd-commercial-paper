@@ -236,7 +236,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
   }
 
 
-  ctrl.getStub = function(transferSide){
+  ctrl.getABStub = function(transferSide){
     return {
       deponentFrom: 'CA9861913023',
       deponentTo:   'DE000DB7HWY7',
@@ -260,6 +260,33 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       }
     };
   }
+
+
+  ctrl.getACStub = function(transferSide){
+    return {
+      deponentFrom: 'CA9861913023',
+      deponentTo:   'NL0000729408',
+
+      security:'RU000ABC0001',
+      transferer:{
+        account: "AC0689654902",
+        division: "87680000045800005",
+      },
+      receiver:{
+        account: "YN0927654908",
+        division: "37800007360900016",
+      },
+      initiator: transferSide,
+      quantity: 1,
+      reference: 'test',
+      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
+      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
+      reason:{
+        created   : new Date()//.format(DATE_INPUT_FORMAT)
+      }
+    };
+  }
+
 
 
 
