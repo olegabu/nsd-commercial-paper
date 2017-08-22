@@ -63,8 +63,8 @@
                       ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
                 <td>{{::o.initiator}}</td>
-                <td ng-if="::o.initiator=='transferer'">{{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</td>
-                <td ng-if="::o.initiator=='receiver'">{{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}</td>
+                <td ng-if="::o.initiator=='transferer'"> {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
+                <td ng-if="::o.initiator=='receiver'">   {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
             </tr>
 
             <tr ng-if="::o.status!='initiated' && o.status!='canceled'" class="odd-{{::$index % 2}}">
@@ -82,8 +82,8 @@
                   <div class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</div>
                 </td>
                 <td>{{::o.initiator}}</td>
-                <td ng-if="::o.initiator=='receiver'">{{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</td>
-                <td ng-if="::o.initiator=='transferer'">{{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}</td>
+                <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
+                <td ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
             </tr>
 
         </tbody>
@@ -361,9 +361,9 @@
                     <div class="{{::$options.getStatusClass(o.status)}}">{{::o.status}}</div>
                   </td>
                   <td>
-                    {{::o.reasonTo.description}} {{::o.reasonTo.document}}/{{::o.reasonTo.created}}
+                    {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span>
                     <br/>
-                    {{::o.reasonFrom.description}} {{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}
+                    {{::o.reasonTo.description}} <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span>
                   </td>
               </tr>
 
