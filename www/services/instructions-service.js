@@ -47,7 +47,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
           return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
             .then(function(data){ return {
                 channel: channelID,
-                result: parseJson(data.result)
+                result: _fixStatus(data.result)
               };
             }).catch(function(){
               return {
@@ -83,17 +83,22 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
-  function parseJson(data){
-    if(typeof data == "string"){
-      try{
-        data = JSON.parse(data);
-      }catch(e){
-        $log.warn(e, data);
-      }
+  function _fixStatus(instruction){
+    var signedFrom = (instruction.alamedaSignatureFrom && instruction.alamedaSignatureFrom.length > 0 );
+    var signedTo = (instruction.alamedaSignatureTo && instruction.alamedaSignatureTo.length > 0 );
+
+    if( signedFrom ^ signedTo ){ // xor
+      instruction.status = signedFrom ? 'transferer-signed' : 'receiver-signed';
     }
-    return data;
+    return instruction;
   }
 
+
+  /**
+   * Determine whether it's a channel between two members (and nsd is always here).
+   * Actually, should be called "threeLateral"
+   * @return {boolean}
+   */
   InstructionService.isBilateralChannel = function(channelID){
     return channelID.indexOf('-') > 0 && !channelID.startsWith('nsd-');
   }
@@ -178,7 +183,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       .then(function(result){
         // get pure value
         return result.map(function(singleValue){
-          return Object.assign(singleValue.value, instructionKey, {_created:new Date(singleValue.timestamp) });
+          return Object.assign( _fixStatus(singleValue.value), instructionKey, {_created:new Date(singleValue.timestamp) });
         });
       });
   }
