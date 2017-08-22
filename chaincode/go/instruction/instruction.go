@@ -50,16 +50,18 @@ type InstructionKey struct {
 }
 
 type InstructionValue struct {
-	DeponentFrom         string `json:"deponentFrom"`
-	DeponentTo           string `json:"deponentTo"`
-	Status               string `json:"status"`
-	Initiator            string `json:"initiator"`
-	ReasonFrom           Reason `json:"reasonFrom"`
-	ReasonTo             Reason `json:"reasonTo"`
-	AlamedaFrom          string `json:"alamedaFrom"`
-	AlamedaTo            string `json:"alamedaTo"`
-	AlamedaSignatureFrom string `json:"alamedaSignatureFrom"`
-	AlamedaSignatureTo   string `json:"alamedaSignatureTo"`
+	DeponentFrom            string `json:"deponentFrom"`
+	DeponentTo              string `json:"deponentTo"`
+	Status                  string `json:"status"`
+	Initiator               string `json:"initiator"`
+	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
+	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
+	ReasonFrom              Reason `json:"reasonFrom"`
+	ReasonTo                Reason `json:"reasonTo"`
+	AlamedaFrom             string `json:"alamedaFrom"`
+	AlamedaTo               string `json:"alamedaTo"`
+	AlamedaSignatureFrom    string `json:"alamedaSignatureFrom"`
+	AlamedaSignatureTo      string `json:"alamedaSignatureTo"`
 }
 
 type Balance struct {
@@ -272,7 +274,7 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 <corr_acc_c>{{.Instruction.Key.Receiver.Account}}</corr_acc_c>
 <corr_sec_c>{{.Instruction.Key.Receiver.Division}}</corr_sec_c>
 <corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>
-<based_on>{{.Reason}}</based_on>
+<based_on>{{.Reason.Description}}</based_on>
 <based_numb>{{.Reason.Document}}</based_numb>
 <based_date>{{.Reason.DocumentDate}}</based_date>
 <securities><security>
@@ -283,12 +285,14 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 <deal_reference>{{.Instruction.Key.Reference}}</deal_reference>
 <date_deal>{{.Instruction.Key.TradeDate}}</date_deal>
 </MF010>
+</Document>
+</Batch>
 `
 	type InstructionWrapper struct {
 		Instruction    Instruction
 		Depositary     string
 		Initiator      string
-		InstructionID  string //TODO: remove this
+		InstructionID  string
 		OperationCode  string
 		ExpirationDate string
 		Reason         Reason
@@ -302,7 +306,7 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 		Instruction:    *this,
 		Depositary:     "NDC000000000",
 		Initiator:      this.Value.DeponentFrom,
-		InstructionID:  "5",
+		InstructionID:  this.Value.MemberInstructionIdFrom,
 		OperationCode:  "16",
 		ExpirationDate: expirationDate.Format("2006-01-02 15:04:05"),
 		Reason: this.Value.ReasonFrom,
@@ -317,6 +321,7 @@ func (this *Instruction) createAlamedaXMLs() (string, string) {
 	buf.Reset()
 	instructionWrapper.OperationCode = "16/1"
 	instructionWrapper.Initiator = this.Value.DeponentTo
+	instructionWrapper.InstructionID = this.Value.MemberInstructionIdTo
 	instructionWrapper.Reason = this.Value.ReasonTo
 
 	t.Execute(buf, instructionWrapper)
@@ -413,7 +418,8 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
+		instruction.Value.MemberInstructionIdTo = args[11]
+		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 
@@ -425,9 +431,10 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
+		instruction.Value.MemberInstructionIdTo = args[11]
 		instruction.Value.Initiator = InitiatorIsReceiver
 		instruction.Value.Status = InstructionInitiated
-		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonTo); err != nil {
+		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 		if instruction.upsertIn(stub) != nil {
@@ -453,7 +460,8 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
+		instruction.Value.MemberInstructionIdFrom = args[11]
+		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 
@@ -465,9 +473,10 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	} else {
 		instruction.Value.DeponentFrom = args[9]
 		instruction.Value.DeponentTo = args[10]
+		instruction.Value.MemberInstructionIdFrom = args[11]
 		instruction.Value.Initiator = InitiatorIsTransferer
 		instruction.Value.Status = InstructionInitiated
-		if err := json.Unmarshal([]byte(args[11]), &instruction.Value.ReasonFrom); err != nil {
+		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 		if instruction.upsertIn(stub) != nil {
