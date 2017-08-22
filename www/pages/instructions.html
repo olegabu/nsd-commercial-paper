@@ -37,6 +37,7 @@
                 <th>Security</th>
                 <th>Quantity</th>
                 <th>Reference</th>
+                <th>Member Instruction Id</th>
                 <th>Instruction Date</th>
                 <th>Trade Date</th>
                 <th>Status</th>
@@ -53,6 +54,7 @@
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
                 <td>{{::o.reference}}</td>
+                <td>{{::o.initiator=='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
@@ -73,6 +75,7 @@
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
                 <td>{{::o.reference}}</td>
+                <td>{{::o.initiator!='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
@@ -200,8 +203,14 @@
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16">
+            <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16" required>
             <label for="i_reference">Reference</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input name="i_miid" type="text" class="" ng-model="inst.memberInstructionId" required ng-maxlength="16" required>
+            <label for="i_miid">InstructionId</label>
           </div>
         </div>
 

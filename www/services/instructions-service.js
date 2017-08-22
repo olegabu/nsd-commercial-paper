@@ -114,6 +114,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     args.push(
       instruction.deponentFrom,
       instruction.deponentTo,
+      instruction.memberInstructionId,
       JSON.stringify(instruction.reason)
     );
 
