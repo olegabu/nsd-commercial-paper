@@ -250,6 +250,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       initiator: transferSide,
       quantity: 1,
       reference: 'test',
+      memberInstructionId:123,
       tradeDate    : new Date(),
       instructionDate : new Date()
     };
@@ -273,6 +274,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       initiator: transferSide,
       quantity: 1,
       reference: 'test',
+      memberInstructionId:123,
       tradeDate    : new Date(),
       instructionDate : new Date()
     };
