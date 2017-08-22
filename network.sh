@@ -13,6 +13,8 @@ COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
 HTTP_PORT=8080
 
+GID=$(id -g)
+
 # Delete any images that were generated as a part of this setup
 # specifically the following images are often left behind:
 # TODO list generated image naming patterns
@@ -81,7 +83,6 @@ function generateOrdererArtifacts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$DOMAIN.yaml"
 
     echo "Change artifacts file ownership"
-    GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Generating orderer genesis block with configtxgen"
@@ -117,7 +118,6 @@ function generatePeerArtifacts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG.yaml"
 
     echo "Change artifacts ownership"
-    GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Adding generated CA private keys filenames to $COMPOSE_FILE"
@@ -155,7 +155,7 @@ function serveOrdererArtifacts() {
     cp "${D}/network-config.json" "www/${D}"
 
     echo "Copying channel block files from $D to be served by www.$ORG1.$DOMAIN"
-    cp "${D}/*.block" "www/${D}"
+    cp ${D}/*.block "www/${D}"
 
     docker-compose --file ${COMPOSE_FILE} up -d "www.$ORG1.$DOMAIN"
 }
@@ -167,6 +167,9 @@ function createChannel () {
     info "creating channel $CHANNEL_NAME by $ORG1 using $F"
 
     docker-compose --file ${F} run --rm "cli.$ORG1.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $CHANNEL_NAME -f /etc/hyperledger/artifacts/channel/$CHANNEL_NAME.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+
+    echo "Change channel block file ownership"
+    docker-compose --file ${F} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 }
 
 function joinChannel() {
@@ -335,14 +338,13 @@ function copyMemberMSP() {
 }
 
 function downloadMemberMSP() {
-    COMPOSE_FILE="ledger/docker-compose-$DOMAIN.yaml"
+    COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
 
     C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
     echo "Change artifacts file ownership"
-    GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 }
 
@@ -424,7 +426,6 @@ function downloadCerts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
     echo "Change artifacts file ownership"
-    GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 }
 
@@ -460,7 +461,7 @@ function downloadArtifactsDepository() {
     done
 
   makeCertDirs
-  downloadCerts ${DOMAIN}
+  downloadCerts ${ORG1}
   downloadMemberMSP
 }
 
@@ -535,7 +536,7 @@ function devLogs () {
 
 function clean() {
   removeDockersFromCompose
-  removeDockersWithDomain
+#  removeDockersWithDomain
   removeUnwantedImages
 }
 
@@ -626,6 +627,8 @@ elif [ "${MODE}" == "download-artifacts-depository" ]; then
   downloadArtifactsDepository
 elif [ "${MODE}" == "download-certs" ]; then
   downloadCerts ${ORG}
+elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
+  serveOrdererArtifacts
 elif [ "${MODE}" == "copy-artifacts-member" ]; then
   copyArtifactsMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-depository" ]; then
