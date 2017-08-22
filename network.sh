@@ -11,10 +11,18 @@ ORG4=c
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
+HTTP_PORT=8080
+
+GID=$(id -g)
 
 # Delete any images that were generated as a part of this setup
 # specifically the following images are often left behind:
 # TODO list generated image naming patterns
+
+function removeUnwantedContainers() {
+  docker ps -a -q -f "name=dev-*"|xargs docker rm -f
+}
+
 function removeUnwantedImages() {
   DOCKER_IMAGE_IDS=$(docker images | grep "dev\|none\|test-vp\|peer[0-9]-" | awk '{print $3}')
   if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
@@ -41,8 +49,6 @@ function removeDockersFromCompose() {
         echo "Removing docker containers listed in $COMPOSE_FILE"
         docker-compose -f ${COMPOSE_FILE} kill
         docker-compose -f ${COMPOSE_FILE} rm -f
-      else
-        echo "No generated $COMPOSE_FILE and no docker instances to remove"
       fi;
     done
 }
@@ -77,7 +83,6 @@ function generateOrdererArtifacts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$DOMAIN.yaml"
 
     echo "Change artifacts file ownership"
-    GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Generating orderer genesis block with configtxgen"
@@ -113,7 +118,6 @@ function generatePeerArtifacts() {
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$ORG.yaml"
 
     echo "Change artifacts ownership"
-    GID=$(id -g)
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Adding generated CA private keys filenames to $COMPOSE_FILE"
@@ -122,6 +126,39 @@ function generatePeerArtifacts() {
     sed -i -e "s/CA_PRIVATE_KEY/${CA_PRIVATE_KEY}/g" ${COMPOSE_FILE}
 }
 
+function servePeerArtifacts() {
+    ORG=$1
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+    
+    echo "Copying generated TLS cert files to be served by www.$ORG.$DOMAIN"
+    D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
+    mkdir -p "www/${D}"
+    cp "${D}/ca.crt" "www/${D}"
+
+    echo "Copying generated MSP cert files to be served by www.$ORG.$DOMAIN"
+    D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
+    cp -r "${D}/msp" "www/${D}"
+
+    docker-compose --file ${COMPOSE_FILE} up -d "www.$ORG.$DOMAIN"
+}
+
+function serveOrdererArtifacts() {
+    COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
+
+    D="artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls"
+    echo "Copying generated orderer TLS cert files from $D to be served by www.$ORG1.$DOMAIN"
+    mkdir -p "www/${D}"
+    cp "${D}/ca.crt" "www/${D}"
+
+    D="artifacts"
+    echo "Copying generated network config file from $D to be served by www.$ORG1.$DOMAIN"
+    cp "${D}/network-config.json" "www/${D}"
+
+    echo "Copying channel block files from $D to be served by www.$ORG1.$DOMAIN"
+    cp ${D}/*.block "www/${D}"
+
+    docker-compose --file ${COMPOSE_FILE} up -d "www.$ORG1.$DOMAIN"
+}
 
 function createChannel () {
     CHANNEL_NAME=$1
@@ -130,6 +167,9 @@ function createChannel () {
     info "creating channel $CHANNEL_NAME by $ORG1 using $F"
 
     docker-compose --file ${F} run --rm "cli.$ORG1.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $CHANNEL_NAME -f /etc/hyperledger/artifacts/channel/$CHANNEL_NAME.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+
+    echo "Change channel block file ownership"
+    docker-compose --file ${F} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 }
 
 function joinChannel() {
@@ -194,9 +234,11 @@ function dockerComposeUp () {
 function dockerComposeDown () {
   COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-  info "stopping docker instances from $COMPOSE_FILE"
+  if [ -f ${COMPOSE_FILE} ]; then
+      info "stopping docker instances from $COMPOSE_FILE"
+      docker-compose -f ${COMPOSE_FILE} down
+  fi;
 
-  docker-compose -f ${COMPOSE_FILE} down
 }
 
 function installInstantiateWarmUp() {
@@ -235,7 +277,7 @@ function startDepository () {
       joinChannel ${ORG1} ${CHANNEL_NAME}
     done
 
-  installInstantiateWarmUp book depository '{"Args":["init","902","05","RU000ABC0001","100"]}'
+  installInstantiateWarmUp book depository '{"Args":["init","AC0689654902","87680000045800005","RU000ABC0001","100"]}'
 
   installInstantiateWarmUp security common '{"Args":["init","RU000ABC0001","active"]}'
 
@@ -243,7 +285,7 @@ function startDepository () {
 
   for CHANNEL_NAME in "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4"
     do
-      instantiateWarmUp instruction ${CHANNEL_NAME} '{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"902\",\"division\":\"05\"},{\"account\":\"902\",\"division\":\"06\"},{\"account\":\"904\",\"division\":\"07\"},{\"account\":\"904\",\"division\":\"08\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"903\",\"division\":\"09\"},{\"account\":\"903\",\"division\":\"10\"},{\"account\":\"905\",\"division\":\"11\"},{\"account\":\"905\",\"division\":\"12\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"906\",\"division\":\"13\"},{\"account\":\"906\",\"division\":\"14\"},{\"account\":\"908\",\"division\":\"15\"},{\"account\":\"908\",\"division\":\"16\"}]}]"]}'
+      instantiateWarmUp instruction ${CHANNEL_NAME} '{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'
     done
 
   installChaincode ${ORG1} position
@@ -252,8 +294,6 @@ function startDepository () {
     do
       instantiateWarmUp position ${CHANNEL_NAME} '{"Args":["init"]}'
     done
-
-  #  logs ${ORG1}
 }
 
 function startMember () {
@@ -271,8 +311,6 @@ function startMember () {
     do
       joinWarmUp ${ORG} instruction ${CHANNEL_NAME}
     done
-
-#  logs ${ORG}
 }
 
 function makeCertDirs() {
@@ -299,11 +337,30 @@ function copyMemberMSP() {
     done
 }
 
+function downloadMemberMSP() {
+    COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
+
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+
+    echo "Change artifacts file ownership"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+}
+
 function copyNetworkConfig() {
     S="../$ORG1/artifacts/network-config.json"
     D="artifacts"
     echo "cp $S $D"
     cp ${S} ${D}
+}
+
+function downloadNetworkConfig() {
+    COMPOSE_FILE="ledger/docker-compose-$1.yaml"
+
+    C="wget --verbose http://www.$ORG1.$DOMAIN:$HTTP_PORT/network-config.json && chown -R $UID:$GID ."
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 }
 
 function copyChannelBlockFiles() {
@@ -318,8 +375,26 @@ function copyChannelBlockFiles() {
     done
 }
 
+function downloadChannelBlockFiles() {
+    ORG=$1
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+
+    for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
+    do
+      C="wget --verbose http://www.$ORG1.$DOMAIN:$HTTP_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
+      echo ${C}
+      docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+    done
+}
+
 function startMemberWithCopy() {
     copyArtifactsMember ${@}
+    dockerComposeUp ${1}
+    startMember ${@}
+}
+
+function startMemberWithDownload() {
+    downloadArtifactsMember ${@}
     dockerComposeUp ${1}
     startMember ${@}
 }
@@ -339,11 +414,33 @@ function copyCerts() {
     done
 }
 
+function downloadCerts() {
+    COMPOSE_FILE="ledger/docker-compose-$1.yaml"
+
+    C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$HTTP_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$HTTP_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
+    echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+
+    echo "Change artifacts file ownership"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+}
+
 function copyArtifactsMember() {
   makeCertDirs
   copyCerts
   copyNetworkConfig
   copyChannelBlockFiles ${@}
+}
+
+function downloadArtifactsMember() {
+  makeCertDirs
+  downloadCerts ${1}
+  downloadNetworkConfig ${1}
+  downloadChannelBlockFiles ${@}
 }
 
 function copyArtifactsDepository() {
@@ -355,6 +452,17 @@ function copyArtifactsDepository() {
   makeCertDirs
   copyCerts
   copyMemberMSP
+}
+
+function downloadArtifactsDepository() {
+  for ORG in ${ORG2} ${ORG3} ${ORG4}
+    do
+      rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
+    done
+
+  makeCertDirs
+  downloadCerts ${ORG1}
+  downloadMemberMSP
 }
 
 function devNetworkUp () {
@@ -372,7 +480,7 @@ function devNetworkDown () {
 
 function devInstallInstantiate () {
 # docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0"
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"902\",\"05\",\"RU000ABC0001\",\"100\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"AC0689654902\",\"87680000045800005\",\"RU000ABC0001\",\"100\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
@@ -384,18 +492,18 @@ function devInstallInstantiate () {
 }
 
 function devInvoke () {
- # ["902","05","903","09","RU000ABC0001","10"]
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"902\",\"05\",\"903\",\"09\",\"RU000ABC0001\",\"10\"]}'"
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"902\",\"05\",\"903\",\"09\",\"RU000ABC0001\",\"10\",\"a\",\"2017-08-12\",\"2017-08-12\"]}'"
+ # ["AC0689654902","87680000045800005","WD0D00654903","58680002816000009","RU000ABC0001","10"]
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"AC0689654902\",\"87680000045800005\",\"WD0D00654903\",\"58680002816000009\",\"RU000ABC0001\",\"10\"]}'"
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n book -v 0 -C myc -c '{\"Args\":[\"move\",\"AC0689654902\",\"87680000045800005\",\"WD0D00654903\",\"58680002816000009\",\"RU000ABC0001\",\"10\",\"a\",\"2017-08-12\",\"2017-08-12\"]}'"
 
- # ["DE000DB7HWY7","902","05","CA9861913023","903","09","RU000ABC0001","10","reference1000","2017-08-08","2017-08-07","reason"]
+ # ["DE000DB7HWY7","AC0689654902","87680000045800005","CA9861913023","WD0D00654903","58680002816000009","RU000ABC0001","10","reference1000","2017-08-08","2017-08-07","reason"]
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"receive\",\"aDeponent\",\"aEmissionAccount\",\"aActiveDivision\",\"bInvestmentAccount\",\"bActiveDivision\",\"RU000ABC0001\",\"10\",\"reference1000\",\"2017-08-08\",\"2017-08-07\",\"reason\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n instruction -v 0 -C myc -c '{\"Args\":[\"check\",\"aEmissionAccount\",\"aActiveDivision\",\"RU000ABC0001\",\"10\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n security -v 0 -C myc -c '{\"Args\":[\"put\",\"RU000ABC0001\",\"redeemed\"]}'"
 
- # ["902","05","RU000ABC0001","10"]
- #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n position -v 0 -C myc -c '{\"Args\":[\"put\",\"902\",\"05\",\"RU000ABC0001\",\"10\"]}'"
+ # ["AC0689654902","87680000045800005","RU000ABC0001","10"]
+ #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n position -v 0 -C myc -c '{\"Args\":[\"put\",\"AC0689654902\",\"87680000045800005\",\"RU000ABC0001\",\"10\"]}'"
 }
 
 function devQuery () {
@@ -428,8 +536,14 @@ function devLogs () {
 
 function clean() {
   removeDockersFromCompose
-  removeDockersWithDomain
+#  removeDockersWithDomain
   removeUnwantedImages
+}
+
+function generateWait() {
+  echo "$(date --rfc-3339='seconds' -u) *** Wait for 7 minutes to make sure the certificates become active ***"
+  sleep 7m
+  beep
 }
 
 # Print the usage message
@@ -469,7 +583,7 @@ while getopts "h?m:o:a:" opt; do
   esac
 done
 
-if [ "${MODE}" == "up" ]; then
+if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
   dockerComposeUp ${ORG2}
@@ -479,12 +593,16 @@ if [ "${MODE}" == "up" ]; then
   startMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
   startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
   startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+elif [ "${MODE}" == "up" ]; then
+  dockerComposeUp ${ORG}
 elif [ "${MODE}" == "down" ]; then
   dockerComposeDown ${DOMAIN}
   dockerComposeDown ${ORG1}
   dockerComposeDown ${ORG2}
   dockerComposeDown ${ORG3}
   dockerComposeDown ${ORG4}
+  removeUnwantedContainers
+  removeUnwantedImages
 elif [ "${MODE}" == "clean" ]; then
   clean
 elif [ "${MODE}" == "generate" ]; then
@@ -495,27 +613,32 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts ${ORG3} 4002
   generatePeerArtifacts ${ORG4} 4003
   generateOrdererArtifacts
+  generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
-  copyArtifactsDepository
+  downloadArtifactsDepository
   generateOrdererArtifacts
 elif [ "${MODE}" == "generate-peer" ]; then
   clean
   removeArtifacts
   generatePeerArtifacts ${ORG} ${API_PORT}
-elif [ "${MODE}" == "copy-artifacts-depository" ]; then
-  copyArtifactsDepository
-elif [ "${MODE}" == "copy-artifacts-member" ]; then
-  copyArtifactsMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+  servePeerArtifacts ${ORG}
+elif [ "${MODE}" == "download-artifacts-depository" ]; then
+  downloadArtifactsDepository
+elif [ "${MODE}" == "download-certs" ]; then
+  downloadCerts ${ORG}
+elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
+  serveOrdererArtifacts
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
   startDepository
+  serveOrdererArtifacts
 elif [ "${MODE}" == "up-2" ]; then
-  startMemberWithCopy ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+  startMemberWithDownload ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-3" ]; then
-  startMemberWithCopy ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
+  startMemberWithDownload ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "up-4" ]; then
-  startMemberWithCopy ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+  startMemberWithDownload ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "logs" ]; then
   logs ${ORG}
 elif [ "${MODE}" == "devup" ]; then

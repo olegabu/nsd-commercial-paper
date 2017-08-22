@@ -13,9 +13,10 @@ build
 /artifacts/cryptogen-*.yaml
 /artifacts/fabric-ca-server-config-*.yaml
 /artifacts/configtx.yaml
-/artifacts/*.block
+/artifacts/*.block*
 /artifacts/network-config.json
 /artifacts/network-config-dev.json
 /artifacts-dev
 /ledger/docker-compose.yaml
 /ledger/docker-compose-*.yaml
+/www/artifacts

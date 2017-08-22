@@ -73,10 +73,10 @@ Generate artifacts for the network and network-config file for the API server:
 
 `./network.sh -m generate`
 
-**Note** you'll need to wait about 6 minutes until the timing of the generated certs lines up. 
+**Note** you'll need to wait about 7 minutes until the timing of the generated certs lines up. 
 Needed temporarily until the issue is resolved. This may come handy if you need to regenerate frequently:
 
-`./network.sh -m generate && sleep 6m && beep && ./network.sh -m up`
+`./network.sh -m generate && sleep 7m && beep && ./network.sh -m up`
 
 Start the network, watch the logs, shutdown.
 
@@ -128,7 +128,7 @@ cd ../c
 
 Now each member has generated their crypto material. The orderer can gather member certificates and use them to generate
 genesis block files `artifacts/*.block` and channel config transaction files `artifacts/channel/*.tx`. The script will
-copy cert files from respective member directories `a`, `b`, `c` into the folder `nsd` shared by depository nsd
+download cert files from members `a`, `b`, `c` www servers into the folder `nsd` shared by depository nsd
 and the orderer.
 
 ```bash
@@ -147,8 +147,9 @@ on nsd peers:
 ``` 
 Ignore `WARNING: Found orphan containers`.
 
-Open terminal windows and start member instances. The script will copy cert files, channel block files received 
-at creation of channels in the previous step and network-config from `nsd/artifacts` folder into its own `artifacts`. 
+Open terminal windows and start member instances. The script will download cert files from each member, 
+channel block files received at creation of channels in the previous step and network-config from nsd www server 
+into its own `artifacts`. 
 Will start the ca server, peers and api server and tail their logs.
 
 ```bash
