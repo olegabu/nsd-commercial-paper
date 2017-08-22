@@ -60,7 +60,7 @@ services:
 
   www-base:
     image: trinitronx/python-simplehttpserver
-    ports:
-      - 8080:8080  
+#    ports:
+#      - 8080:8080  
     volumes:
       - ../www/artifacts:/var/www/:ro

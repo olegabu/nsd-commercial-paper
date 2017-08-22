@@ -438,8 +438,8 @@ function copyArtifactsMember() {
 
 function downloadArtifactsMember() {
   makeCertDirs
-  downloadCerts
-  downloadNetworkConfig
+  downloadCerts ${1}
+  downloadNetworkConfig ${1}
   downloadChannelBlockFiles ${@}
 }
 
