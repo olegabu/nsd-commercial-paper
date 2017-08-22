@@ -542,7 +542,8 @@ function clean() {
 
 function generateWait() {
   echo "$(date --rfc-3339='seconds' -u) *** Wait for 7 minutes to make sure the certificates become active ***"
-  sleep 420
+  sleep 7m
+  beep
 }
 
 # Print the usage message
@@ -621,16 +622,12 @@ elif [ "${MODE}" == "generate-peer" ]; then
   removeArtifacts
   generatePeerArtifacts ${ORG} ${API_PORT}
   servePeerArtifacts ${ORG}
-elif [ "${MODE}" == "copy-artifacts-depository" ]; then
-  copyArtifactsDepository
 elif [ "${MODE}" == "download-artifacts-depository" ]; then
   downloadArtifactsDepository
 elif [ "${MODE}" == "download-certs" ]; then
   downloadCerts ${ORG}
 elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
   serveOrdererArtifacts
-elif [ "${MODE}" == "copy-artifacts-member" ]; then
-  copyArtifactsMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
