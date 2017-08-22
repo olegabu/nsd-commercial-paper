@@ -50,6 +50,10 @@ html body .wrapper main {
   padding: 2% 0;
 }
 
+.border{
+  border: solid 1px rgba(51,51,51,0.12);
+}
+
 /* fix header */
 h3{
   margin-top: 0;
@@ -145,6 +149,11 @@ input.locked:disabled{
   min-height: 250px;
 }
 
+.modal.modal-70{
+  width: 70%;
+}
+
+.modal.modal-90,
 .modal.modal-large{
   width: 90%;
 }

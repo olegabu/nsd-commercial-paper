@@ -59,11 +59,8 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
       initiator: transferSide,
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
-      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
-      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
-      reason:{
-        created   : new Date()//.format(DATE_INPUT_FORMAT)
-      }
+      tradeDate    : new Date(),
+      instructionDate : new Date()
     };
   }
 
@@ -253,11 +250,8 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       initiator: transferSide,
       quantity: 1,
       reference: 'test',
-      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
-      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
-      reason:{
-        created   : new Date()//.format(DATE_INPUT_FORMAT)
-      }
+      tradeDate    : new Date(),
+      instructionDate : new Date()
     };
   }
 
@@ -279,11 +273,8 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
       initiator: transferSide,
       quantity: 1,
       reference: 'test',
-      tradeDate    : new Date(),//.format(DATE_INPUT_FORMAT),
-      instructionDate : new Date(),//.format(DATE_INPUT_FORMAT),
-      reason:{
-        created   : new Date()//.format(DATE_INPUT_FORMAT)
-      }
+      tradeDate    : new Date(),
+      instructionDate : new Date()
     };
   }
 
