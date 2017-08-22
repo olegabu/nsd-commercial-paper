@@ -19,4 +19,6 @@ build
 /artifacts-dev
 /ledger/docker-compose.yaml
 /ledger/docker-compose-*.yaml
-/www/artifacts
+/www/artifacts/*.block
+/www/artifacts/network-config.json
+/www/artifacts/crypto-config

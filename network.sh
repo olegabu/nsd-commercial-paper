@@ -365,7 +365,7 @@ function copyMemberMSP() {
 function downloadMemberMSP() {
     COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
@@ -383,7 +383,7 @@ function copyNetworkConfig() {
 function downloadNetworkConfig() {
     COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-    C="wget --verbose http://www.$ORG1.$DOMAIN:$WWW_PORT/network-config.json && chown -R $UID:$GID ."
+    C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/network-config.json && chown -R $UID:$GID ."
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 }
@@ -406,7 +406,7 @@ function downloadChannelBlockFiles() {
 
     for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
     do
-      C="wget --verbose http://www.$ORG1.$DOMAIN:$WWW_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
+      C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
       echo ${C}
       docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
     done
@@ -442,11 +442,11 @@ function copyCerts() {
 function downloadCerts() {
     COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
-    C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$WWW_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
+    C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$WWW_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
     echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 
@@ -669,6 +669,8 @@ elif [ "${MODE}" == "generate" ]; then
 elif [ "${MODE}" == "generate-orderer" ]; then
   downloadArtifactsDepository
   generateOrdererArtifacts
+elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
+  serveOrdererArtifacts
 elif [ "${MODE}" == "generate-peer" ]; then
   clean
   removeArtifacts
