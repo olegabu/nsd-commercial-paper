@@ -177,6 +177,21 @@ cd tmp/c
 Real world deployment scenario with members deploying their CA server, peer, api and web servers as docker instances on
 one host. Members' host servers connect to each other over internet. 
 
+## Install prerequisites
+
+```bash
+sudo apt update && sudo apt -y install docker docker-compose tree
+```
+
+Add yourself to the group to be able to run docker and re-login.
+
+```bash
+sudo gpasswd -a $USER docker
+exit
+```
+
+## Each member downloads software, generates crypto material and config files
+
 Each member clones the repo and generates artifacts. Pass organization name with `-o`. You can pass other ports as args
 `-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used.
 
@@ -207,6 +222,8 @@ generation process on depository host nsd:
 ```bash
 ./network.sh -m generate-orderer && sleep 7m
 ```
+## Each member starts their nodes
+
 After that you can start the orderer and the depository peers: nsd. Will create and join channels, 
 install and instantiate chaincodes on nsd peers:
 
@@ -222,6 +239,16 @@ Each member starts the ca server, peers and api servers:
 ```bash
 ./network.sh -m up-2
 ``` 
+
+Which is equivalent to starting with an explicit organization name and all possible bilateral channels with other 
+members:
+
+```bash
+./network.sh -m up -o a -k "a-b a-c"
+```
+
+Other members start their nodes:
+
 ```bash
 ./network.sh -m up-3
 ``` 
@@ -229,5 +256,20 @@ Each member starts the ca server, peers and api servers:
 ./network.sh -m up-4
 ```
 
+You can tail the logs by passing your organization with `-o`:
 
+```bash
+./network.sh -m logs -o nsd
+```
+```bash
+./network.sh -m logs -o a
+```
 
+## Users of each member can now access web app and transact
+
+Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.
+
+1. [depository nsd](http://54.173.221.247:4000)
+1. [issuer a](http://54.161.190.237:4000)
+1. [investor b](http://54.166.77.150:4000)
+1. [investor c](http://52.23.204.164:4000)

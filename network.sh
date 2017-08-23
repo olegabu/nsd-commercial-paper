@@ -632,7 +632,7 @@ function printHelp () {
 }
 
 # Parse commandline args
-while getopts "h?m:o:a:w:c:0:1:2:3:" opt; do
+while getopts "h?m:o:a:w:c:0:1:2:3:k:" opt; do
   case "$opt" in
     h|\?)
       printHelp
@@ -656,6 +656,8 @@ while getopts "h?m:o:a:w:c:0:1:2:3:" opt; do
     ;;
     3)  PEER1_EVENT_PORT=$OPTARG
     ;;
+    k)  CHANNELS=$OPTARG
+    ;;
   esac
 done
 
@@ -670,7 +672,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
   startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
 elif [ "${MODE}" == "up" ]; then
-  dockerComposeUp ${ORG}
+  startMemberWithDownload ${ORG} ${CHANNELS}
 elif [ "${MODE}" == "down" ]; then
   dockerComposeDown ${DOMAIN}
   dockerComposeDown ${ORG1}
