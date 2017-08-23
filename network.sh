@@ -148,10 +148,10 @@ function generatePeerArtifacts() {
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-peer.yaml
 
     # cryptogen
-    sed -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
 
     # docker-compose.yaml
-    sed -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    sed -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
 
     # fabric-ca-server-config.yaml
     sed -e "s/ORG/$ORG/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG.yaml"
