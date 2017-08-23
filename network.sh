@@ -397,13 +397,15 @@ function copyNetworkConfig() {
 }
 
 function downloadNetworkConfig() {
-    COMPOSE_FILE="ledger/docker-compose-$1.yaml"
+    ORG=$1
+
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
 
     info "downloading network config file using $COMPOSE_FILE"
 
     C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/network-config.json && chown -R $UID:$GID ."
     #echo ${C}
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C}"
 }
 
 function copyChannelBlockFiles() {
@@ -420,6 +422,7 @@ function copyChannelBlockFiles() {
 
 function downloadChannelBlockFiles() {
     ORG=$1
+    
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
 
     info "downloading channel block files using $COMPOSE_FILE"
@@ -428,7 +431,7 @@ function downloadChannelBlockFiles() {
     do
       C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
       #echo ${C}
-      docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+      docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C}"
     done
 }
 
