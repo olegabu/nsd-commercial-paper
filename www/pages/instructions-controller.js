@@ -140,6 +140,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
    *
    */
   ctrl.sendInstruction = function(instruction){
+    $scope.inst = null;
 
     // FIXME here date can come in two different formats:
     //  Date object when we change form value
@@ -165,10 +166,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
 
     ctrl.invokeInProgress = true;
-    return p.then(function(){
-      $scope.inst = null;
-    })
-    .finally(function(){
+    return p.finally(function(){
       ctrl.invokeInProgress = false;
     });
   };
