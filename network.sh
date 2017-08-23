@@ -29,7 +29,7 @@ DEFAULT_PEER1_EVENT_PORT=7058
 DEFAULT_ORDERER_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
 DEFAULT_PEER_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1"
 DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:\\n      - www.$ORG1.$DOMAIN:$IP1\\n      - www.$ORG2.$DOMAIN:$IP2\\n      - www.$ORG3.$DOMAIN:$IP3\\n      - www.$ORG4.$DOMAIN:$IP4"
-DEFAULT_API_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
+DEFAULT_API_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
 
 GID=$(id -g)
 
