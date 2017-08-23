@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "I9nWx6RapIoz4rAT0LbaXR8uS1c=",
+			"path": "github.com/olegabu/nsd-commercial-paper-common",
+			"revision": "9b241ea7554d5b1f937e5be23e346349ca0425b0",
+			"revisionTime": "2017-08-23T10:14:18Z"
+		}
+	],
+	"rootPath": "github.com/olegabu/nsd-commercial-paper/chaincode/go/book"
+}

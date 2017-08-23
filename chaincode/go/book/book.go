@@ -9,11 +9,12 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/olegabu/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("BookChaincode")
 
-const indexName = `Book`
+const bookIndex = `Book`
 
 // BookChaincode
 type BookChaincode struct {
@@ -23,39 +24,12 @@ type BookValue struct {
 	Quantity   		int 	`json:"quantity"`
 }
 
-//TODO move to common package
-type Balance struct {
-	Account 		string 	`json:"account"`
-	Division 		string 	`json:"division"`
-}
 
 //TODO reuse Position struct
 type Book struct {
-	Balance 		Balance `json:"balance"`
+	Balance 		nsd.Balance `json:"balance"`
 	Security        string 	`json:"security"`
 	Quantity   		int 	`json:"quantity"`
-}
-
-//TODO move to common package
-type Instruction struct {
-	Transferer      Balance `json:"transferer"`
-	Receiver        Balance `json:"receiver"`
-	Security        string 	`json:"security"`
-	Quantity        string 	`json:"quantity"`
-	Reference       string 	`json:"reference"`
-	InstructionDate string 	`json:"instructionDate"`
-	TradeDate       string 	`json:"tradeDate"`
-	DeponentFrom    string  `json:"deponentFrom"`
-	DeponentTo      string  `json:"deponentTo"`
-	Status          string 	`json:"status"`
-	Initiator       string 	`json:"initiator"`
-	Reason          Reason 	`json:"reason"`
-}
-
-type Reason struct {
-	Document 		string 	`json:"document"`
-	Description 	string 	`json:"description"`
-	DocumentDate 	string 	`json:"documentDate"`
 }
 
 type KeyModificationValue struct {
@@ -116,7 +90,7 @@ func (t *BookChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.
 	}
 
 	// account-division-security
-	key, err := stub.CreateCompositeKey(indexName, []string{account, division, security})
+	key, err := stub.CreateCompositeKey(bookIndex, []string{account, division, security})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -149,7 +123,7 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 		return shim.Error(err.Error())
 	}
 
-	keyFrom, err := stub.CreateCompositeKey(indexName, []string{account, division, security})
+	keyFrom, err := stub.CreateCompositeKey(bookIndex, []string{account, division, security})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -177,37 +151,30 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 }
 
 func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// accountFrom, divisionFrom, accountTo, divisionTo, security, quantity, reference, instructionDate, tradeDate
-	if len(args) < 6 {
-		return pb.Response{Status:400, Message: fmt.Sprintf("Incorrect number of arguments. " +
-			"Expecting accountFrom, divisionFrom, accountTo, divisionTo, security, quantity. " +
-			"But got %d args: %s", len(args), args)}
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
 	}
 
-	accountFrom := args[0]
-	divisionFrom := args[1]
-	accountTo := args[2]
-	divisionTo := args[3]
-	security := args[4]
-	quantity, err := strconv.Atoi(args[5])
-	if err != nil {
-		return shim.Error(err.Error())
+	//check stored list for this instructions has been executed already
+	if instruction.ExistsIn(stub) {
+		if err := instruction.LoadFrom(stub); err != nil {
+			return pb.Response{Status: 404, Message: "Instruction not found."}
+		}
+
+		if instruction.Value.Status == nsd.InstructionExecuted {
+			return pb.Response{Status: 400, Message: "Already executed."}
+		}
 	}
 
-	var instruction Instruction
-	if len(args) == 9 {
-		instruction = Instruction{Transferer:Balance{Account:accountFrom, Division:divisionFrom},
-			Receiver:Balance{Account:accountTo, Division:divisionTo},
-			Security:security,
-			Quantity:strconv.Itoa(quantity),
-			Reference:args[6],
-			InstructionDate:args[7],
-			TradeDate:args[8],}
+	accountFrom := instruction.Key.Transferer.Account
+	divisionFrom := instruction.Key.Transferer.Division
+	security := instruction.Key.Security
+	quantity, _ := strconv.Atoi(instruction.Key.Quantity)
+	accountTo := instruction.Key.Receiver.Account
+	divisionTo := instruction.Key.Receiver.Division
 
-		//TODO check stored list for this instructions has been executed already
-	}
-
-	keyFrom, err := stub.CreateCompositeKey(indexName, []string{accountFrom, divisionFrom, security})
+	keyFrom, err := stub.CreateCompositeKey(bookIndex, []string{accountFrom, divisionFrom, security})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -243,7 +210,7 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
-	keyTo, err := stub.CreateCompositeKey(indexName, []string{accountTo, divisionTo, security})
+	keyTo, err := stub.CreateCompositeKey(bookIndex, []string{accountTo, divisionTo, security})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -278,37 +245,25 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
-	if instruction != (Instruction{}) {
-		instruction.Status = "executed"
-		err = setInstructionEvent(stub, instruction)
-		if err != nil {
-			return shim.Error(err.Error())
+	if instruction != (nsd.Instruction{}) {
+		instruction.Value.Status = nsd.InstructionExecuted
+
+		//save to the ledger list of executed instructions
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 520, Message: "Persistence failure."}
 		}
 
-		//TODO save to the ledger list of executed instructions
+		if err := instruction.EmitState(stub); err != nil {
+			return pb.Response{Status: 520, Message: "Event emission failure."}
+		}
 	}
 
 	return shim.Success(nil)
 }
 
-func setInstructionEvent(stub shim.ChaincodeStubInterface, instruction Instruction) (error) {
-	logger.Debugf("setInstructionEvent", instruction)
-
-	bytes, err := json.Marshal(instruction)
-	if err != nil {
-		return err
-	}
-
-	err = stub.SetEvent("Instruction." + instruction.Status, bytes)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	it, err := stub.GetStateByPartialCompositeKey(indexName, []string{})
+	it, err := stub.GetStateByPartialCompositeKey(bookIndex, []string{})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -334,7 +289,7 @@ func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) p
 		}
 
 		book := Book {
-			Balance: Balance {
+			Balance: nsd.Balance {
 				Account: compositeKeyParts[0],
 				Division: compositeKeyParts[1],
 			},
@@ -359,7 +314,7 @@ func (t *BookChaincode) history(stub shim.ChaincodeStubInterface, args []string)
 	}
 
 	//account-division-security
-	key, err := stub.CreateCompositeKey(indexName, args)
+	key, err := stub.CreateCompositeKey(bookIndex, args)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
