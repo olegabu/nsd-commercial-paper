@@ -382,12 +382,11 @@ function copyMemberMSP() {
 function downloadMemberMSP() {
     COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
-    echo ${C}
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+    info "downloading member MSP files using $COMPOSE_FILE"
 
-    echo "Change artifacts file ownership"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
+    #echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG1.$DOMAIN" bash -c "${C} && chown -R $UID:$GID ."
 }
 
 function copyNetworkConfig() {
@@ -400,8 +399,10 @@ function copyNetworkConfig() {
 function downloadNetworkConfig() {
     COMPOSE_FILE="ledger/docker-compose-$1.yaml"
 
+    info "downloading network config file using $COMPOSE_FILE"
+
     C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/network-config.json && chown -R $UID:$GID ."
-    echo ${C}
+    #echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
 }
 
@@ -421,10 +422,12 @@ function downloadChannelBlockFiles() {
     ORG=$1
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
 
+    info "downloading channel block files using $COMPOSE_FILE"
+
     for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
     do
       C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/$CHANNEL_NAME.block && chown -R $UID:$GID ."
-      echo ${C}
+      #echo ${C}
       docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
     done
 }
@@ -457,18 +460,19 @@ function copyCerts() {
 }
 
 function downloadCerts() {
-    COMPOSE_FILE="ledger/docker-compose-$1.yaml"
+    ORG=$1
+    
+    COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
+
+    info "downloading cert files using $COMPOSE_FILE"
 
     C="wget --verbose --directory-prefix crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
-    echo ${C}
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
+    #echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C} && chown -R $UID:$GID ."
 
     C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
-    echo ${C}
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "${C}"
-
-    echo "Change artifacts file ownership"
-    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+    #echo ${C}
+    docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C} && chown -R $UID:$GID ."
 }
 
 function copyArtifactsMember() {
