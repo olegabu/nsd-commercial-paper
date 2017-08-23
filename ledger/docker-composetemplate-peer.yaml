@@ -39,6 +39,7 @@ services:
         - ../artifacts/crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer0.ORG.DOMAIN/:/etc/hyperledger/crypto/peer
     depends_on:
       - ca.ORG.DOMAIN
+    PEER_EXTRA_HOSTS
 
   peer1.ORG.DOMAIN:
     container_name: peer1.ORG.DOMAIN
@@ -56,6 +57,7 @@ services:
         - ../artifacts/crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer1.ORG.DOMAIN/:/etc/hyperledger/crypto/peer
     depends_on:
       - ca.ORG.DOMAIN
+    PEER_EXTRA_HOSTS
 
   # api server
   api.ORG.DOMAIN:
@@ -71,6 +73,7 @@ services:
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
+    API_EXTRA_HOSTS
 
   cli.DOMAIN:
     container_name: cli.DOMAIN
@@ -91,6 +94,7 @@ services:
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
+    CLI_EXTRA_HOSTS
 
   # simple http server to disseminate certificates
   www.ORG.DOMAIN:

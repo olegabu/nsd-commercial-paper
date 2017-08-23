@@ -8,6 +8,11 @@ ORG2=a
 ORG3=b
 ORG4=c
 
+IP1=54.173.221.247
+IP2=54.161.190.237
+IP3=54.166.77.150
+IP4=52.23.204.164
+
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
@@ -20,6 +25,11 @@ DEFAULT_PEER0_PORT=7051
 DEFAULT_PEER0_EVENT_PORT=7053
 DEFAULT_PEER1_PORT=7056
 DEFAULT_PEER1_EVENT_PORT=7058
+
+DEFAULT_ORDERER_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
+DEFAULT_PEER_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1"
+DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:\\n      - www.$ORG1.$DOMAIN:$IP1\\n      - www.$ORG2.$DOMAIN:$IP2\\n      - www.$ORG3.$DOMAIN:$IP3\\n      - www.$ORG4.$DOMAIN:$IP4"
+DEFAULT_API_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
 
 GID=$(id -g)
 
@@ -107,7 +117,14 @@ function generateOrdererArtifacts() {
 function generatePeerArtifacts() {
     ORG=$1
 
-    [[ -z  ${ORG} || ${#} == 0 ]] && echo "missing required argument ORG" && exit 1
+    [[ ${#} == 0 ]] && echo "missing required argument -o ORG" && exit 1
+
+    if [ ${#} == 1 ]; then
+      # if no port args are passed assume generating for multi host deployment
+      PEER_EXTRA_HOSTS=${DEFAULT_PEER_EXTRA_HOSTS}
+      CLI_EXTRA_HOSTS=${DEFAULT_CLI_EXTRA_HOSTS}
+      API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS}
+    fi
 
     API_PORT=$2
     WWW_PORT=$3
@@ -131,10 +148,10 @@ function generatePeerArtifacts() {
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-peer.yaml
 
     # cryptogen
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
+    sed -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
 
     # docker-compose.yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    sed -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
 
     # fabric-ca-server-config.yaml
     sed -e "s/ORG/$ORG/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG.yaml"

@@ -178,22 +178,22 @@ Real world deployment scenario with members deploying their CA server, peer, api
 one host. Members' host servers connect to each other over internet. 
 
 Each member clones the repo and generates artifacts. Pass organization name with `-o`. You can pass other ports as args
-`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3`, `-4` for the api, web, ca and peer ports. If omitted,default ones are used.
+`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used.
 
 ```bash
 git clone https://github.com/olegabu/nsd-commercial-paper
 cd nsd-commercial-paper
-./network.sh -m generate -o nsd
+./network.sh -m generate-peer -o nsd
 ```
 
 ```bash
-./network.sh -m generate -o a
+./network.sh -m generate-peer -o a
 ```
 ```bash
-./network.sh -m generate -o b
+./network.sh -m generate-peer -o b
 ```
 ```bash
-./network.sh -m generate -o c
+./network.sh -m generate-peer -o c
 ```
 
 These will create docker-compose files with default mapped ports that don't have to be different for each member as they
