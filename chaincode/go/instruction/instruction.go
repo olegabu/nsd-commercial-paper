@@ -401,7 +401,9 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
 		callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
 
-		if !(callerIsTransferer || callerIsReceiver) {
+		logger.Debug(callerIsTransferer, callerIsReceiver, callerIsNSD)
+
+		if !(callerIsTransferer || callerIsReceiver || callerIsNSD) {
 			continue
 		}
 
