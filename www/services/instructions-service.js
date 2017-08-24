@@ -47,7 +47,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
           return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
             .then(function(data){ return {
                 channel: channelID,
-                result: _fixStatus(data.result)
+                result: data.result
               };
             }).catch(function(){
               return {
@@ -75,7 +75,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     .then(function(results){
       // join key and value
       return results.map(function(singleResult){
-        return Object.assign({}, singleResult.key, singleResult.value);
+        return Object.assign({}, _fixStatus(singleResult.value), singleResult.key);
       });
     });
   };
