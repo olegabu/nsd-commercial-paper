@@ -28,7 +28,7 @@ module.exports = function (require) {
 
   //TODO user with login 'admin' has to be logged to the web gui, use admin identity that api server operates under
   var config = require('../config.json');
-  const USERNAME = process.env.SERVICE_USER || 'orchestrator' /*config.user.username*/;
+  const USERNAME = process.env.SERVICE_USER || 'service' /*config.user.username*/;
 
 
   logger.info('**************    ORCHESTRATOR     ******************');
