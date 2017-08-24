@@ -44,7 +44,21 @@ func (t *BookChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 
 	_, args := stub.GetFunctionAndParameters()
 
-	return t.put(stub, args)
+	type bookInit struct {
+		Account     string `json:"account"`
+		Division    string `json:"division"`
+		Security    string `json:"security"`
+		Quantity    string `json:"quantity"`
+	}
+
+	var bookInits []bookInit
+	if err := json.Unmarshal([]byte(args[0]), &bookInits); err == nil && len(bookInits) != 0 {
+		for _, entry := range bookInits {
+			t.put(stub, []string{entry.Account, entry.Division, entry.Security, entry.Quantity})
+		}
+	}
+
+	return shim.Success(nil)
 }
 
 func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
