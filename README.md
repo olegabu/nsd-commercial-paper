@@ -188,7 +188,7 @@ On other Linux distros make sure these versions or higher are installed:
 - docker-compose version 1.8.0
 - Docker version 1.12.6
 
-Add yourself to the group to be able to run docker and re-login.
+Add yourself to the group and re-login to be able to run docker.
 
 ```bash
 sudo gpasswd -a $USER docker
@@ -207,13 +207,10 @@ cd nsd-commercial-paper
 ```
 
 ```bash
-./network.sh -m generate-peer -o a
+./network.sh -m generate-peer -o megafon
 ```
 ```bash
-./network.sh -m generate-peer -o b
-```
-```bash
-./network.sh -m generate-peer -o c
+./network.sh -m generate-peer -o raiffeisen
 ```
 
 These will create docker-compose files with default mapped ports that don't have to be different for each member as they
@@ -249,7 +246,7 @@ Which is equivalent to starting with an explicit organization name and all possi
 members:
 
 ```bash
-./network.sh -m up -o a -k "a-b a-c"
+./network.sh -m up -o megafon -k "megafon-raiffeisen"
 ```
 
 Other members start their nodes:
@@ -257,9 +254,6 @@ Other members start their nodes:
 ```bash
 ./network.sh -m up-3
 ``` 
-```bash
-./network.sh -m up-4
-```
 
 You can tail the logs by passing your organization with `-o`:
 
@@ -271,6 +265,5 @@ You can tail the logs by passing your organization with `-o`:
 Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.
 
 1. [depository nsd](http://54.173.221.247:4000)
-1. [issuer a](http://54.161.190.237:4000)
-1. [investor b](http://54.166.77.150:4000)
-1. [investor c](http://52.23.204.164:4000)
+1. [issuer megafon](http://54.161.190.237:4000)
+1. [investor raiffeisen](http://54.166.77.150:4000)
