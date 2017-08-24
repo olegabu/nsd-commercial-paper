@@ -40,11 +40,11 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredIni
 	this.Value.AlamedaFrom, this.Value.AlamedaTo = createAlamedaXMLs(this)
 
 	if err := this.UpsertIn(stub); err != nil {
-		return pb.Response{Status: 520, Message: "Persistence failure."}
+		return pb.Response{Status: 500, Message: "Persistence failure."}
 	}
 
 	if err := this.EmitState(stub); err != nil {
-		return pb.Response{Status: 520, Message: "Event emission failure."}
+		return pb.Response{Status: 500, Message: "Event emission failure."}
 	}
 
 	return shim.Success(nil)
@@ -224,7 +224,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		}
 
 		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 520, Message: "Persistence failure."}
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer)
@@ -238,7 +238,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 520, Message: "Persistence failure."}
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 
 		}
 		return shim.Success(nil)
@@ -266,7 +266,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		}
 
 		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 520, Message: "Persistence failure."}
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver)
@@ -280,7 +280,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 520, Message: "Persistence failure."}
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 
 		}
 		return shim.Success(nil)
@@ -326,13 +326,13 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		 callerIsNSD && status == nsd.InstructionDownloaded:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
-			return pb.Response{Status: 520, Message: "Persistence failure."}
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 	case (callerIsTransferer || callerIsReceiver) && instruction.Value.Status == nsd.InstructionInitiated && status == nsd.InstructionCanceled:
 		if (callerIsTransferer && instruction.Value.Initiator == nsd.InitiatorIsTransferer) || (callerIsReceiver && instruction.Value.Initiator == nsd.InitiatorIsReceiver) {
 			instruction.Value.Status = status
 			if err := instruction.UpsertIn(stub); err != nil {
-				return pb.Response{Status: 520, Message: "Persistence failure."}
+				return pb.Response{Status: 500, Message: "Persistence failure."}
 			}
 		}
 	default:
@@ -340,7 +340,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	if err := instruction.EmitState(stub); err != nil {
-		return pb.Response{Status: 520, Message: "Event emission failure."}
+		return pb.Response{Status: 500, Message: "Event emission failure."}
 	}
 
 	return shim.Success(nil)
@@ -557,7 +557,7 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	if err := instruction.UpsertIn(stub); err != nil {
-		return pb.Response{Status: 520, Message: "Persistence failure."}
+		return pb.Response{Status: 500, Message: "Persistence failure."}
 	}
 
 	return shim.Success(nil)

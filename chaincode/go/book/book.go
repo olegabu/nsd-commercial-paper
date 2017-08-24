@@ -173,11 +173,11 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	//check stored list for this instructions has been executed already
 	if instruction.ExistsIn(stub) {
 		if err := instruction.LoadFrom(stub); err != nil {
-			return pb.Response{Status: 404, Message: "Instruction not found."}
+			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
 		}
 
 		if instruction.Value.Status == nsd.InstructionExecuted {
-			return pb.Response{Status: 400, Message: "Already executed."}
+			return pb.Response{Status: 409, Message: "Already executed."}
 		}
 	}
 
@@ -264,11 +264,11 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 
 		//save to the ledger list of executed instructions
 		if err := instruction.UpsertIn(stub); err != nil {
-			return pb.Response{Status: 520, Message: "Persistence failure."}
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
 		if err := instruction.EmitState(stub); err != nil {
-			return pb.Response{Status: 520, Message: "Event emission failure."}
+			return pb.Response{Status: 500, Message: "Event emission failure."}
 		}
 	}
 
