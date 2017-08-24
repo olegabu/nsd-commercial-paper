@@ -172,6 +172,9 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	if function == "query" {
 		return t.query(stub, args)
 	}
+	if function == "queryByType" {
+		return t.queryByType(stub, args)
+	}
 	if function == "history" {
 		return t.history(stub, args)
 	}
@@ -414,6 +417,53 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == nsd.InstructionExecuted) ||
 			(instruction.Value.Status == nsd.InstructionDeclined) ||
 			callerIsNSD {
+			instructions = append(instructions, instruction)
+		}
+	}
+
+	result, err := json.Marshal(instructions)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(result)
+}
+
+func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+	if !(callerIsNSD) {
+		return pb.Response{Status:400, Message: "Insufficient privileges. Expecting call from nsd."}
+	}
+
+	// status
+	if len(args) != 1 {
+		return pb.Response{Status:400, Message: fmt.Sprintf("Incorrect number of arguments. " +
+			"Expecting 'status'. " +
+			"But got %d args: %s", len(args), args)}
+	}
+
+	expectedStatus := args[0]
+
+	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer it.Close()
+
+	instructions := []nsd.Instruction{}
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		instruction := nsd.Instruction{}
+
+		if err := instruction.FillFromLedgerValue(response.Value); err != nil {
+			return shim.Error(err.Error())
+		}
+
+		if instruction.Value.Status == expectedStatus {
 			instructions = append(instructions, instruction)
 		}
 	}
