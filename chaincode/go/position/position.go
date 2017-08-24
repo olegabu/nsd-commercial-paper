@@ -42,7 +42,7 @@ type KeyModificationValue struct {
 
 // required for history
 type PositionValue struct {
-	Quantity        int 	`json:"quantity"`
+	Quantity        string 	`json:"quantity"`
 }
 
 // **** Position Methods **** //
@@ -118,19 +118,21 @@ func (this *Position) fillFromCompositeKeyParts(compositeKeyParts []string) (err
 }
 
 func (this *Position) fillFromArgs(args []string) (error) {
-	if len(args) != 4 {
-		return errors.New("Incorrect number of arguments. Expecting 4.")
+	if len(args) < 3 {
+		return errors.New("Incorrect number of arguments. Expecting >=3.")
 	}
 
 	this.Balance.Account 	= args[0]
 	this.Balance.Division 	= args[1]
 	this.Security 			= args[2]
 
-	quantity, err := strconv.Atoi(args[3])
-	if err != nil {
-		return errors.New("cannot convert to quantity")
+	if len(args) > 3 {
+		quantity, err := strconv.Atoi(args[3])
+		if err != nil {
+			return errors.New("cannot convert to quantity")
+		}
+		this.Quantity = quantity
 	}
-	this.Quantity = quantity
 
 	return nil
 }
@@ -244,10 +246,8 @@ func (t *PositionChaincode) query(stub shim.ChaincodeStubInterface, args []strin
 }
 
 func (t *PositionChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 11 {
-		return shim.Error("Incorrect number of arguments. " +
-			"Expecting deponentFrom, accountFrom, divisionFrom, deponentTo, accountTo, divisionTo, " +
-			"security, quantity, reference, positionDate, tradeDate")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting account, division, security")
 	}
 
 	position := Position{}
@@ -285,9 +285,14 @@ func (t *PositionChaincode) history(stub shim.ChaincodeStubInterface, args []str
 			entry.Timestamp = time.Unix(ts.Seconds, int64(ts.Nanos)).String()
 		}
 
-		err = json.Unmarshal(response.GetValue(), &entry.Value)
+
+		var values []string
+		err = json.Unmarshal(response.GetValue(), &values)
 		if err != nil {
 			return shim.Error(err.Error())
+		}
+		if len(values) > 0 {
+			entry.Value.Quantity = values[0]
 		}
 
 		modifications = append(modifications, entry)
