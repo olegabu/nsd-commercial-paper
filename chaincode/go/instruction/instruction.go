@@ -318,7 +318,9 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	switch {
-	case callerIsNSD && status == nsd.InstructionDeclined, callerIsNSD && status == nsd.InstructionExecuted:
+	case callerIsNSD && status == nsd.InstructionDeclined,
+		 callerIsNSD && status == nsd.InstructionExecuted,
+		 callerIsNSD && status == nsd.InstructionDownloaded:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 520, Message: "Persistence failure."}
@@ -412,6 +414,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == nsd.InstructionMatched) ||
 			(instruction.Value.Status == nsd.InstructionSigned) ||
 			(instruction.Value.Status == nsd.InstructionExecuted) ||
+			(instruction.Value.Status == nsd.InstructionDownloaded) ||
 			(instruction.Value.Status == nsd.InstructionDeclined) ||
 			callerIsNSD {
 			instructions = append(instructions, instruction)

@@ -13,12 +13,13 @@ const (
 	InitiatorIsTransferer = "transferer"
 	InitiatorIsReceiver   = "receiver"
 
-	InstructionInitiated = "initiated"
-	InstructionMatched   = "matched"
-	InstructionSigned    = "signed"
-	InstructionExecuted  = "executed"
-	InstructionDeclined  = "declined"
-	InstructionCanceled  = "canceled"
+	InstructionInitiated    = "initiated"
+	InstructionMatched      = "matched"
+	InstructionSigned       = "signed"
+	InstructionExecuted     = "executed"
+	InstructionDownloaded   = "downloaded"
+	InstructionDeclined     = "declined"
+	InstructionCanceled     = "canceled"
 )
 
 // TODO: make this private
