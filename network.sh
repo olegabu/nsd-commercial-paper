@@ -319,7 +319,7 @@ function startDepository () {
       joinChannel ${ORG1} ${CHANNEL_NAME}
     done
 
-  installInstantiateWarmUp book depository '{"Args":["init","AC0689654902","87680000045800005","RU000ABC0001","100"]}'
+  installInstantiateWarmUp book depository '{"Args":["init","[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]"]}'
 
   installInstantiateWarmUp security common '{"Args":["init","RU000ABC0001","active"]}'
 
@@ -529,7 +529,8 @@ function devNetworkDown () {
 
 function devInstallInstantiate () {
 # docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p book -n book -v 0"
- docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"AC0689654902\",\"87680000045800005\",\"RU000ABC0001\",\"100\"]}'"
+
+ docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n book -v 0 -C myc -c '{\"Args\":[\"init\",\"[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]\"]}'"
 
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode install -p instruction -n instruction -v 0 && peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
  #docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode instantiate -n instruction -v 0 -C myc -c '{\"Args\":[\"init\"]}'"
