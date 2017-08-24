@@ -22,7 +22,6 @@ Profiles:
                     - *ORG1 # nsd depository
                     - *ORG2 # a issuer
                     - *ORG3 # b investor
-                    - *ORG4 # c investor
     common:
         Consortium: SampleConsortium
         Application:
@@ -31,7 +30,6 @@ Profiles:
                 - *ORG1
                 - *ORG2
                 - *ORG3
-                - *ORG4
     depository:
         Consortium: SampleConsortium
         Application:
@@ -46,22 +44,6 @@ Profiles:
                 - *ORG1
                 - *ORG2
                 - *ORG3
-    ORG3-ORG4:
-        Consortium: SampleConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *ORG1
-                - *ORG3
-                - *ORG4
-    ORG2-ORG4:
-        Consortium: SampleConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *ORG1
-                - *ORG2
-                - *ORG4
     ORG1-ORG2:
         Consortium: SampleConsortium
         Application:
@@ -76,13 +58,6 @@ Profiles:
             Organizations:
                 - *ORG1
                 - *ORG3
-    ORG1-ORG4:
-        Consortium: SampleConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *ORG1
-                - *ORG4
 
 ################################################################################
 #
@@ -138,14 +113,6 @@ Organizations:
         MSPDir: crypto-config/peerOrganizations/ORG3.DOMAIN/msp
         AnchorPeers:
             - Host: peer0.ORG3.DOMAIN
-              Port: 7051
-
-    - &ORG4
-        Name: ORG4MSP
-        ID: ORG4MSP
-        MSPDir: crypto-config/peerOrganizations/ORG4.DOMAIN/msp
-        AnchorPeers:
-            - Host: peer0.ORG4.DOMAIN
               Port: 7051
 
 ################################################################################

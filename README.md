@@ -180,8 +180,13 @@ one host. Members' host servers connect to each other over internet.
 ## Install prerequisites
 
 ```bash
-sudo apt update && sudo apt -y install docker docker-compose tree
+sudo apt update && sudo apt -y install docker docker-compose
 ```
+
+On other Linux distros make sure these versions or higher are installed:
+
+- docker-compose version 1.8.0
+- Docker version 1.12.6
 
 Add yourself to the group to be able to run docker and re-login.
 
@@ -261,10 +266,6 @@ You can tail the logs by passing your organization with `-o`:
 ```bash
 ./network.sh -m logs -o nsd
 ```
-```bash
-./network.sh -m logs -o a
-```
-
 ## Users of each member can now access web app and transact
 
 Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.

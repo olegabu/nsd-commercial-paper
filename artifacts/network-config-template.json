@@ -70,28 +70,6 @@
 				"key":  "crypto-config/peerOrganizations/ORG3.DOMAIN/users/Admin@ORG3.DOMAIN/msp/keystore",
 				"cert": "crypto-config/peerOrganizations/ORG3.DOMAIN/users/Admin@ORG3.DOMAIN/msp/signcerts"
 			}
-		},
-
-		"ORG4": {
-			"name":  "peerORG4",
-			"mspid": "ORG4MSP",
-			"ca": "https://ca.ORG4.DOMAIN:7054",
-			"peer0": {
-				"requests": "grpcs://peer0.ORG4.DOMAIN:7051",
-				"events":   "grpcs://peer0.ORG4.DOMAIN:7053",
-				"server-hostname": "peer0.ORG4.DOMAIN",
-				"tls_cacerts": "crypto-config/peerOrganizations/ORG4.DOMAIN/peers/peer0.ORG4.DOMAIN/tls/ca.crt"
-			},
-			"peer1": {
-				"requests": "grpcs://peer1.ORG4.DOMAIN:7051",
-				"events":   "grpcs://peer1.ORG4.DOMAIN:7053",
-				"server-hostname": "peer1.ORG4.DOMAIN",
-				"tls_cacerts": "crypto-config/peerOrganizations/ORG4.DOMAIN/peers/peer1.ORG4.DOMAIN/tls/ca.crt"
-			},
-			"admin": {
-				"key":  "crypto-config/peerOrganizations/ORG4.DOMAIN/users/Admin@ORG4.DOMAIN/msp/keystore",
-				"cert": "crypto-config/peerOrganizations/ORG4.DOMAIN/users/Admin@ORG4.DOMAIN/msp/signcerts"
-			}
 		}
 	},
 
@@ -118,14 +96,6 @@
       "acc":{
         "WD0D00654903" :["58680002816000009", "11560007930600010"],
         "WD0H7B654905" :["51630003768000011", "36090008645500012"]
-      }
-    },
-    "ORG4":{
-      "dep":"NL0000729408",
-      "role":"investor",
-      "acc":{
-        "YN0000654906" :["6294000472000013", "57680007190700014"],
-        "YN0927654908" :["9384000328700015", "37800007360900016"]
       }
     }
   },

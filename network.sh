@@ -4,14 +4,17 @@ STARTTIME=$(date +%s)
 
 DOMAIN=nsd.ru
 ORG1=nsd
-ORG2=a
-ORG3=b
-ORG4=c
+ORG2=megafon
+ORG3=raiffeisen
 
 IP1=54.173.221.247
 IP2=54.161.190.237
 IP3=54.166.77.150
-IP4=52.23.204.164
+
+INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'
+BOOK_INIT='{"Args":["init","[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]"]}'
+SECURITY_INIT='{"Args":["init","RU000ABC0001","active"]}'
+POSITION_INIT='{"Args":["init"]}'
 
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
@@ -26,10 +29,10 @@ DEFAULT_PEER0_EVENT_PORT=7053
 DEFAULT_PEER1_PORT=7056
 DEFAULT_PEER1_EVENT_PORT=7058
 
-DEFAULT_ORDERER_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
+DEFAULT_ORDERER_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3"
 DEFAULT_PEER_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1"
-DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:\\n      - www.$ORG1.$DOMAIN:$IP1\\n      - www.$ORG2.$DOMAIN:$IP2\\n      - www.$ORG3.$DOMAIN:$IP3\\n      - www.$ORG4.$DOMAIN:$IP4"
-DEFAULT_API_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3\\n      - peer0.$ORG4.$DOMAIN:$IP4"
+DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:\\n      - www.$ORG1.$DOMAIN:$IP1\\n      - www.$ORG2.$DOMAIN:$IP2\\n      - www.$ORG3.$DOMAIN:$IP3"
+DEFAULT_API_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3"
 
 GID=$(id -g)
 
@@ -59,7 +62,7 @@ function removeArtifacts() {
 }
 
 function removeDockersFromCompose() {
-    for O in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+    for O in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3}
     do
       COMPOSE_FILE="ledger/docker-compose-$O.yaml"
 
@@ -83,19 +86,19 @@ function removeDockersWithDomain() {
 }
 
 function generateOrdererArtifacts() {
-    echo "Creating orderer yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $ORG4, $DEFAULT_ORDERER_PORT"
+    echo "Creating orderer yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $DEFAULT_ORDERER_PORT"
 
     COMPOSE_FILE="ledger/docker-compose-$DOMAIN.yaml"
     COMPOSE_TEMPLATE=ledger/docker-composetemplate-orderer.yaml
 
     # configtx and cryptogen
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" artifacts/configtxtemplate.yaml > artifacts/configtx.yaml
     sed -e "s/DOMAIN/$DOMAIN/g" artifacts/cryptogentemplate-orderer.yaml > artifacts/"cryptogen-$DOMAIN.yaml"
     # docker-compose.yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORDERER_PORT/$DEFAULT_ORDERER_PORT/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" -e "s/ORG4/$ORG4/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORDERER_PORT/$DEFAULT_ORDERER_PORT/g" -e "s/ORG1/$ORG1/g" -e "s/ORG2/$ORG2/g" -e "s/ORG3/$ORG3/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
     # network-config.json
-    #  fill environments                                                                                            |   remove comments
-    sed -e "s/\DOMAIN/$DOMAIN/g" -e "s/\ORG1/$ORG1/g" -e "s/\ORG2/$ORG2/g" -e "s/\ORG3/$ORG3/g" -e "s/\ORG4/$ORG4/g" -e "s/^\s*\/\/.*$//g" artifacts/network-config-template.json > artifacts/network-config.json
+    #  fill environments                                                                           |   remove comments
+    sed -e "s/\DOMAIN/$DOMAIN/g" -e "s/\ORG1/$ORG1/g" -e "s/\ORG2/$ORG2/g" -e "s/\ORG3/$ORG3/g" -e "s/^\s*\/\/.*$//g" artifacts/network-config-template.json > artifacts/network-config.json
 
     echo "Generating crypto material with cryptogen"
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$DOMAIN" bash -c "cryptogen generate --config=cryptogen-$DOMAIN.yaml"
@@ -107,7 +110,7 @@ function generateOrdererArtifacts() {
     mkdir -p artifacts/channel
     docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile OrdererGenesis -outputBlock ./channel/genesis.block
 
-    for CHANNEL_NAME in depository common "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4" "$ORG1-$ORG2" "$ORG1-$ORG3" "$ORG1-$ORG4"
+    for CHANNEL_NAME in depository common "$ORG2-$ORG3" "$ORG1-$ORG2" "$ORG1-$ORG3"
     do
         echo "Generating channel config transaction for $CHANNEL_NAME"
         docker-compose --file ${COMPOSE_FILE} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$CHANNEL_NAME" -outputCreateChannelTx ./channel/"$CHANNEL_NAME".tx -channelID "$CHANNEL_NAME"
@@ -313,28 +316,28 @@ function joinWarmUp() {
 }
 
 function startDepository () {
-  for CHANNEL_NAME in depository common "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4" "$ORG1-$ORG2" "$ORG1-$ORG3" "$ORG1-$ORG4"
+  for CHANNEL_NAME in depository common "$ORG2-$ORG3" "$ORG1-$ORG2" "$ORG1-$ORG3"
     do
       createChannel ${CHANNEL_NAME}
       joinChannel ${ORG1} ${CHANNEL_NAME}
     done
 
-  installInstantiateWarmUp book depository '{"Args":["init","[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]"]}'
+  installInstantiateWarmUp book depository ${BOOK_INIT}
 
-  installInstantiateWarmUp security common '{"Args":["init","RU000ABC0001","active"]}'
+  installInstantiateWarmUp security common ${SECURITY_INIT}
 
   installChaincode ${ORG1} instruction
 
-  for CHANNEL_NAME in "$ORG2-$ORG3" "$ORG2-$ORG4" "$ORG3-$ORG4"
+  for CHANNEL_NAME in "$ORG2-$ORG3"
     do
-      instantiateWarmUp instruction ${CHANNEL_NAME} '{"Args":["init","[{\"organization\":\"a.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"b.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'
+      instantiateWarmUp instruction ${CHANNEL_NAME} ${INSTRUCTION_INIT}
     done
 
   installChaincode ${ORG1} position
 
-  for CHANNEL_NAME in "$ORG1-$ORG2" "$ORG1-$ORG3" "$ORG1-$ORG4"
+  for CHANNEL_NAME in "$ORG1-$ORG2" "$ORG1-$ORG3"
     do
-      instantiateWarmUp position ${CHANNEL_NAME} '{"Args":["init"]}'
+      instantiateWarmUp position ${CHANNEL_NAME} ${POSITION_INIT}
     done
 }
 
@@ -359,7 +362,7 @@ function makeCertDirs() {
   # crypto-config/ordererOrganizations/nsd.ru/orderers/orderer.nsd.ru/tls/ca.crt"
   mkdir -p "artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls"
 
-  for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
+  for ORG in ${ORG1} ${ORG2} ${ORG3}
     do
         # crypto-config/peerOrganizations/nsd.nsd.ru/peers/peer0.nsd.nsd.ru/tls/ca.crt
         D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
@@ -368,32 +371,14 @@ function makeCertDirs() {
     done
 }
 
-function copyMemberMSP() {
-  for ORG in ${ORG2} ${ORG3} ${ORG4}
-    do
-        # cp ../a/artifacts/crypto-config/peerOrganizations/a.nsd.ru/msp/ artifacts/crypto-config/peerOrganizations/a.nsd.ru
-        S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/msp/"
-        D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/"
-        echo "cp -r $S $D"
-        cp -r ${S} ${D}
-    done
-}
-
 function downloadMemberMSP() {
     COMPOSE_FILE="ledger/docker-compose-$ORG1.yaml"
 
     info "downloading member MSP files using $COMPOSE_FILE"
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/admincerts/Admin@\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/cacerts/ca.\$ORG.$DOMAIN-cert.pem && wget --verbose --directory-prefix crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts http://www.\$ORG.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\$ORG.$DOMAIN/msp/tlscacerts/tlsca.\$ORG.$DOMAIN-cert.pem; done"
     #echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG1.$DOMAIN" bash -c "${C} && chown -R $UID:$GID ."
-}
-
-function copyNetworkConfig() {
-    S="../$ORG1/artifacts/network-config.json"
-    D="artifacts"
-    echo "cp $S $D"
-    cp ${S} ${D}
 }
 
 function downloadNetworkConfig() {
@@ -406,18 +391,6 @@ function downloadNetworkConfig() {
     C="wget --verbose http://www.$ORG1.$DOMAIN:$DEFAULT_WWW_PORT/network-config.json && chown -R $UID:$GID ."
     #echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C}"
-}
-
-function copyChannelBlockFiles() {
-    ORG=$1
-
-    for CHANNEL_NAME in common "$ORG1-$ORG" ${@:2}
-    do
-      S="../$ORG1/artifacts/$CHANNEL_NAME.block"
-      D="artifacts"
-      echo "cp $S $D"
-      cp ${S} ${D}
-    done
 }
 
 function downloadChannelBlockFiles() {
@@ -435,31 +408,10 @@ function downloadChannelBlockFiles() {
     done
 }
 
-function startMemberWithCopy() {
-    copyArtifactsMember ${@}
-    dockerComposeUp ${1}
-    startMember ${@}
-}
-
 function startMemberWithDownload() {
     downloadArtifactsMember ${@}
     dockerComposeUp ${1}
     startMember ${@}
-}
-
-function copyCerts() {
-    S="../$ORG1/artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/ca.crt"
-    D="artifacts/crypto-config/ordererOrganizations/$DOMAIN/orderers/orderer.$DOMAIN/tls/"
-    echo "cp $S $D"
-    cp ${S} ${D}
-
-  for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}
-    do
-	S="../$ORG/artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls/ca.crt"
-	D="artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN/peers/peer0.$ORG.$DOMAIN/tls"
-	echo "cp $S $D"
-        cp ${S} ${D}
-    done
 }
 
 function downloadCerts() {
@@ -473,16 +425,9 @@ function downloadCerts() {
     #echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C} && chown -R $UID:$GID ."
 
-    C="for ORG in ${ORG1} ${ORG2} ${ORG3} ${ORG4}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
+    C="for ORG in ${ORG1} ${ORG2} ${ORG3}; do wget --verbose --directory-prefix crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls http://www.\${ORG}.$DOMAIN:$DEFAULT_WWW_PORT/crypto-config/peerOrganizations/\${ORG}.$DOMAIN/peers/peer0.\${ORG}.$DOMAIN/tls/ca.crt; done"
     #echo ${C}
     docker-compose --file ${COMPOSE_FILE} run --rm "cli.$ORG.$DOMAIN" bash -c "${C} && chown -R $UID:$GID ."
-}
-
-function copyArtifactsMember() {
-  makeCertDirs
-  copyCerts
-  copyNetworkConfig
-  copyChannelBlockFiles ${@}
 }
 
 function downloadArtifactsMember() {
@@ -492,19 +437,8 @@ function downloadArtifactsMember() {
   downloadChannelBlockFiles ${@}
 }
 
-function copyArtifactsDepository() {
-  for ORG in ${ORG2} ${ORG3} ${ORG4}
-    do
-      rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
-    done
-
-  makeCertDirs
-  copyCerts
-  copyMemberMSP
-}
-
 function downloadArtifactsDepository() {
-  for ORG in ${ORG2} ${ORG3} ${ORG4}
+  for ORG in ${ORG2} ${ORG3}
     do
       rm -rf "artifacts/crypto-config/peerOrganizations/$ORG.$DOMAIN"
     done
@@ -607,10 +541,6 @@ function generatePeerArtifacts3() {
   generatePeerArtifacts ${ORG3} 4002 8082 9054 9051 9053 9056 9058
 }
 
-function generatePeerArtifacts4() {
-  generatePeerArtifacts ${ORG4} 4003 8083 10054 10051 10053 10056 10058
-}
-
 # Print the usage message
 function printHelp () {
   echo "Usage: "
@@ -667,11 +597,9 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   dockerComposeUp ${ORG1}
   dockerComposeUp ${ORG2}
   dockerComposeUp ${ORG3}
-  dockerComposeUp ${ORG4}
   startDepository
-  startMember ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
-  startMember ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
-  startMember ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+  startMember ${ORG2} "${ORG2}-${ORG3}"
+  startMember ${ORG3} "${ORG2}-${ORG3}"
 elif [ "${MODE}" == "up" ]; then
   startMemberWithDownload ${ORG} ${CHANNELS}
 elif [ "${MODE}" == "down" ]; then
@@ -679,7 +607,6 @@ elif [ "${MODE}" == "down" ]; then
   dockerComposeDown ${ORG1}
   dockerComposeDown ${ORG2}
   dockerComposeDown ${ORG3}
-  dockerComposeDown ${ORG4}
   removeUnwantedContainers
   removeUnwantedImages
 elif [ "${MODE}" == "clean" ]; then
@@ -690,7 +617,6 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts1
   generatePeerArtifacts2
   generatePeerArtifacts3
-  generatePeerArtifacts4
   generateOrdererArtifacts
   generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
@@ -711,20 +637,15 @@ elif [ "${MODE}" == "generate-2" ]; then
 elif [ "${MODE}" == "generate-3" ]; then
   generatePeerArtifacts3
   servePeerArtifacts ${ORG3}
-elif [ "${MODE}" == "generate-4" ]; then
-  generatePeerArtifacts4
-  servePeerArtifacts ${ORG4}
 elif [ "${MODE}" == "up-depository" ]; then
   dockerComposeUp ${DOMAIN}
   dockerComposeUp ${ORG1}
   startDepository
   serveOrdererArtifacts
 elif [ "${MODE}" == "up-2" ]; then
-  startMemberWithDownload ${ORG2} "${ORG2}-${ORG3}" "${ORG2}-${ORG4}"
+  startMemberWithDownload ${ORG2} "${ORG2}-${ORG3}"
 elif [ "${MODE}" == "up-3" ]; then
-  startMemberWithDownload ${ORG3} "${ORG2}-${ORG3}" "${ORG3}-${ORG4}"
-elif [ "${MODE}" == "up-4" ]; then
-  startMemberWithDownload ${ORG4} "${ORG2}-${ORG4}" "${ORG3}-${ORG4}"
+  startMemberWithDownload ${ORG3} "${ORG2}-${ORG3}"
 elif [ "${MODE}" == "logs" ]; then
   logs ${ORG}
 elif [ "${MODE}" == "devup" ]; then
