@@ -100,10 +100,7 @@ module.exports = function (require) {
 
   peerListener.eventHub.on('connected', function(){
     // run check on connect/reconnect, so we'll process all missed records
-    _processMatchedInstructions()
-      .catch(e=>{
-        logger.error('_processMatchedInstructions failed:', e);
-      });
+    _processMatchedInstructions();
   });
 
 
@@ -111,6 +108,7 @@ module.exports = function (require) {
   // QUERY INSTRUCTIONS
 
   function _processMatchedInstructions(){
+    logger.info('Process missed instructions');
     var INSTRUCTION_MATCHED_STATUS = 'matched';
 
     return _getAllInstructions(endorsePeerId, INSTRUCTION_MATCHED_STATUS)
@@ -118,7 +116,7 @@ module.exports = function (require) {
           // typeof instructionInfoList is {Array<{channel_id:string, instruction:instruction}>}
           logger.debug('Got %s instruction(s) to process', instructionInfoList.length);
 
-          return tools.chainPromise(instructionInfoList, function(instructionInfo){
+          return /*tools.*/chainPromise(instructionInfoList, function(instructionInfo){
             // var channelID = instructionInfo.channel_id;
             var instruction = instructionInfo.instruction;
 
@@ -133,9 +131,11 @@ module.exports = function (require) {
               //   logger.error('_processInstruction failed:', e);
               // });
           });
+        })
+        .catch(e=>{
+          logger.error('_processMatchedInstructions failed:', e);
         });
   }
-
 
 
   /**
