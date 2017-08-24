@@ -430,11 +430,6 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 
 func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
-	if !(callerIsNSD) {
-		return pb.Response{Status:400, Message: "Insufficient privileges. Expecting call from nsd."}
-	}
-
 	// status
 	if len(args) != 1 {
 		return pb.Response{Status:400, Message: fmt.Sprintf("Incorrect number of arguments. " +
