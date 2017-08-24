@@ -15,6 +15,8 @@ module.exports = {
   instructionFilename : instructionFilename,
   instructionArguments: instructionArguments,
   normalizeInstruction: normalizeInstruction,
+  // getRoleInInstruction: getRoleInInstruction,
+  isBilateralChannel  : isBilateralChannel,
 
   ConfigHelper : ConfigHelper
 }
@@ -33,6 +35,28 @@ function normalizeInstruction(instruction){
   }
   return instruction;
 }
+
+// /**
+//  *
+//  */
+// function getRoleInInstruction(instruction, deponentCode){
+//   if(instruction.deponentFrom == deponentCode){
+//     return 'transferer';
+//   }else if(instruction.deponentTo == deponentCode){
+//     return 'receiver';
+//   }
+//   return null;
+// }
+
+/**
+ * Determine whether it's a channel between two members (and nsd is always here).
+ * Actually, should be called "threeLateral"
+ * @return {boolean}
+ */
+function isBilateralChannel(channelID){
+    return channelID.indexOf('-') > 0 && !channelID.startsWith('nsd-');
+}
+
 
 /**
  *

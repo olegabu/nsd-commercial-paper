@@ -95,8 +95,113 @@ module.exports = function (require) {
     catch(e) {
       logger.error('Caught while processing block event', e);
     }
-
   });
+
+
+  peerListener.eventHub.on('connected', function(){
+    // run check on connect/reconnect, so we'll process all missed records
+    _processMatchedInstructions()
+      .catch(e=>{
+        logger.error('_processMatchedInstructions failed:', e);
+      });
+  });
+
+
+
+  // QUERY INSTRUCTIONS
+
+  function _processMatchedInstructions(){
+    var INSTRUCTION_MATCHED_STATUS = 'matched';
+
+    return _getAllInstructions(endorsePeerId, INSTRUCTION_MATCHED_STATUS)
+        .then(function(instructionInfoList){
+          // typeof instructionInfoList is {Array<{channel_id:string, instruction:instruction}>}
+          logger.debug('Got %s instruction(s) to process', instructionInfoList.length);
+
+          return tools.chainPromise(instructionInfoList, function(instructionInfo){
+            // var channelID = instructionInfo.channel_id;
+            var instruction = instructionInfo.instruction;
+
+            if(instruction.status !== INSTRUCTION_MATCHED_STATUS){
+              logger.warn('Skip instruction with status "%s" (not "%s")', instruction.status, INSTRUCTION_MATCHED_STATUS);
+              return;
+            }
+
+            return moveBookByInstruction(instruction)
+              // already catched in 'moveBookByInstruction'
+              // .catch(e=>{
+              //   logger.error('_processInstruction failed:', e);
+              // });
+          });
+        });
+  }
+
+
+
+  /**
+   * @param {string} peer
+   * @param {string} [status]
+   * @return {Promise<Array<Instruction>>}
+   */
+  function _getAllInstructions(peer, status){
+    // logger.trace('_getAllInstructions', peer, status);
+    var self = this;
+    return query.getChannels(peer, USERNAME, ORG)
+        .then(result=>result.channels)
+        // filter bilateral channels
+        .then(channelList=>channelList.filter(channel=>helper.isBilateralChannel(channel.channel_id)))
+        .then(function(channelList){
+          // logger.trace('_getAllInstructions got channels:', JSON.stringify(channelList));
+          return /*tools.*/chainPromise(channelList, function(channel){
+              return _getInstructions(channel.channel_id, peer, status)
+                .catch(e=>{
+                  logger.warn(e);
+                  return [];
+                })
+                .then(function(instructionList){
+                  return instructionList.map(instruction=>{
+                    return {
+                      channel_id: channel.channel_id,
+                      instruction : instruction
+                    };
+                  });
+                });
+          });
+        })
+        .then(function(dataArr){
+          // join array of array into one array
+          return dataArr.reduce(function(result, data){
+            result.push.apply(result, data);
+            return result;
+          }, []);
+        })
+  }
+
+
+
+  /**
+   * @param {string} channelID
+   * @param {string} peer - (orgPeerID)
+   * @param {string} [status]
+   * @return {Promise<Array<Instruction>>}
+   */
+  function _getInstructions(channelID, peer, status){
+    // logger.trace('FabricRestClient.getInstructions', channelID, peer, status);
+    var args = status ? [status] : [];
+    var method = status ? 'queryByType' : 'query';
+
+    //TODO peer0 is inconsistent with explicit peer url in invoke.invokeChaincode. This caused Oleg pain.
+    return query.queryChaincode(peer, channelID, 'instruction', args, method, USERNAME, ORG)
+      .then(function(response){ return response.result; })
+      .then(function(results){
+        // join key and value
+        return results.map(function(singleResult){
+          //logger.trace('FabricRestClient.getInstructions result', JSON.stringify(singleResult));
+          return Object.assign({}, singleResult.key, singleResult.value);
+        });
+      });
+  }
+
 
 
   /**
@@ -194,3 +299,49 @@ module.exports = function (require) {
 
 
 
+
+
+
+
+
+/**
+ * Run {@link param promiseFn} across each element in array sequentially
+ *
+ * @param {Array} array
+ * @param {object} opts
+ * @param {object} opts.drop:boolean - don't save result for each promise
+ * @param {function} promiseFn
+ * @return {Promise}
+ *
+ * by preliminary estimation the recursive mode takes less memory than iterative,
+ * because iterative one allocates memory for the function before any async operation run
+ */
+function chainPromise(array, opts, promiseFn){
+    if(typeof opts === "function" && !promiseFn){
+      promiseFn = opts;
+      opts = {};
+    }
+
+    var i = 0;
+    var result = [];
+
+    var collectorFn = opts.drop ? nope : __collectResult;
+    function __collectResult(res){
+      result.push(res);
+    }
+    function nope(){}
+
+    function __step(){
+        if(i >= array.length){
+            return Promise.resolve();
+        }
+        let item = array[i++];
+        return Promise.resolve(promiseFn(item))
+            .then(collectorFn)
+            .then(__step);
+    }
+
+    return __step().then(function(){
+      return opts.drop ? null : result;
+    });
+}
