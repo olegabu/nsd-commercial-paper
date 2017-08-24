@@ -111,7 +111,7 @@ module.exports = function (require) {
     logger.info('Process missed instructions');
     var INSTRUCTION_MATCHED_STATUS = 'matched';
 
-    return _getAllInstructions(endorsePeerId, INSTRUCTION_MATCHED_STATUS)
+    return _getAllInstructions(endorsePeerId/*, INSTRUCTION_MATCHED_STATUS*/) // TODO: uncomment this line when 'key' will be received
         .then(function(instructionInfoList){
           // typeof instructionInfoList is {Array<{channel_id:string, instruction:instruction}>}
           logger.debug('Got %s instruction(s) to process', instructionInfoList.length);
