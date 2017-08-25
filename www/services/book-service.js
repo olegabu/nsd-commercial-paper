@@ -57,10 +57,21 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
   };
 
 
+  /**
+   *
+   */
   BookService.put = function(book){
     $log.debug('BookService.put', book);
 
-    throw new Error('put is incomplete');
+    var chaincodeID = BookService._getChaincodeID();
+    var channelID = BookService.getChannelID();
+    var peer = BookService._getQueryPeer();
+    var args = BookService._arguments(book);
+    args.push(book.quantity);
+
+    // We can safely use here the result of _getQueryPeer() fn.
+    return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'put', args);
+
   }
 
 
