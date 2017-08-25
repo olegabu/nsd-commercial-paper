@@ -7,7 +7,9 @@
 <div class="row" role-show="nsd">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" modal href="#newSecurityEntry" translate>NEW_SECURITY_LABEL</button>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" modal href="#newSecurityEntry">
+        <span translate>NEW_SECURITY_LABEL</span>
+      </button>
     </div>
   </div>
 </div>
@@ -28,7 +30,9 @@
               <td>{{::o.security}}</td>
               <td>{{::o.status}}</td>
               <td>
-                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o)" href="#newCalendarEntry" modal translate>NEW_CALENDAR_ENTRY_LABEL</button>
+                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o)" href="#newCalendarEntry" modal>
+                    <span translate>NEW_CALENDAR_ENTRY_LABEL</span>
+                  </button>
                   <!--
                   <input type="button" class="btn btn-default" ng-click="ctl.verify(o)" value="Verify" ng-hide="o.status"/>
                   <input type="button" class="btn btn-danger" ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
@@ -38,7 +42,7 @@
 
           <tr ng-hide="ctl.list.length">
               <td colspan="99" align="center">
-                  <i translate="NO_ITEMS_LABEL"></i>
+                  <i translate>NO_ITEMS_LABEL</i>
               </td>
           </tr>
       </tbody>
@@ -52,7 +56,7 @@
 <div id="newCalendarEntry" class="modal modal-fixed-footer">
   <form name="calendarEntryForm" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4 translate="CALENDAR_ENTRY_LABEL"></h4>
+      <h4 translate>CALENDAR_ENTRY_TITLE</h4>
 
         <!-- transferer/From -->
         <div class="row" hidden>
@@ -132,18 +136,18 @@
 <div id="newSecurityEntry" class="modal modal-fixed-footer">
   <form name="securityForm" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4>New Security</h4>
+      <h4 translate>NEW_SECURITY_TITLE</h4>
 
         <div class="row">
           <div class="input-field col s12">
             <input name="s_security" type="text" class="" ng-model="security.security" required>
-            <label for="s_security">Security</label>
+            <label for="s_security" translate>SECURITY_LABEL</label>
           </div>
         </div>
         <div class="row" hidden>
           <div class="input-field col s12">
             <textarea id="s_description" name="s_description" class="materialize-textarea" ng-model="security.description"></textarea>
-            <label for="s_description">Description</label>
+            <label for="s_description" translate>DESCRIPTION_LABEL</label>
           </div>
         </div>
 
@@ -181,12 +185,12 @@
         <div class="row">
           <!-- redeem org -->
           <div class="input-field col s2">
-            <h5 class="nowrap">Redeem to</h5>
+            <h5 class="nowrap" translate>SECURITY_REDEEM_TO_LABEL</h5>
           </div>
           <div class="input-field col s5">
-            <select ng-model="security.redeem.account" name="s_r_acc" material-select watch class=""
-                    ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts" placeholder="Account" required></select>
-            <label for="s_r_acc">Account</label>
+            <select ng-model="security.redeem.account" name="s_r_acc" material-select watch
+                    ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts" required></select>
+            <label for="s_r_acc" translate>ACCOUNT_LABEL</label>
           </div>
           <!--
           <div class="input-field col s5">
@@ -197,9 +201,9 @@
           -->
 
           <div class="input-field col s5">
-            <select ng-model="security.redeem.division" name="s_r_div" material-select watch class=""
-                    ng-options="o for o in ctl.accounts[security.redeem.account]" placeholder="Division" required></select>
-            <label for="s_r_div">Division</label>
+            <select ng-model="security.redeem.division" name="s_r_div" material-select watch
+                    ng-options="o for o in ctl.accounts[security.redeem.account]" required></select>
+            <label for="s_r_div" translate>DIVISION_LABEL</label>
           </div>
 
           <!--
@@ -217,10 +221,10 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat"
             ng-disabled="securityForm.$invalid"
-            ng-click="ctl.sendSecurity(security)" value="Ok"/>
+            ng-click="ctl.sendSecurity(security)" value="OK_LABEL" translate-attr="{value:'OK_LABEL'}"/>
 
       <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
-            ng-click="security = null; securityForm.$setPristine();" value="Cancel"/>
+            ng-click="security = null; securityForm.$setPristine();" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
     </div>
   </form>
 </div>

@@ -1,6 +1,9 @@
 {
 
+
+
   "NEW_BOOK_FOR_LABEL":"For",
+  "SECURITY_REDEEM_TO_LABEL":"Redeem to",
   "ACCOUNT_INPUT_PLACEHOLDER":"Account",
   "DIVISION_INPUT_PLACEHOLDER":"Division",
   "SECURITY_INPUT_PLACEHOLDER":"Security",
@@ -21,12 +24,13 @@
   "CODE_LABEL" : "Code",
   "DESCRIPTION_LABEL" : "Description",
   "NEW_SECURITY_LABEL" : "New Security",
+  "NEW_SECURITY_TITLE" : "New Security",
   "NEW_CALENDAR_ENTRY_LABEL" : "New Calendar Entry",
   "NEW_BOOK_LABEL" : "New Book Entry",
   "NEW_BOOK_TITLE" : "New Book Entry",
   "CALENDAR_ENTRY_DATE_LABEL": "Calendar entry date",
   "STATUS_LABEL": "Status",
-  "CALENDAR_ENTRY_LABEL": "Calendar Entry",
+  "CALENDAR_ENTRY_TITLE": "Calendar Entry",
   "COUPON_LABEL": "Coupon",
   "MATURITY_LABEL": "Maturity",
   "REDEMPTION_LABEL": "Redemption",
