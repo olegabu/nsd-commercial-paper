@@ -59,13 +59,19 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
   SecurityService.addCalendarEntry = function(cEntry) {
     $log.debug('SecurityService.addCalendarEntry');
 
-    throw new Error("addCalendarEntry incomplete");
-    // var chaincodeID = SecurityService._getChaincodeID();
-    // var channelID = SecurityService.getChannelID();
-    // var peer = SecurityService._getQueryPeer();
+    var chaincodeID = SecurityService._getChaincodeID();
+    var channelID = SecurityService.getChannelID();
+    var peer = SecurityService._getQueryPeer();
+    var args = [
+      cEntry.security,
+      cEntry.type,
+      cEntry.date,
+      cEntry.description||'',
+      cEntry.reference
+    ];
 
-    // return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
-    //     .then(function(data){ return parseJson(data.result); });
+    // We can safely use here the result of _getQueryPeer() fn.
+    return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'addToCalendar', args);
   };
 
   SecurityService.sendSecurity = function(security){

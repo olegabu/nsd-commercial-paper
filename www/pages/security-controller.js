@@ -5,6 +5,8 @@
  */
 function SecurityController($scope, SecurityService, ConfigLoader) {
 
+  var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
+
   var ctrl = this;
 
   ctrl.list = [];
@@ -35,14 +37,18 @@ function SecurityController($scope, SecurityService, ConfigLoader) {
   }
 
 
-  ctrl.newCalendarEntry = function(){
+  ctrl.newCalendarEntry = function(security){
+    $scope.centrySecurity = security;
     $scope.centry = $scope.centry || {
+      security: security.security,
       date: new Date()
     };
   }
 
   ctrl.sendCEntry = function(centry){
     ctrl.invokeInProgress = true;
+
+    centry.date = formatDate(centry.date);
     return SecurityService.addCalendarEntry(centry)
       .then(function(){
         $scope.centry = null;
@@ -61,6 +67,23 @@ function SecurityController($scope, SecurityService, ConfigLoader) {
       .finally(function(){
         ctrl.invokeInProgress = false;
       });
+  }
+
+
+  /**
+   * Parse date in format dd/mm/yyyy
+   * @param {string|Date} dateStr
+   * @return {Date}
+   */
+  function formatDate(date){
+    if(!date) return null;
+
+    if(!(date instanceof Date)){
+      // assumind date is a string: '1 August, 2017'
+      // TODO: we shouldn't rely on this
+      date = new Date(date);
+    }
+    return date.format(DATE_FABRIC_FORMAT);
   }
 
 
