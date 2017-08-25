@@ -2,5 +2,8 @@
   "ORGANISATION_LABEL": "Organisation",
   "ACCOUNT_LABEL": "Account",
   "SECURITY_LABEL": "Security",
-  "QUANTITY_LABEL": "Quantity"
+  "QUANTITY_LABEL": "Quantity",
+  "CREATED_LABEL": "Created",
+  "CLOSE_LABEL": "Close",
+  "NO_ITEMS_LABEL": "No Items"
 }

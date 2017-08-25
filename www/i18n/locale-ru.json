@@ -2,5 +2,8 @@
   "ORGANISATION_LABEL": "Организация",
   "ACCOUNT_LABEL": "Учетная запись",
   "SECURITY_LABEL": "Безопасность",
-  "QUANTITY_LABEL": "Колличесвто"
+  "QUANTITY_LABEL": "Колличество",
+  "CREATED_LABEL": "Создано",
+  "CLOSE_LABEL": "Закрыть",
+  "NO_ITEMS_LABEL": "Нет записей"
 }
