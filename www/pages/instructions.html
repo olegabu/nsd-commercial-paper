@@ -205,10 +205,12 @@
           <div class="input-field col s6">
             <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16" required>
             <label for="i_reference">Reference</label>
+            <span class="input-error-message" ng-show="formInstruction.i_reference.$error.maxlength">Maximum 16 characters</span>
           </div>
           <div class="input-field col s6">
             <input name="i_miid" type="text" class="" ng-model="inst.memberInstructionId" required ng-maxlength="16" required>
             <label for="i_miid">Instruction ID</label>
+            <span class="input-error-message" ng-show="formInstruction.i_miid.$error.maxlength">Maximum 16 characters</span>
           </div>
         </div>
 
