@@ -16,17 +16,28 @@ var logger = shim.NewLogger("SecurityChaincode")
 
 const indexName = `Security`
 
+const EntryMaturedStatus = `MCAL`
+const SecurityMaturedStatus = `matured`
+
 // SecurityChaincode
 type SecurityChaincode struct {
 }
 
 type SecurityValue struct {
 	Status      	string 	`json:"status"`
+	Entries			[]CalendarEntries
 }
 
 type Security struct {
-	Security        string 	`json:"security"`
-	Status      	string 	`json:"status"`
+	Security        string 			`json:"security"`
+	Status      	string 			`json:"status"`
+	Entries			[]CalendarEntries
+}
+
+type CalendarEntries struct {
+	Date			string
+	Code 			string
+	Text			string
 }
 
 type KeyModificationValue struct {
@@ -58,27 +69,38 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 	if function == "history" {
 		return t.history(stub, args)
 	}
+	if function == "addEntry" {
+		return t.addCalendarEntry(stub, args)
+	}
 
 	return shim.Error(fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
 		"put, query, history. But got: %v", args[0]))
 }
 
 func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// security, status
 	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. " +
 			"Expecting security, status")
 	}
 
-	security := args[0]
-	status := args[1]
+	s, err := t.findByKey(stub, args[0])
+	if err != nil {
+		s.Security = args[0]
+		s.Entries = []CalendarEntries{}
+	}
 
-	key, err := stub.CreateCompositeKey(indexName, []string{security})
+	s.Status = args[1]
+
+	return t.save(stub, s)
+}
+
+func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security) pb.Response {
+	key, err := stub.CreateCompositeKey(indexName, []string{item.Security})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(SecurityValue{Status: status})
+	value, err := json.Marshal(SecurityValue{Status: item.Status, Entries: item.Entries})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -91,6 +113,62 @@ func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(nil)
 }
 
+func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting security, code, date, text")
+	}
+
+	security, err := t.findByKey(stub, args[0])
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Security not found: %v ", err))
+	}
+
+	entry := CalendarEntries{}
+	entry.Code = args[1]
+	entry.Date = args[2]
+	entry.Text = args[3]
+
+	security.Entries = append(security.Entries, entry)
+
+	if entry.Code == EntryMaturedStatus{
+		security.Status = SecurityMaturedStatus
+	}
+
+	t.save(stub, security)
+
+	return shim.Success(nil)
+}
+
+func (t *SecurityChaincode) findByKey(stub shim.ChaincodeStubInterface, securityName string) (Security, error) {
+
+	key, err := stub.CreateCompositeKey(indexName, []string{securityName})
+	if err != nil {
+		return Security{}, fmt.Errorf("Cannot create composite key: %v", err)
+	}
+
+	response, err := stub.GetState(key)
+	if err != nil {
+		return Security{}, fmt.Errorf("Cannot read the state: %v", err)
+	}
+	if response == nil {
+		return Security{}, fmt.Errorf("No security found for key: %v", key)
+	}
+	var value SecurityValue
+	err = json.Unmarshal(response, &value)
+	if err != nil {
+		return Security{}, fmt.Errorf("Cannot Unmarshal security: %v", err)
+	}
+
+	security := Security {
+		Security: securityName,
+		Status: value.Status,
+		Entries:value.Entries,
+	}
+
+	return security, nil
+}
+
 func (t *SecurityChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	it, err := stub.GetStateByPartialCompositeKey(indexName, []string{})
 	if err != nil {
@@ -98,7 +176,7 @@ func (t *SecurityChaincode) query(stub shim.ChaincodeStubInterface, args []strin
 	}
 	defer it.Close()
 
-	securitys := []Security{}
+	securities := []Security{}
 	for it.HasNext() {
 		responseRange, err := it.Next()
 		if err != nil {
@@ -120,12 +198,13 @@ func (t *SecurityChaincode) query(stub shim.ChaincodeStubInterface, args []strin
 		security := Security {
 			Security: compositeKeyParts[0],
 			Status: value.Status,
+			Entries:value.Entries,
 		}
 
-		securitys = append(securitys, security)
+		securities = append(securities, security)
 	}
 
-	result, err := json.Marshal(securitys)
+	result, err := json.Marshal(securities)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
