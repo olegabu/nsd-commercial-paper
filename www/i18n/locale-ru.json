@@ -1,7 +1,23 @@
 {
 
+  "STATUS_active":"Активен",
+  "STATUS_matured":"Выведен",
+
+  "STATUS_initiated":"создана",
+  "STATUS_matched":"сквитована",
+  "STATUS_executed":"проведена",
+  "STATUS_transferer-signed":"подписана отправителем",
+  "STATUS_receiver-signed":"подписана получателем",
+  "STATUS_signed":"подписана участниками",
+  "STATUS_downloaded":"скачана",
+  "STATUS_declined":"отвергнута",
+  "STATUS_canceled":"отменена",
+
+  "INITIATOR_transferer":"отправитель",
+  "INITIATOR_receiver":"получатель",
+
   "NEW_BOOK_FOR_LABEL":"Кому",
-  "LOGIN_TO_LABEL":"Войти в",
+  "LOGIN_TO_LABEL":"Авторизоваться в",
   "LOGIN_WELCOME_TEXT":"Авторизируйтесь в системе",
   "SECURITY_REDEEM_TO_LABEL":"Возврат",
   "ACCOUNT_INPUT_PLACEHOLDER":"Счет",
@@ -42,7 +58,6 @@
   "COUPON_LABEL": "Купон",
   "MATURITY_LABEL": "Maturity (вопрос в переводчику)",
   "REDEMPTION_LABEL": "Redemption (вопрос к переводчику)",
-  "SCHEDULE_LABEL": "Отложить",
   "OK_LABEL": "Сохранить",
   "CANCEL_LABEL": "Отмена",
   "EXPLORER_LABEL": "Браузер",
@@ -65,8 +80,7 @@
   "INSTRUCTION_DATE_LABEL": "Instruction Date (Переводить)",
   "TRADE_DATE_LABEL": "Trade Date (Переводить)",
   "INITIATOR_LABEL": "Инициатор",
-  "REASON_LABEL": "Причина",
-  "LOCK_LABEL": "Блокировано",
+  "REASON_LABEL": "Основание",
   "DEPONENT_LABEL": "Депонент",
   "DIVISION_LABEL": "Раздел",
   "12_CHARACTERS_LABEL": "Должно быть ровно 12 символов",

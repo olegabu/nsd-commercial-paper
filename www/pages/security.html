@@ -28,7 +28,7 @@
       <tbody>
           <tr ng-repeat="o in ctl.list">
               <td>{{::o.security}}</td>
-              <td>{{::o.status}}</td>
+              <td translate>STATUS_{{::o.status}}</td>
               <td>
                   <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o)" href="#newCalendarEntry" modal>
                     <span translate>NEW_CALENDAR_ENTRY_LABEL</span>

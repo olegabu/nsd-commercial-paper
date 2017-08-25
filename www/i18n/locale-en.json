@@ -1,5 +1,18 @@
 {
 
+  "STATUS_active":"active",
+  "STATUS_matured":"matured",
+
+  "STATUS_initiated":"initiated",
+  "STATUS_matched":"matched",
+  "STATUS_executed":"executed",
+  "STATUS_transferer-signed":"transferer-signed",
+  "STATUS_receiver-signed":"receiver-signed",
+  "STATUS_signed":"signed",
+  "STATUS_downloaded":"downloaded",
+  "STATUS_declined":"declined",
+  "STATUS_canceled":"canceled",
+
   "NEW_BOOK_FOR_LABEL":"For",
   "LOGIN_TO_LABEL":"Login to",
   "LOGIN_WELCOME_TEXT":"Register and enroll new user in the organization",
@@ -42,7 +55,6 @@
   "COUPON_LABEL": "Coupon",
   "MATURITY_LABEL": "Maturity",
   "REDEMPTION_LABEL": "Redemption",
-  "SCHEDULE_LABEL": "schedule",
   "OK_LABEL": "Ok",
   "CANCEL_LABEL": "Cancel",
   "EXPLORER_LABEL": "Explorer",
@@ -67,7 +79,6 @@
   "TRADE_DATE_LABEL": "Trade Date",
   "INITIATOR_LABEL": "Initiator",
   "REASON_LABEL": "Reason",
-  "LOCK_LABEL": "lock",
   "DEPONENT_LABEL": "Deponent",
   "DIVISION_LABEL": "Division",
   "12_CHARACTERS_LABEL": "Should be exactly 12 characters",
