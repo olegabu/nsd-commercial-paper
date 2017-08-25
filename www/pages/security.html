@@ -7,8 +7,8 @@
 <div class="row" role-show="nsd">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()">New Security</button>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry()" href="#newCalendarEntry" modal>New Calendar Entry</button>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" translate="NEW_SECURITY_LABEL"></button>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry()" href="#newCalendarEntry" modal translate="NEW_CALENDAR_ENTRY_LABEL"></button>
     </div>
   </div>
 </div>
@@ -19,8 +19,8 @@
     <table class="table-bordered highlight responsive-table">
       <thead>
           <tr>
-              <th>Security</th>
-              <th>Status</th>
+              <th translate="SECURITY_LABEL"></th>
+              <th translate="STATUS_LABEL"></th>
           </tr>
       </thead>
       <tbody>
@@ -35,7 +35,7 @@
 
           <tr ng-hide="ctl.list.length">
               <td colspan="99" align="center">
-                  <i>No items</i>
+                  <i translate="NO_ITEMS_LABEL"></i>
               </td>
           </tr>
       </tbody>
@@ -49,44 +49,44 @@
 <div id="newCalendarEntry" class="modal modal-fixed-footer">
   <form name="calendarEntryForm" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4>Calendar Entry</h4>
+      <h4 translate="CALENDAR_ENTRY_LABEL"></h4>
 
         <!-- transferer/From -->
         <div class="row" hidden>
           <div class="input-field col s12">
             <p>
               <input class="with-gap" name="eventType" value="coupon" type="radio" id="coupon" />
-              <label for="coupon">Coupon</label>
+              <label for="coupon" translate="COUPON_LABEL"></label>
             </p>
             <p>
               <input class="with-gap" name="eventType" value="maturity" type="radio" id="maturity" />
-              <label for="maturity">Maturity</label>
+              <label for="maturity" translate="MATURITY_LABEL"></label>
             </p>
             <p>
               <input class="with-gap" name="eventType" value="redemption" type="radio" id="redemption"  />
-              <label for="redemption">Redemption</label>
+              <label for="redemption" translate="REDEMPTION_LABEL"></label>
             </p>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
-            <i class="material-icons prefix">schedule</i>
+            <i class="material-icons prefix" translate="SCHEDULE_LABEL"></i>
             <input name="ce_date" type="text" class="datepicker" ng-model="centry.date" input-date required>
-            <label for="ce_date">Calendar entry date</label>
+            <label for="ce_date" translate="CALENDAR_ENTRY_DATE_LABEL"></label>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s12">
             <input name="ce_reference" type="text" class="" ng-model="centry.code" required>
-            <label for="ce_reference">Code</label>
+            <label for="ce_reference" translate="CODE_LABEL"></label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
             <textarea id="ce_description" name="ce_description" class="materialize-textarea" ng-model="centry.description"></textarea>
-            <label for="ce_description">Description</label>
+            <label for="ce_description" translate="DESCRIPTION_LABEL"></label>
           </div>
         </div>
 
@@ -96,8 +96,8 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
             ng-disabled="calendarEntryForm.$invalid"
-            ng-click="ctl.sendCEntry(redemption)" value="Ok"/>.
-      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="centry = null" value="Cancel"/>
+            ng-click="ctl.sendCEntry(redemption)" translate="OK_LABEL"/>.
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="centry = null" translate="CANCEL_LABEL"/>
     </div>
   </form>
 </div>
