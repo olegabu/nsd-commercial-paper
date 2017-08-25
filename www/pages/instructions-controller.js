@@ -243,7 +243,7 @@ function InstructionsController($scope, $filter, InstructionService, BookService
       deponentFrom: 'CA9861913023',
       deponentTo:   'DE000DB7HWY7',
 
-      security:'RU000ABC0001',
+      security:'RU0DLTMFONCB',
       transferer:{
         account: "MFONISSUEACC",
         division: "19000000000000000",
@@ -267,7 +267,7 @@ function InstructionsController($scope, $filter, InstructionService, BookService
       deponentFrom: 'CA9861913023',
       deponentTo:   'NL0000729408',
 
-      security:'RU000ABC0001',
+      security:'RU0DLTMFONCB',
       transferer:{
         account: "AC0689654902",
         division: "87680000045800005",
