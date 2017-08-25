@@ -88,6 +88,9 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "redeem" {
 		return t.redeem(stub, args)
 	}
+	if function == "redeemHistory" {
+		return t.getRedeemHistory(stub, args)
+	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
 		"put, move, check, query, history. But got: %v", args[0])
@@ -282,6 +285,22 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	return shim.Success(nil)
 }
 
+func (t *BookChaincode) getRedeemHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
+			"Expecting security"}
+	}
+	key, err := stub.CreateCompositeKey(redeemIndex, args)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	data, err := stub.GetState(key)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(data)
+}
+
 func (t *BookChaincode) findAll(stub shim.ChaincodeStubInterface) ([]Book, error) {
 	return t.find(stub, "")
 }
@@ -393,9 +412,9 @@ func (t *BookChaincode) history(stub shim.ChaincodeStubInterface, args []string)
 }
 
 func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
-			"Expecting security"}
+			"Expecting security, reason"}
 	}
 	key, err := stub.CreateCompositeKey(redeemIndex, args)
 	if err != nil {
@@ -424,16 +443,17 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 	history := [][]string{}
 
 	for _, element := range books {
-		template := []string{"","","","","","","","",""}
-		template[0] = element.Balance.Account
-		template[1] = element.Balance.Division
-		template[2] = security.Redeem.Account
-		template[3] = security.Redeem.Division
-		template[4] = args[0]
-		template[5] = strconv.Itoa(element.Quantity)
-		template[6] = "redeem"
-		template[7] = time.Now().Format("20060102150405")
-		template[8] = ""
+		template := []string{}
+		template = append(template, element.Balance.Account)
+		template = append(template, element.Balance.Division)
+		template = append(template, security.Redeem.Account)
+		template = append(template, security.Redeem.Division)
+		template = append(template, args[0])
+		template = append(template, strconv.Itoa(element.Quantity))
+		template = append(template, "redeem")
+		template = append(template, time.Now().Format("20060102150405"))
+		template = append(template, "")
+		template = append(template, args[1])
 		t.move(stub, template)
 
 		history = append(history, template)
