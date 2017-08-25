@@ -1,7 +1,5 @@
 {
 
-
-
   "NEW_BOOK_FOR_LABEL":"For",
   "SECURITY_REDEEM_TO_LABEL":"Redeem to",
   "ACCOUNT_INPUT_PLACEHOLDER":"Account",
@@ -64,5 +62,6 @@
   "DOCUMENT_NUMBER_LABEL": "Document number",
   "DOCUMENT_DATE_LABEL": "Document date",
   "ISIN_LABEL": "ISIN",
+  "EVENT_TYPE_LABEL": "Event type",
   "NO_ITEMS_LABEL": "No Items"
 }

@@ -61,5 +61,6 @@
   "DOCUMENT_NUMBER_LABEL": "Номер документа",
   "DOCUMENT_DATE_LABEL": "Дата документа",
   "ISIN_LABEL": "ISIN",
+  "EVENT_TYPE_LABEL": "Тип события",
   "NO_ITEMS_LABEL": "Нет записей"
 }

@@ -58,7 +58,7 @@
     <div class="modal-content">
       <h4 translate>CALENDAR_ENTRY_TITLE</h4>
 
-        <!-- transferer/From -->
+        <!--
         <div class="row" hidden>
           <div class="input-field col s12">
             <p>
@@ -73,13 +73,14 @@
               <input class="with-gap" name="ce_type" value="redemption" type="radio" ng-model="centry.type" id="ce_redemption"  />
               <label for="ce_redemption" translate>REDEMPTION_LABEL</label>
             </p>
-            <label>Calendar entry type</label>
+            <label translate>EVENT_TYPE_LABEL</label>
           </div>
         </div>
+        -->
         <div class="row">
           <div class="input-field col s12">
             <input name="ce_type" type="text" class="" ng-model="centry.type" required>
-            <label for="ce_type">Event type</label>
+            <label for="ce_type" translate>EVENT_TYPE_LABEL</label>
           </div>
         </div>
 
@@ -87,27 +88,27 @@
           <div class="input-field col s12">
             <i class="material-icons postfix">schedule</i>
             <input name="ce_date" type="text" class="datepicker" ng-model="centry.date" input-date required>
-            <label for="ce_date" translate="CALENDAR_ENTRY_DATE_LABEL"></label>
+            <label for="ce_date" translate>CALENDAR_ENTRY_DATE_LABEL</label>
           </div>
         </div>
 
         <div class="row" hidden>
           <div class="input-field col s12">
             <input name="ce_security" type="text" class="" ng-model="centry.security">
-            <label for="ce_security">Security</label>
+            <label for="ce_security" translate>SECURITY_LABEL</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
             <input name="ce_reference" type="text" class="" ng-model="centry.reference" required ng-maxlength="16">
-            <label for="ce_reference">Reference</label>
-            <span class="input-error-message" ng-show="calendarEntryForm.ce_reference.$error.maxlength">Maximum 16 characters</span>
+            <label for="ce_reference" translate>REFERENCE_LABEL</label>
+            <span class="input-error-message" ng-show="calendarEntryForm.ce_reference.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
             <textarea id="ce_description" name="ce_description" class="materialize-textarea" ng-model="centry.description"></textarea>
-            <label for="ce_description" translate="DESCRIPTION_LABEL"></label>
+            <label for="ce_description" translate>DESCRIPTION_LABEL</label>
           </div>
         </div>
 
@@ -117,9 +118,10 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
             ng-disabled="calendarEntryForm.$invalid"
-            ng-click="ctl.sendCEntry(centry)" value="Ok" translate="OK_LABEL"/>.
+            ng-click="ctl.sendCEntry(centry)" value="OK_LABEL" translate-attr="{value:'OK_LABEL'}"/>
+
       <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
-            ng-click="centry = null; calendarEntryForm.$setPristine();" value="Cancel" translate="CANCEL_LABEL"/>
+            ng-click="centry = null; calendarEntryForm.$setPristine();" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
     </div>
   </form>
 </div>
