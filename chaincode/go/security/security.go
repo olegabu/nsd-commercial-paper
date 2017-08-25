@@ -24,21 +24,21 @@ type SecurityChaincode struct {
 }
 
 type SecurityValue struct {
-	Status      	string 	`json:"status"`
-	Entries			[]CalendarEntries
+	Status      	string 				`json:"status"`
+	Entries			[]CalendarEntries	`json:"entries"`
 }
 
 type Security struct {
-	Security        string 			`json:"security"`
-	Status      	string 			`json:"status"`
-	Entries			[]CalendarEntries
+	Security        string 				`json:"security"`
+	Status      	string 				`json:"status"`
+	Entries			[]CalendarEntries	`json:"entries"`
 }
 
 type CalendarEntries struct {
-	Date			string
-	Code 			string
-	Text			string
-	Reference		string
+	Date			string	`json:"date"`
+	Code 			string	`json:"code"`
+	Text			string	`json:"text"`
+	Reference		string	`json:"reference"`
 }
 
 type KeyModificationValue struct {
