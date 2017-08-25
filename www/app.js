@@ -239,7 +239,7 @@ angular.module('nsd.app',[
         prefix: 'i18n/locale-',
         suffix: '.json'
     });
-    $translateProvider.preferredLanguage('en');
+    $translateProvider.preferredLanguage('ru');
     $translateProvider.useSanitizeValueStrategy('escape');
 }])
 
