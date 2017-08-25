@@ -10,6 +10,7 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 	//cb "github.com/hyperledger/fabric/protos/common"
 	//"github.com/golang/protobuf/proto"
+	"github.com/olegabu/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("SecurityChaincode")
@@ -26,16 +27,14 @@ type SecurityChaincode struct {
 type SecurityValue struct {
 	Status      	string 				`json:"status"`
 	Entries			[]CalendarEntries	`json:"entries"`
-	RedeemAccount	string				`json:"raccount"`
-	RedeemDivision	string				`json:"rdivision"`
+	Redeem			nsd.Balance			`json:"redeem"`
 }
 
 type Security struct {
 	Security        string 				`json:"security"`
 	Status      	string 				`json:"status"`
 	Entries			[]CalendarEntries	`json:"entries"`
-	RedeemAccount	string				`json:"raccount"`
-	RedeemDivision	string				`json:"rdivision"`
+	Redeem			nsd.Balance			`json:"redeem"`
 }
 
 type CalendarEntries struct {
@@ -95,8 +94,9 @@ func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string)
 	}
 
 	s.Status = args[1]
-	s.RedeemAccount = args[2]
-	s.RedeemDivision = args[3]
+	s.Redeem = nsd.Balance{}
+	s.Redeem.Account = args[2]
+	s.Redeem.Division = args[3]
 
 	return t.save(stub, s)
 }
@@ -107,7 +107,9 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(SecurityValue{Status: item.Status, Entries: item.Entries, RedeemAccount:item.RedeemAccount, RedeemDivision:item.RedeemDivision})
+	value, err := json.Marshal(SecurityValue{Status: item.Status,
+											Entries: item.Entries,
+											Redeem:nsd.Balance{Account:item.Redeem.Account, Division:item.Redeem.Division}})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -171,8 +173,10 @@ func (t *SecurityChaincode) findByKey(stub shim.ChaincodeStubInterface, security
 	security := Security {
 		Security: securityName,
 		Status: value.Status,
-		RedeemAccount: value.RedeemAccount,
-		RedeemDivision: value.RedeemDivision,
+		Redeem: nsd.Balance{
+			Account: value.Redeem.Account,
+			Division: value.Redeem.Division,
+		},
 		Entries:value.Entries,
 	}
 
@@ -208,8 +212,10 @@ func (t *SecurityChaincode) query(stub shim.ChaincodeStubInterface, args []strin
 		security := Security {
 			Security: compositeKeyParts[0],
 			Status: value.Status,
-			RedeemAccount: value.RedeemAccount,
-			RedeemDivision: value.RedeemDivision,
+			Redeem: nsd.Balance{
+				Account:  value.Redeem.Account,
+				Division: value.Redeem.Division,
+			},
 			Entries:value.Entries,
 		}
 

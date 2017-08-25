@@ -65,12 +65,12 @@ func TestSecurity_Query(t *testing.T){
 		fmt.Println("Newly created security has wrong status :", securities[0].Status, " , expected: ", securityStatus)
 		t.FailNow()
 	}
-	if securities[0].RedeemAccount !=  redeemAccount{
-		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].RedeemAccount, " , expected: ", redeemAccount)
+	if securities[0].Redeem.Account !=  redeemAccount{
+		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].Redeem.Account, " , expected: ", redeemAccount)
 		t.FailNow()
 	}
-	if securities[0].RedeemDivision != redeemDivision {
-		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].RedeemDivision, " , expected: ", redeemDivision)
+	if securities[0].Redeem.Division != redeemDivision {
+		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].Redeem.Division, " , expected: ", redeemDivision)
 		t.FailNow()
 	}
 	if len(securities[0].Entries) != 0 {
@@ -104,12 +104,12 @@ func TestSecurity_Put(t *testing.T){
 		fmt.Println("Newly created security has wrong status :", securities[0].Status, " , expected: ", securityStatus)
 		t.FailNow()
 	}
-	if securities[0].RedeemAccount !=  redeemAccount{
-		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].RedeemAccount, " , expected: ", redeemAccount)
+	if securities[0].Redeem.Account !=  redeemAccount{
+		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].Redeem.Account, " , expected: ", redeemAccount)
 		t.FailNow()
 	}
-	if securities[0].RedeemDivision != redeemDivision {
-		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].RedeemDivision, " , expected: ", redeemDivision)
+	if securities[0].Redeem.Division != redeemDivision {
+		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].Redeem.Division, " , expected: ", redeemDivision)
 		t.FailNow()
 	}
 	if len(securities[0].Entries) != 0 {
@@ -239,12 +239,12 @@ func TestSecurity_Update(t *testing.T){
 		fmt.Println("Newly created security has wrong status")
 		t.FailNow()
 	}
-	if securities[0].RedeemAccount !=  redeemAccount{
-		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].RedeemAccount, " , expected: ", redeemAccount)
+	if securities[0].Redeem.Account !=  redeemAccount{
+		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].Redeem.Account, " , expected: ", redeemAccount)
 		t.FailNow()
 	}
-	if securities[0].RedeemDivision != redeemDivision {
-		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].RedeemDivision, " , expected: ", redeemDivision)
+	if securities[0].Redeem.Division != redeemDivision {
+		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].Redeem.Division, " , expected: ", redeemDivision)
 		t.FailNow()
 	}
 	if len(securities[0].Entries) != 1 {
