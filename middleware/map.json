@@ -1,6 +1,10 @@
 {
   "middleware":[
     {
+      "name":"Config",
+      "file":"./config.js"
+    },
+    {
       "name":"Chaincode Event Orchestrator",
       "file":"./orchestrator.js"
     }

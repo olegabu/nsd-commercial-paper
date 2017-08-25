@@ -11,7 +11,7 @@ STARTTIME=$(date +%s)
 : ${IP2:="54.167.225.4"}
 : ${IP3:="54.152.106.253"}
 
-: ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'}
+: ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'}
 : ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\",\"security\":\"RU000A0JWGG3\",\"quantity\":\"1998899\"}]"]}'}
 : ${SECURITY_INIT:='{"Args":["init","RU000A0JWGG3","active","MZ130605006C","22000000000000000"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
@@ -35,6 +35,10 @@ DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:\\n      - www.$ORG1.$DOMAIN:$IP1\\n      -
 DEFAULT_API_EXTRA_HOSTS1="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3"
 DEFAULT_API_EXTRA_HOSTS2="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG3.$DOMAIN:$IP3"
 DEFAULT_API_EXTRA_HOSTS3="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2"
+
+ROLE1=nsd
+ROLE2=issuer
+ROLE3=issuer
 
 GID=$(id -g)
 
@@ -130,11 +134,22 @@ function generatePeerArtifacts() {
       CLI_EXTRA_HOSTS=${DEFAULT_CLI_EXTRA_HOSTS}
       if [ ${ORG} == ${ORG1} ]; then
         API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS1}
+        ROLE="$ROLE1"
       elif [ ${ORG} == ${ORG2} ]; then
         API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS2}
+        ROLE="$ROLE2"
       elif [ ${ORG} == ${ORG3} ]; then
         API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS3}
+        ROLE="$ROLE3"
       fi
+    fi
+
+    if [ ${ORG} == ${ORG1} ]; then
+      ROLE="$ROLE1"
+    elif [ ${ORG} == ${ORG2} ]; then
+      ROLE="$ROLE2"
+    elif [ ${ORG} == ${ORG3} ]; then
+      ROLE="$ROLE3"
     fi
 
     API_PORT=$2
@@ -162,7 +177,8 @@ function generatePeerArtifacts() {
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
 
     # docker-compose.yaml
-    sed -e "s/\$INSTRUCTION_INIT/$INSTRUCTION_INIT/g" -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    INSTRUCTION_INIT_ESCAPED=$(echo "$INSTRUCTION_INIT"|sed -e 's/\\/\\\\/g')
+    sed -e "s/\$INSTRUCTION_INIT/$INSTRUCTION_INIT_ESCAPED/g" -e "s/\$ROLE/$ROLE/g" -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
 
     # fabric-ca-server-config.yaml
     sed -e "s/ORG/$ORG/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG.yaml"
@@ -403,7 +419,7 @@ function downloadNetworkConfig() {
 
 function downloadChannelBlockFiles() {
     ORG=$1
-    
+
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
 
     info "downloading channel block files using $COMPOSE_FILE"
@@ -424,7 +440,7 @@ function startMemberWithDownload() {
 
 function downloadCerts() {
     ORG=$1
-    
+
     COMPOSE_FILE="ledger/docker-compose-$ORG.yaml"
 
     info "downloading cert files using $COMPOSE_FILE"
