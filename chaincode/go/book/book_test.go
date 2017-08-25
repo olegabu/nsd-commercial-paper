@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	//"github.com/olegabu/nsd-commercial-paper/chaincode/go/security"
 )
 
 func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
@@ -26,7 +27,7 @@ func TestBook_Init(t *testing.T) {
 	scc := new(BookChaincode)
 	stub := shim.NewMockStub("bookChaincode", scc)
 
-	checkInit(t, stub, [][]byte{[]byte("init"), []byte("AC0689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("100")})
+	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]")})
 
 	//Correct transaction
 	checkState(t, stub, 200, [][]byte{[]byte("check"), []byte("AC0689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("90")})
@@ -37,3 +38,28 @@ func TestBook_Init(t *testing.T) {
 	// Quantity less than current balance
 	checkState(t, stub, 409, [][]byte{[]byte("check"), []byte("AC0689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("200")})
 }
+
+//TODO: uncomment when package for security changed to  "security"
+
+//func TestRedeem(t *testing.T) {
+//	sccSecurity := new(security.SecurityChaincode)
+//	stubSecurity := shim.NewMockStub("security", sccSecurity)
+//	stubSecurity.MockInit("1", [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active"), []byte("AAA689654902"), []byte("87680000045800005")})
+//
+//	fmt.Println(stubSecurity.State)
+//
+//	sccBook := new(BookChaincode)
+//	stub := shim.NewMockStub("book", sccBook)
+//
+//	stub.MockPeerChaincode("security/common", stubSecurity)
+//	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{\"account\":\"BBB689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"}]")})
+//
+//	stub.MockInvoke("1", [][]byte{[]byte("redeem"), []byte("RU000ABC0001")})
+//
+//	//AAA should have at least 100
+//	checkState(t, stub, 200, [][]byte{[]byte("check"), []byte("AAA689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("90")})
+//	//BBB should have nothing on it's balance
+//	checkState(t, stub, 409, [][]byte{[]byte("check"), []byte("BBB689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("90")})
+//	//Second redeem is impossible
+//	checkState(t, stub, 400, [][]byte{[]byte("redeem"), []byte("RU000ABC0001")})
+//}

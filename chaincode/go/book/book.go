@@ -15,6 +15,7 @@ import (
 var logger = shim.NewLogger("BookChaincode")
 
 const bookIndex = `Book`
+const redeemIndex = `Redeem`
 
 // BookChaincode
 type BookChaincode struct {
@@ -22,6 +23,9 @@ type BookChaincode struct {
 
 type BookValue struct {
 	Quantity   		int 	`json:"quantity"`
+}
+type SecurityValue struct {
+	Redeem			nsd.Balance			`json:"redeem"`
 }
 
 
@@ -80,6 +84,9 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 	if function == "history" {
 		return t.history(stub, args)
+	}
+	if function == "redeem" {
+		return t.redeem(stub, args)
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
@@ -275,11 +282,15 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	return shim.Success(nil)
 }
 
+func (t *BookChaincode) findAll(stub shim.ChaincodeStubInterface) ([]Book, error) {
+	return t.find(stub, "")
+}
 
-func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *BookChaincode) find(stub shim.ChaincodeStubInterface, filterBySecurity string) ([]Book, error) {
+
 	it, err := stub.GetStateByPartialCompositeKey(bookIndex, []string{})
 	if err != nil {
-		return shim.Error(err.Error())
+		return []Book{}, fmt.Errorf("Cannot get state: %v", err)
 	}
 	defer it.Close()
 
@@ -287,19 +298,23 @@ func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) p
 	for it.HasNext() {
 		responseRange, err := it.Next()
 		if err != nil {
-			return shim.Error(err.Error())
+			return []Book{}, fmt.Errorf("Cannot get next element: %v", err)
 		}
 
 		//account-division-security
 		_, compositeKeyParts, err := stub.SplitCompositeKey(responseRange.Key)
 		if err != nil {
-			return shim.Error(err.Error())
+			return []Book{}, fmt.Errorf("Cannot split composite key: %v", err)
 		}
 
 		var value BookValue
 		err = json.Unmarshal(responseRange.Value, &value)
 		if err != nil {
-			return shim.Error(err.Error())
+			return []Book{}, fmt.Errorf("Cannot unmarsal response: %v", err)
+		}
+
+		if filterBySecurity != "" && compositeKeyParts[2] != filterBySecurity{
+			continue
 		}
 
 		book := Book {
@@ -313,7 +328,12 @@ func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) p
 
 		books = append(books, book)
 	}
+	return books, nil
+}
 
+
+func (t *BookChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	books, err := t.findAll(stub)
 	result, err := json.Marshal(books)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -370,6 +390,65 @@ func (t *BookChaincode) history(stub shim.ChaincodeStubInterface, args []string)
 		return shim.Error(err.Error())
 	}
 	return shim.Success(result)
+}
+
+func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
+			"Expecting security"}
+	}
+	key, err := stub.CreateCompositeKey(redeemIndex, args)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	if data, err := stub.GetState(key); err != nil || data != nil {
+		return pb.Response{Status:400, Message: "Security already redeemed. "}
+	}
+
+	response := stub.InvokeChaincode("security", [][]byte{[]byte("find"), []byte(args[0])}, "common")
+
+	if response.Status != shim.OK {
+		return shim.Error("Cannot load information about security from another channel. " + response.Message)
+	}
+	var security SecurityValue
+	err = json.Unmarshal(response.Payload, &security)
+	if err != nil {
+		return shim.Error("Cannot unmarshal response: " + err.Error())
+	}
+
+	books, err := t.find(stub, args[0])
+	if err != nil {
+		return shim.Error("Cannot load all records for selected security. " + err.Error())
+	}
+
+	history := [][]string{}
+
+	for _, element := range books {
+		template := []string{"","","","","","","","",""}
+		template[0] = element.Balance.Account
+		template[1] = element.Balance.Division
+		template[2] = security.Redeem.Account
+		template[3] = security.Redeem.Division
+		template[4] = args[0]
+		template[5] = strconv.Itoa(element.Quantity)
+		template[6] = "redeem"
+		template[7] = time.Now().Format("20060102150405")
+		template[8] = ""
+		t.move(stub, template)
+
+		history = append(history, template)
+	}
+
+	result, err := json.Marshal(history)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if err = stub.PutState(key, result); err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(nil)
 }
 
 func main() {

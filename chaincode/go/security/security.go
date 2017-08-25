@@ -1,5 +1,5 @@
 package main
-
+//package security
 
 import (
 	"fmt"
@@ -8,8 +8,6 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	//cb "github.com/hyperledger/fabric/protos/common"
-	//"github.com/golang/protobuf/proto"
 	"github.com/olegabu/nsd-commercial-paper-common"
 )
 
@@ -75,6 +73,9 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 	}
 	if function == "addEntry" {
 		return t.addCalendarEntry(stub, args)
+	}
+	if function == "find" {
+		return t.find(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
@@ -181,6 +182,24 @@ func (t *SecurityChaincode) findByKey(stub shim.ChaincodeStubInterface, security
 	}
 
 	return security, nil
+}
+
+func (t *SecurityChaincode) find(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. " +
+			"Expecting security")
+	}
+
+	security, err := t.findByKey(stub, args[0])
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	result, err := json.Marshal(security)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(result)
 }
 
 func (t *SecurityChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
