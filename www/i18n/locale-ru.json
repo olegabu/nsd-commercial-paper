@@ -1,10 +1,13 @@
 {
 
   "NEW_BOOK_FOR_LABEL":"Кому",
+  "LOGIN_TO_LABEL":"Войти в",
+  "LOGIN_WELCOME_TEXT":"Авторизируйтесь в системе",
   "SECURITY_REDEEM_TO_LABEL":"Возврат",
   "ACCOUNT_INPUT_PLACEHOLDER":"Счет",
   "DIVISION_INPUT_PLACEHOLDER":"Раздел",
   "SECURITY_INPUT_PLACEHOLDER":"Security",
+  "USERNAME_INPUT_PLACEHOLDER":"Пользователь",
 
   "BOOK_HISTORY_LABEL":"История баланса",
   "POSITION_HISTORY_LABEL":"История баланса",
@@ -25,7 +28,7 @@
   "CREATED_LABEL": "Создано",
   "CLOSE_LABEL": "Закрыть",
   "USERNAME_LABEL": "Имя Пользователя",
-  "SIGN_UP_LABEL" : "Зарегистрироваться",
+  "SIGN_UP_LABEL" : "Войти",
   "CODE_LABEL" : "Код",
   "DESCRIPTION_LABEL" : "Описание",
   "NEW_SECURITY_LABEL" : "Новая запись в каталоге ценных бумаг",
