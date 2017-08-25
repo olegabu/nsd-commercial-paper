@@ -94,6 +94,7 @@ services:
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
+      - www.ORG.DOMAIN
     CLI_EXTRA_HOSTS
 
   # simple http server to disseminate certificates

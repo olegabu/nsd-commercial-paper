@@ -32,7 +32,9 @@ DEFAULT_PEER1_EVENT_PORT=7058
 DEFAULT_ORDERER_EXTRA_HOSTS="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3"
 DEFAULT_PEER_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1"
 DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:\\n      - www.$ORG1.$DOMAIN:$IP1\\n      - www.$ORG2.$DOMAIN:$IP2\\n      - www.$ORG3.$DOMAIN:$IP3"
-DEFAULT_API_EXTRA_HOSTS="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3"
+DEFAULT_API_EXTRA_HOSTS1="extra_hosts:\\n      - peer0.$ORG2.$DOMAIN:$IP2\\n      - peer0.$ORG3.$DOMAIN:$IP3"
+DEFAULT_API_EXTRA_HOSTS2="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG3.$DOMAIN:$IP3"
+DEFAULT_API_EXTRA_HOSTS3="extra_hosts:\\n      - orderer.$DOMAIN:$IP1\\n      - peer0.$ORG1.$DOMAIN:$IP1\\n      - peer0.$ORG2.$DOMAIN:$IP2"
 
 GID=$(id -g)
 
@@ -126,7 +128,13 @@ function generatePeerArtifacts() {
       # if no port args are passed assume generating for multi host deployment
       PEER_EXTRA_HOSTS=${DEFAULT_PEER_EXTRA_HOSTS}
       CLI_EXTRA_HOSTS=${DEFAULT_CLI_EXTRA_HOSTS}
-      API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS}
+      if [ ${ORG} == ${ORG1} ]; then
+        API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS1}
+      elif [ ${ORG} == ${ORG2} ]; then
+        API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS2}
+      elif [ ${ORG} == ${ORG3} ]; then
+        API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS3}
+      fi
     fi
 
     API_PORT=$2
