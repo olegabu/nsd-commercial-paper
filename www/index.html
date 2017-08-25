@@ -46,7 +46,7 @@
     <nav>
       <div class="nav-wrapper center">
         <a href="#" sidenav data-activates="nav-mobile" class="button-collapse top-nav full waves-effect waves-light hide-on-large-only">
-          <i class="material-icons" translate="MENU_LABEL"></i>
+          <i class="material-icons">menu</i>
         </a>
 
         <!-- logo -->
@@ -60,12 +60,12 @@
         <!-- main menu -->
         <ul class="menu hide-on-med-and-down" ng-cloak>
           <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem">
-            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">
+            <a ui-sref="{{::state.name}}" ui-sref-active="menu-active" translate>
               {{::state.data.name||state.name}}
             </a>
           </li>
           <li ng-show="ctrl.authorized()">
-            <a href="/admin" target="_blank" translate="EXPLORER_LABEL"></a>
+            <a href="/admin" target="_blank" translate>EXPLORER_LABEL</a>
           </li>
 
           <li ng-show="ctrl.authorized()">
@@ -75,7 +75,7 @@
             </a>
             <ul id="dropdown7" class="dropdown-content">
               <li>
-                <a href="#" ng-click="ctrl.logout()" translate="LOGOUT_LABEL"></a>
+                <a href="#" ng-click="ctrl.logout()" translate>LOGOUT_LABEL</a>
               </li>
             </ul>
           </li>
@@ -90,21 +90,21 @@
     <ul class="side-nav fixed clearfix left" id="nav-mobile">
       <div ng-show="ctrl.authorized()">
         <li ng-repeat="state in ctrl.$state.get()|filter:ctrl.visibleMenuItem" >
-          <a ui-sref="{{::state.name}}" ui-sref-active="menu-active">{{::state.data.name||state.name}}</a>
+          <a ui-sref="{{::state.name}}" ui-sref-active="menu-active" translate>{{::state.data.name||state.name}}</a>
         </li>
         <li>
-          <a href="/admin" target="_blank" translate="EXPLORER_LABEL"></a>
+          <a href="/admin" target="_blank" translate>EXPLORER_LABEL</a>
         </li>
 
-        <h5 class="center" translate="LOGGED_IN_LABEL"></h5>
+        <h5 class="center" translate>LOGGED_IN_LABEL</h5>
         <h6 class="center">{{ctrl.getUser().tokenData.username}}</h6>
         <li>
-          <a href="#" ng-click="ctrl.logout()" translate="LOGOUT_LABEL"></a>
+          <a href="#" ng-click="ctrl.logout()" translate>LOGOUT_LABEL</a>
         </li>
 
       </div>
       <div ng-hide="ctrl.authorized()">
-        <h5 class="center" translate="UNAUTHORIZED_LABEL"></h5>
+        <h5 class="center" translate>UNAUTHORIZED_LABEL</h5>
       </div>
     </ul>
   </aside>
@@ -129,25 +129,13 @@
     </div>
     <div class="f-cont valign-wrapper f-foot col s12 m12 l12">
       <div class="left-align valign col s6 m6 l6">
-        <p class="copy" translate="COPYRIGHT_LABEL">
-        </p>
+        <p class="copy">&copy;<span translate>COPYRIGHT_LABEL</span></p>
       </div>
     </div>
   </div>
 
 </div>
 
-
-<!-- system alert structure -->
-<div id="systemAlert" class="modal">
-  <div class="modal-content">
-    <h4>{{title}}</h4>
-    <p>A bunch of text</p>
-  </div>
-  <div class="modal-footer">
-    <a href="#!" class="modal-action modal-close" translate="AGREE_LABEL"></a>
-  </div>
-</div>
 
 
 

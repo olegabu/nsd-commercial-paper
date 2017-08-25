@@ -81,7 +81,7 @@ angular.module('nsd.app',[
       controller   : 'BookController',
       controllerAs : 'ctl',
       data:{
-        name: 'Book',
+        name: 'BOOK_MENU',
         roles:'nsd'
       }
     })
@@ -91,7 +91,7 @@ angular.module('nsd.app',[
       controller   : 'PositionsController',
       controllerAs : 'ctl',
       data:{
-        name: 'Positions',
+        name: 'POSITIONS_MENU',
         roles: ['issuer', 'investor']
       }
     })
@@ -101,7 +101,7 @@ angular.module('nsd.app',[
       controller   : 'SecurityController',
       controllerAs : 'ctl',
       data:{
-        name: 'Security Master',
+        name: 'SECURITY_MASTER_MENU',
         roles:'*'
       }
     })
@@ -111,7 +111,7 @@ angular.module('nsd.app',[
       controller   : 'InstructionsController',
       controllerAs : 'ctl',
       data:{
-        name: 'Instructions',
+        name: 'INSTRUCTION_MENU',
         roles:'*',
         default: true
       }
@@ -240,7 +240,9 @@ angular.module('nsd.app',[
         suffix: '.json'
     });
     $translateProvider.preferredLanguage('ru');
+    // $translateProvider.preferredLanguage('en');
     $translateProvider.useSanitizeValueStrategy('escape');
+    $translateProvider.usePostCompiling(true);
 }])
 
 /**

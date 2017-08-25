@@ -12,6 +12,10 @@
   "INSTRUCTION_TRANSFER_ID":"16",
   "INSTRUCTION_RECEIVER_ID":"16/1",
 
+  "BOOK_MENU":"Балансы",
+  "POSITIONS_MENU":"Баланс",
+  "SECURITY_MASTER_MENU":"Ценные бумаги",
+  "INSTRUCTION_MENU":"Переводы",
 
 
   "ORGANISATION_LABEL": "Организация",
@@ -38,13 +42,12 @@
   "SCHEDULE_LABEL": "Отложить",
   "OK_LABEL": "Сохранить",
   "CANCEL_LABEL": "Отмена",
-  "MENU_LABEL": "Меню",
   "EXPLORER_LABEL": "Браузер",
   "LOGOUT_LABEL": "Выйти из системы",
-  "LOGGED_IN_LABEL": "В системе",
+  "LOGGED_IN_LABEL": "Авторизирован",
   "UNAUTHORIZED_LABEL": "Отказано в доступе",
   "AGREE_LABEL": "Согласен",
-  "COPYRIGHT_LABEL": "&copy;2017 - Все права защищены",
+  "COPYRIGHT_LABEL": "2017 - Все права защищены",
   "TRANSFER_INSTRUCTION_LABEL": "Новая инструкция 16",
   "RECEIVE_INSTRUCTION_LABEL": "Новая инструкция 16/1",
   "TRANSFER_INSTRUCTION_TITLE": "Новая инструкция 16",

@@ -12,6 +12,10 @@
   "INSTRUCTION_TRANSFER_ID":"16",
   "INSTRUCTION_RECEIVER_ID":"16/1",
 
+  "BOOK_MENU":"Book",
+  "POSITIONS_MENU":"Positions",
+  "SECURITY_MASTER_MENU":"Security Master",
+  "INSTRUCTION_MENU":"Instructions",
 
 
   "ORGANISATION_LABEL": "Organisation",
@@ -38,13 +42,12 @@
   "SCHEDULE_LABEL": "schedule",
   "OK_LABEL": "Ok",
   "CANCEL_LABEL": "Cancel",
-  "MENU_LABEL": "Menu",
   "EXPLORER_LABEL": "Explorer",
   "LOGOUT_LABEL": "Logout",
   "LOGGED_IN_LABEL": "Logged in",
   "UNAUTHORIZED_LABEL": "Unauthorized",
   "AGREE_LABEL": "Agree",
-  "COPYRIGHT_LABEL": "&copy;Copyright 2017 - All Rights Reserved",
+  "COPYRIGHT_LABEL": "Copyright 2017 - All Rights Reserved",
   "TRANSFER_INSTRUCTION_LABEL": "Transfer Instruction",
   "RECEIVE_INSTRUCTION_LABEL": "Receive Instruction",
 
