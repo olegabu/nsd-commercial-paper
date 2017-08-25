@@ -77,5 +77,12 @@
   "DOCUMENT_DATE_LABEL": "Document date",
   "ISIN_LABEL": "ISIN",
   "EVENT_TYPE_LABEL": "Event type",
-  "NO_ITEMS_LABEL": "No Items"
+  "NO_ITEMS_LABEL": "No Items",
+
+  "CANCEL_INSTRUCTION_PROMPT":"Cancel %s -> %s ?",
+  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?",
+
+  "CONFIRM_TITLE":"Confirm your actions",
+  "CONFIRM_ACTION":"Confirm",
+  "DECLINE_ACTION":"Decline"
 }

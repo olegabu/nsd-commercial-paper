@@ -16,7 +16,7 @@
         <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')"
                 href="#transferInstruction" modal role-show="issuer, investor"><span translate>RECEIVE_INSTRUCTION_LABEL</span></button>
 
-        <button class="btn btn-primary" type="button" ng-click="ctl.newRedemption()"
+        <button class="btn btn-primary" type="button" ng-click="formRedemption.$setPristine(); ctl.newRedemption()"
                 href="#redemption" modal role-show="nsd"><span translate>CREATE_REDEMPTION_INSTRUCTION_LABEL</span></button>
       </div>
     </div>

@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, $filter, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -86,7 +86,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
 
   ctrl.cancelInstruction = function(instruction){
 
-    return DialogService.confirm( 'Cancel '+instruction.deponentFrom+' -> '+instruction.deponentTo+' ?', {yesTitle:'Cancel it', yesKlass:'red white-text'})
+    return DialogService.confirm( $filter('translate')('CANCEL_INSTRUCTION_PROMPT').replace('%s', instruction.deponentFrom).replace('%s', instruction.deponentTo), {yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){
           ctrl.invokeInProgress = true;
@@ -209,7 +209,7 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
    * @param {Redemption} redemption
    */
   ctrl.sendRedemption = function(redemption){
-    return DialogService.confirm( 'Redeem '+redemption.security+' ?', {yesTitle:'Yes, redeem it', yesKlass:'red white-text'})
+    return DialogService.confirm( $filter('translate')('REDEEM_INSTRUCTION_PROMPT').replace('%s', redemption.security), {yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){
 

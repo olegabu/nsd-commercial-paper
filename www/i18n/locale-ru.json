@@ -76,5 +76,12 @@
   "DOCUMENT_DATE_LABEL": "Дата документа",
   "ISIN_LABEL": "ISIN",
   "EVENT_TYPE_LABEL": "Тип события",
-  "NO_ITEMS_LABEL": "Нет записей"
+  "NO_ITEMS_LABEL": "Нет записей",
+
+  "CANCEL_INSTRUCTION_PROMPT":"Отменить перевод %s -> %s ?",
+  "REDEEM_INSTRUCTION_PROMPT":"Отозвать бумагу %s ?",
+
+  "CONFIRM_TITLE":"Подтвердите действие",
+  "CONFIRM_ACTION":"Подтвердить",
+  "DECLINE_ACTION":"Отменить"
 }

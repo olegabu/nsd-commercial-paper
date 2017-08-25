@@ -12,12 +12,12 @@ function DialogService($document, $compile, $templateCache, $rootScope, $q, $log
     '<div id="confirmDialog" class="modal modal-fixed-footer modal-dialog">'
     + '<form name="form" class="form-horizontal" novalidate>'
       + '<div class="modal-content">'
-        + '<h4>{{$options.title}}</h4>'
+        + '<h4 translate>{{$options.title}}</h4>'
         + '<div class="row">{{$options.text}}</div>'
       + '</div>'
       + '<div class="modal-footer">'
-        + '<input type="submit" class="modal-action waves-effect waves-green btn-flat {{$options.yesKlass}}" ng-click="$close(true)" value="{{$options.yesLabel}}"/>'
-        + '<input type="button" class="modal-action waves-effect waves-green btn-flat {{$options.noKlass}}" ng-click="$close(false)" value="{{$options.noLabel}}"/>'
+        + '<button type="submit" class="modal-action waves-effect waves-green btn-flat {{$options.yesKlass}}" ng-click="$close(true)" translate>{{$options.yesLabel}}</button>'
+        + '<button type="button" class="modal-action waves-effect waves-green btn-flat {{$options.noKlass}}" ng-click="$close(false)" translate>{{$options.noLabel}}</button>'
       + '</div>'
     + '</form>'
   + '</div>';
@@ -34,11 +34,11 @@ function DialogService($document, $compile, $templateCache, $rootScope, $q, $log
   DialogService.confirm = function(text, options){
     options = options || {};
 
-    options.title = options.title  || 'Confirm your actions';
+    options.title = options.title || 'CONFIRM_TITLE' || 'Confirm your actions';
     options.text = text || options.text || 'Are you sure?';
-    options.yesLabel = options.yesLabel || 'Yes';
+    options.yesLabel = options.yesLabel || 'CONFIRM_ACTION' || 'Yes';
     options.yesKlass = options.yesKlass || '';
-    options.noLabel  = options.noLabel || 'No';
+    options.noLabel  = options.noLabel || 'DECLINE_ACTION' || 'No';
     options.noKlass  = options.noKlass || '';
 
     return DialogService.dialog('confirmDialog.html', options);
