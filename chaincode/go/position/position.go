@@ -3,33 +3,17 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"encoding/json"
 	"time"
-	"errors"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/olegabu/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("PositionChaincode")
 
-const indexName = `Position`
-
 type PositionChaincode struct {
-}
-
-// Position is the main data type stored in ledger
-type Position struct {
-	Balance      	Balance `json:"balance"`
-	Security        string 	`json:"security"`
-	Quantity        int 	`json:"quantity"`
-}
-
-//TODO move to common package
-type Balance struct {
-	Account 		string 	`json:"account"`
-	Division 		string 	`json:"division"`
 }
 
 // required for history
@@ -43,122 +27,6 @@ type KeyModificationValue struct {
 // required for history
 type PositionValue struct {
 	Quantity        string 	`json:"quantity"`
-}
-
-// **** Position Methods **** //
-func (this *Position) toStringArray() ([]string) {
-	return []string{
-		this.Balance.Account,
-		this.Balance.Division,
-		this.Security,
-	}
-}
-
-func (this *Position) toCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
-	return stub.CreateCompositeKey(indexName, this.toStringArray())
-}
-
-func (this *Position) existsIn(stub shim.ChaincodeStubInterface) (bool) {
-	compositeKey, err := this.toCompositeKey(stub)
-	if err != nil {
-		return false
-	}
-
-	bytes, _ := stub.GetState(compositeKey)
-	if bytes == nil {
-		return false
-	}
-
-	return true
-}
-
-func (this *Position) loadFrom(stub shim.ChaincodeStubInterface) (error) {
-	compositeKey, err := this.toCompositeKey(stub)
-	if err != nil {
-		return err
-	}
-
-	bytes, err := stub.GetState(compositeKey)
-	if err != nil {
-		return err
-	}
-
-	return this.fillFromLedgerValue(bytes)
-}
-
-func (this *Position) upsertIn(stub shim.ChaincodeStubInterface) (error) {
-	compositeKey, err := this.toCompositeKey(stub)
-	if err != nil {
-		return err
-	}
-
-	value, err := this.toLedgerValue()
-	if err != nil {
-		return err
-	}
-
-	err = stub.PutState(compositeKey, value)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (this *Position) fillFromCompositeKeyParts(compositeKeyParts []string) (error) {
-	if len(compositeKeyParts) != 3 {
-		return errors.New("Composite key parts array length must be 3.")
-	}
-
-	this.Balance.Account 	= compositeKeyParts[0]
-	this.Balance.Division 	= compositeKeyParts[1]
-	this.Security 			= compositeKeyParts[2]
-
-	return nil
-}
-
-func (this *Position) fillFromArgs(args []string) (error) {
-	if len(args) < 3 {
-		return errors.New("Incorrect number of arguments. Expecting >=3.")
-	}
-
-	this.Balance.Account 	= args[0]
-	this.Balance.Division 	= args[1]
-	this.Security 			= args[2]
-
-	if len(args) > 3 {
-		quantity, err := strconv.Atoi(args[3])
-		if err != nil {
-			return errors.New("cannot convert to quantity")
-		}
-		this.Quantity = quantity
-	}
-
-	return nil
-}
-
-func (this *Position) toLedgerValue() ([]byte, error) {
-	return json.Marshal([]string{strconv.Itoa(this.Quantity)})
-}
-
-func (this *Position) toJSON() ([]byte, error) {
-	return json.Marshal(this)
-}
-
-func (this *Position) fillFromLedgerValue(bytes []byte) (error) {
-	var str []string
-	err := json.Unmarshal(bytes, &str)
-	if err != nil {
-		return err
-	}
-
-	quantity, err := strconv.Atoi(str[0])
-	if err != nil {
-		logger.Error("cannot convert to quantity", err)
-	}
-	this.Quantity = quantity
-
-	return nil
 }
 
 // **** Chaincode Methods **** //
@@ -190,14 +58,14 @@ func (t *PositionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 }
 
 func (t *PositionChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	position := Position{}
-	err := position.fillFromArgs(args)
+	position := nsd.Position{}
+	err := position.FillFromArgs(args)
 	if err != nil {
 		//TODO change from 500 to bad request 400
 		return shim.Error(err.Error())
 	}
 
-	if position.upsertIn(stub) != nil {
+	if position.UpsertIn(stub) != nil {
 		return shim.Error("Position upsertIn error.")
 	}
 
@@ -205,22 +73,22 @@ func (t *PositionChaincode) put(stub shim.ChaincodeStubInterface, args []string)
 }
 
 func (t *PositionChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	it, err := stub.GetStateByPartialCompositeKey(indexName, []string{})
+	it, err := stub.GetStateByPartialCompositeKey(nsd.PositionIndex, []string{})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	defer it.Close()
 
-	positions := []Position{}
+	positions := []nsd.Position{}
 	for it.HasNext() {
 		response, err := it.Next()
 		if err != nil {
 			return shim.Error(err.Error())
 		}
 
-		position := Position{}
+		position := nsd.Position{}
 
-		err = position.fillFromLedgerValue(response.Value)
+		err = position.FillFromLedgerValue(response.Value)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -229,7 +97,7 @@ func (t *PositionChaincode) query(stub shim.ChaincodeStubInterface, args []strin
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		err = position.fillFromCompositeKeyParts(compositeKeyParts)
+		err = position.FillFromCompositeKeyParts(compositeKeyParts)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -250,13 +118,13 @@ func (t *PositionChaincode) history(stub shim.ChaincodeStubInterface, args []str
 		return shim.Error("Incorrect number of arguments. Expecting account, division, security")
 	}
 
-	position := Position{}
-	err := position.fillFromArgs(args)
+	position := nsd.Position{}
+	err := position.FillFromArgs(args)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	compositeKey, err := position.toCompositeKey(stub)
+	compositeKey, err := position.ToCompositeKey(stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
