@@ -245,12 +245,12 @@ function InstructionsController($scope, $filter, InstructionService, BookService
 
       security:'RU000ABC0001',
       transferer:{
-        account: "AC0689654902",
-        division: "87680000045800005",
+        account: "MFONISSUEACC",
+        division: "19000000000000000",
       },
       receiver:{
-        account: "WD0D00654903",
-        division: "58680002816000009",
+        account: "RBIOWNER0ACC",
+        division: "00000000000000000",
       },
       initiator: transferSide,
       quantity: 1,
