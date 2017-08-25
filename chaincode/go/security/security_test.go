@@ -105,8 +105,9 @@ func TestSecurity_AddEntry(t *testing.T){
 	code := "updated"
 	date := "12/12/17"
 	text := "Some message"
+	reference := "#35"
 
-	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text)})
+	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text), []byte(reference)})
 
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 
@@ -130,6 +131,10 @@ func TestSecurity_AddEntry(t *testing.T){
 		fmt.Println("Newly created Entry has wrong text :", securities[0].Entries[0].Text, " , expected: ", text)
 		t.FailNow()
 	}
+	if securities[0].Entries[0].Reference != reference {
+		fmt.Println("Newly created Entry has wrong reference :", securities[0].Entries[0].Reference, " , expected: ", reference)
+		t.FailNow()
+	}
 }
 
 func TestSecurity_AddMultipleEntries(t *testing.T){
@@ -139,10 +144,11 @@ func TestSecurity_AddMultipleEntries(t *testing.T){
 	code := "updated"
 	date := "12/12/17"
 	text := "Some message"
+	reference := "#35"
 
-	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text)})
-	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text)})
-	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text)})
+	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text), []byte(reference)})
+	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text), []byte(reference)})
+	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text), []byte(reference)})
 
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 
@@ -164,8 +170,9 @@ func TestSecurity_EntryMaturity(t *testing.T){
 	code := EntryMaturedStatus
 	date := "12/12/17"
 	text := "Some message"
+	reference := "#35"
 
-	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text)})
+	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(name), []byte(code), []byte(date), []byte(text), []byte(reference)})
 
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 
@@ -187,8 +194,9 @@ func TestSecurity_Update(t *testing.T){
 	code := "updated"
 	date := "12/12/17"
 	text := "Some message"
+	reference := "#35"
 
-	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(securityName), []byte(code), []byte(date), []byte(text)})
+	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(securityName), []byte(code), []byte(date), []byte(text), []byte(reference)})
 
 
 	stub.MockInvoke("1", [][]byte{[]byte("put"), []byte(securityName), []byte(newStatus)})

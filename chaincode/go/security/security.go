@@ -38,6 +38,7 @@ type CalendarEntries struct {
 	Date			string
 	Code 			string
 	Text			string
+	Reference		string
 }
 
 type KeyModificationValue struct {
@@ -114,9 +115,9 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 }
 
 func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 4 {
+	if len(args) != 5 {
 		return shim.Error("Incorrect number of arguments. " +
-			"Expecting security, code, date, text")
+			"Expecting security, code, date, text, reference")
 	}
 
 	security, err := t.findByKey(stub, args[0])
@@ -125,9 +126,10 @@ func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, a
 	}
 
 	entry := CalendarEntries{}
-	entry.Code = args[1]
-	entry.Date = args[2]
-	entry.Text = args[3]
+	entry.Code 		= args[1]
+	entry.Date 		= args[2]
+	entry.Text 		= args[3]
+	entry.Reference = args[4]
 
 	security.Entries = append(security.Entries, entry)
 
