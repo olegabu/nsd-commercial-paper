@@ -62,7 +62,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
       });
   }
 
-  ctrl.sendBook = function(book){
+  ctrl.addBook = function(book){
     ctrl.invokeInProgress = true;
     return BookService.put(book)
       .finally(function(){
