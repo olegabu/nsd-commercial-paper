@@ -159,7 +159,7 @@
           </div>
 
           <div class="input-field col s3">
-            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'" translate>lock</i>
+            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'" >lock</i>
             <input name="i_r_dep" type="text" class="uppercase locked" ng-model="inst.deponentTo"
                    ng-disabled="inst.initiator=='receiver'" required ng-length="12">
             <label for="i_r_dep" translate>DEPONENT_LABEL</label>
@@ -215,13 +215,13 @@
 
         <div class="row">
           <div class="input-field col s6">
-            <i class="material-icons postfix" translate>schedule</i>
+            <i class="material-icons postfix">schedule</i>
             <input name="i_trade_date" type="text" class="datepicker" ng-model="inst.tradeDate" input-date required>
             <label for="i_trade_date" translate>TRADE_DATE_LABEL</label>
           </div>
 
           <div class="input-field col s6">
-            <i class="material-icons postfix" translate>schedule</i>
+            <i class="material-icons postfix">schedule</i>
             <input name="i_instruction_date" type="text" class="datepicker" ng-model="inst.instructionDate" input-date required>
             <label for="i_instruction_date" translate>INSTRUCTION_DATE_LABEL</label>
           </div>
