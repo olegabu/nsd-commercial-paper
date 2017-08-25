@@ -5,5 +5,7 @@
   "QUANTITY_LABEL": "Колличество",
   "CREATED_LABEL": "Создано",
   "CLOSE_LABEL": "Закрыть",
+  "USERNAME_LABEL": "Имя Пользователя",
+  "SIGN_UP_LABEL" : "Зарегистрироваться",
   "NO_ITEMS_LABEL": "Нет записей"
 }

@@ -4,12 +4,12 @@
 
 <form name="login_form" class="form-horizontal" novalidate>
   <div class="form-group">
-    <label for="username">Username</label>
+    <label for="username" translate="USERNAME_LABEL"></label>
     <input type="text" id="username" name="username" placeholder="Username" ng-model="user.username" required/>
   </div>
 
   <div class="form-group">
-    <button class="btn btn-primary" type="button" ng-click="ctl.signUp(user)" ng-disabled="login_form.$invalid">Sign up</button>
+    <button class="btn btn-primary" type="button" ng-click="ctl.signUp(user)" ng-disabled="login_form.$invalid" translate="SIGN_UP_LABEL"></button>
   </div>
 
 </form>

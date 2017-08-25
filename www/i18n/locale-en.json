@@ -5,5 +5,7 @@
   "QUANTITY_LABEL": "Quantity",
   "CREATED_LABEL": "Created",
   "CLOSE_LABEL": "Close",
+  "USERNAME_LABEL": "Username",
+  "SIGN_UP_LABEL" : "Sign Up",
   "NO_ITEMS_LABEL": "No Items"
 }
