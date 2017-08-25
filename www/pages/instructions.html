@@ -55,11 +55,12 @@
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
-                  <div class="{{::ctl.getStatusClass(o.status)}}" translate>STATUS_{{::o.status}}</div>
-                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
-                      ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
+                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
+                        value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
+                        ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
-                <td translate>INITIATOR_{{::o.initiator}}</td>
+                <td>{{::'INITIATOR_'+o.initiator|translate}}</td>
                 <td ng-if="::o.initiator=='transferer'">
                   <span>{{::o.reasonFrom.description}}</span>
                   <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span>
@@ -82,9 +83,9 @@
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
-                  <div class="{{::ctl.getStatusClass(o.status)}}" translate>STATUS_{{::o.status}}</div>
+                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
                 </td>
-                <td translate>INITIATOR_{{::o.initiator}}</td>
+                <td>{{::'INITIATOR_'+o.initiator|translate}}</td>
                 <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
                 <td ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
             </tr>
@@ -362,7 +363,7 @@
                   <td>{{::o.instructionDate|date}}</td>
                   <td>{{::o.tradeDate|date}}</td>
                   <td class="center">
-                    <div class="{{::$options.getStatusClass(o.status)}}" translate>STATUS_{{::o.status}}</div>
+                    <div class="{{::$options.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
                   </td>
                   <td>
                     {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span>
