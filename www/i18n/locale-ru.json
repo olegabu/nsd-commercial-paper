@@ -7,5 +7,18 @@
   "CLOSE_LABEL": "Закрыть",
   "USERNAME_LABEL": "Имя Пользователя",
   "SIGN_UP_LABEL" : "Зарегистрироваться",
+  "CODE_LABEL" : "Код",
+  "DESCRIPTION_LABEL" : "Описание",
+  "NEW_SECURITY_LABEL" : "Новая запись в разделе Безопасность",
+  "NEW_CALENDAR_ENTRY_LABEL" : "Новая запись в Календаре",
+  "CALENDAR_ENTRY_DATE_LABEL": "Дата календарной записи",
+  "STATUS_LABEL": "Статус",
+  "CALENDAR_ENTRY_LABEL": "Календарная запись",
+  "COUPON_LABEL": "Купон",
+  "MATURITY_LABEL": "Maturity (вопрос в переводчику)",
+  "REDEMPTION_LABEL": "Redemption (вопрос к переводчику)",
+  "SCHEDULE_LABEL": "Отложить",
+  "OK_LABEL": "Сохранить",
+  "CANCEL_LABEL": "Отмена",
   "NO_ITEMS_LABEL": "Нет записей"
 }
