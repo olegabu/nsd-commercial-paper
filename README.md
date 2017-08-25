@@ -3,6 +3,122 @@
 Decentralized application manages instructions to transfer securities between members of NSD.
 See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2PjBoSN_M2hXXtBFyUv9HACu0Q-6WWqCv_TRcdIS8Y/edit?usp=sharing).
 
+# Deployment with dockers run on separate hosts
+
+Real world deployment scenario with members deploying their CA server, peer, api and web servers as docker instances on
+one host. Members' host servers connect to each other over internet. 
+
+## Install prerequisites
+
+```bash
+sudo apt update && sudo apt -y install docker docker-compose
+```
+
+On other Linux distros make sure these versions or higher are installed:
+
+- docker-compose version 1.8.0
+- Docker version 1.12.6
+
+Add yourself to the group and re-login to be able to run docker.
+
+```bash
+sudo gpasswd -a $USER docker
+exit
+```
+
+## Each member downloads software, generates crypto material and config files
+
+Each member clones the repository to download source code:
+ 
+ ```bash
+ git clone https://github.com/olegabu/nsd-commercial-paper
+ cd nsd-commercial-paper
+ ```
+ 
+Then each member generates artifacts. Pass organization name with `-o`.
+
+You can pass ports as args
+`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used. 
+
+These commands create docker-compose files with default mapped ports that don't have to be different for each member 
+as they run on separate hosts: `4000 8080 7054 7051 7053 7056 7058`.
+
+### NSD
+
+```bash
+./network.sh -m generate-peer -o nsd
+```
+
+### Megafon
+
+```bash
+./network.sh -m generate-peer -o megafon
+```
+
+### Raiffeisen
+
+```bash
+./network.sh -m generate-peer -o raiffeisen
+```
+
+Each member has generated their crypto material and is now serving their cert files to be gathered during the orderer's
+generation process on depository host nsd.
+
+Depository creates ledger and channel config files:
+
+### NSD
+
+```bash
+./network.sh -m generate-orderer && sleep 7m
+```
+## Each member starts their nodes
+
+After all generation is done and over you can start the orderer and the depository peers on on depository host nsd. 
+This command creates and joins channels, installs and instantiates chaincodes on nsd peers:
+
+### NSD
+
+```bash
+./network.sh -m up-depository
+``` 
+
+Now the orderer has created channels, nsd peers instantiated chaincodes and other members can join channels by 
+downloading channel `.block` files.
+
+Each member starts the ca server, peers and api servers:
+
+### Megafon
+
+```bash
+./network.sh -m up-2
+``` 
+
+Which is equivalent to starting with an explicit organization name and all possible bilateral channels with other 
+members:
+
+```bash
+./network.sh -m up -o megafon -k "megafon-raiffeisen"
+```
+
+### Raiffeisen
+
+```bash
+./network.sh -m up-3
+``` 
+
+You can tail the logs by passing your organization with `-o`:
+
+```bash
+./network.sh -m logs -o raiffeisen
+```
+## Users of each member can now access their web app and transact
+
+Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.
+
+1. [depository nsd](http://54.173.221.247:4000)
+1. [issuer megafon](http://54.161.190.237:4000)
+1. [investor raiffeisen](http://54.166.77.150:4000)
+
 # Chaincode development
 
 Use docker instances to support chaincode development and debugging in an IDE.
@@ -171,117 +287,3 @@ cd tmp/b
 cd tmp/c
 ./network.sh -m up-4
 ```
- 
-# Deployment with dockers run on separate hosts
-
-Real world deployment scenario with members deploying their CA server, peer, api and web servers as docker instances on
-one host. Members' host servers connect to each other over internet. 
-
-## Install prerequisites
-
-```bash
-sudo apt update && sudo apt -y install docker docker-compose
-```
-
-On other Linux distros make sure these versions or higher are installed:
-
-- docker-compose version 1.8.0
-- Docker version 1.12.6
-
-Add yourself to the group and re-login to be able to run docker.
-
-```bash
-sudo gpasswd -a $USER docker
-exit
-```
-
-## Each member downloads software, generates crypto material and config files
-
-Each member clones the repo and generates artifacts. Pass organization name with `-o`.
-
-### NSD
-
-```bash
-git clone https://github.com/olegabu/nsd-commercial-paper
-cd nsd-commercial-paper
-./network.sh -m generate-peer -o nsd
-```
-You can pass other ports as args
-`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used.
-
-Other members generate their key pairs, create their root certs at the same time.
-
-### Megafon
-
-```bash
-./network.sh -m generate-peer -o megafon
-```
-
-### Raiffeisen
-
-```bash
-./network.sh -m generate-peer -o raiffeisen
-```
-
-These will create docker-compose files with default mapped ports that don't have to be different for each member as they
-run on separate hosts: 
-
-4000 8080 7054 7051 7053 7056 7058
-
-Each member has generated their crypto material and is now serving their cert files to be gathered during the orderer's
-generation process on depository host nsd.
-
-### NSD
-
-```bash
-./network.sh -m generate-orderer && sleep 7m
-```
-## Each member starts their nodes
-
-After all generation is done and over you can start the orderer and the depository peers on the host of the depository: nsd. 
-Will create and join channels, install and instantiate chaincodes on nsd peers:
-
-### NSD
-
-```bash
-./network.sh -m up-depository
-``` 
-
-Now the orderer has created channels, nsd peers instantiated chaincodes and other members can join channels by 
-downloading channel *.block files.
-
-Each member starts the ca server, peers and api servers:
-
-### Megafon
-
-```bash
-./network.sh -m up-2
-``` 
-
-Which is equivalent to starting with an explicit organization name and all possible bilateral channels with other 
-members:
-
-```bash
-./network.sh -m up -o megafon -k "megafon-raiffeisen"
-```
-
-Other members start their nodes:
-
-### Raiffeisen
-
-```bash
-./network.sh -m up-3
-``` 
-
-You can tail the logs by passing your organization with `-o`:
-
-```bash
-./network.sh -m logs -o raiffeisen
-```
-## Users of each member can now access web app and transact
-
-Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.
-
-1. [depository nsd](http://54.173.221.247:4000)
-1. [issuer megafon](http://54.161.190.237:4000)
-1. [investor raiffeisen](http://54.166.77.150:4000)
