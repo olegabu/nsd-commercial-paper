@@ -111,13 +111,13 @@
 <div id="transferInstruction" class="modal modal-fixed-footer modal-70">
   <form name="formInstruction" class="form-horizontal" novalidate>
     <div class="modal-content">
-        <h4 ng-if="inst.initiator=='transferer'">TRANSFER_INSTRUCTION_TITLE</h4>
-        <h4 ng-if="inst.initiator=='receiver'">translate>RECEIVE_INSTRUCTION_TITLE</h4>
+        <h4 ng-if="inst.initiator=='transferer'" translate>TRANSFER_INSTRUCTION_TITLE</h4>
+        <h4 ng-if="inst.initiator=='receiver'" translate>RECEIVE_INSTRUCTION_TITLE</h4>
 
         <div class="row">
           <!-- transferer/From -->
           <div class="input-field col s2">
-            <h5>Transferer</h5>
+            <h5 translate>TRANSFERER_LABEL</h5>
           </div>
 
           <div class="input-field col s3">
@@ -159,7 +159,7 @@
           </div>
 
           <div class="input-field col s3">
-            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'" translate>LOCK_LABEL</i>
+            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'" >lock</i>
             <input name="i_r_dep" type="text" class="uppercase locked" ng-model="inst.deponentTo"
                    ng-disabled="inst.initiator=='receiver'" required ng-length="12">
             <label for="i_r_dep" translate>DEPONENT_LABEL</label>
@@ -215,13 +215,13 @@
 
         <div class="row">
           <div class="input-field col s6">
-            <i class="material-icons postfix" translate>SCHEDULE_LABEL</i>
+            <i class="material-icons postfix">schedule</i>
             <input name="i_trade_date" type="text" class="datepicker" ng-model="inst.tradeDate" input-date required>
             <label for="i_trade_date" translate>TRADE_DATE_LABEL</label>
           </div>
 
           <div class="input-field col s6">
-            <i class="material-icons postfix" translate>SCHEDULE_LABEL</i>
+            <i class="material-icons postfix">schedule</i>
             <input name="i_instruction_date" type="text" class="datepicker" ng-model="inst.instructionDate" input-date required>
             <label for="i_instruction_date" translate>INSTRUCTION_DATE_LABEL</label>
           </div>
@@ -242,7 +242,7 @@
             <label for="i_a_document" translate>DOCUMENT_NUMBER_LABEL</label>
           </div>
           <div class="input-field col s4">
-            <i class="material-icons postfix" translate>SCHEDULE_LABEL</i>
+            <i class="material-icons postfix"></i>
             <input name="i_a_created" type="text" class="datepicker" ng-model="inst.reason.created" input-date>
             <label for="i_a_created" translate>DOCUMENT_DATE_LABEL</label>
           </div>
