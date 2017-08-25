@@ -18,12 +18,12 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
 
     return 'security';
 
-    var chaincodeID = ConfigLoader.get()['contracts'].securityMaster;
-    if(!chaincodeID){
-      // must be specified in network-config.json
-      throw new Error("No chaincode name for 'securityMaster' contract");
-    }
-    return chaincodeID;
+    // var chaincodeID = ConfigLoader.get()['contracts'].securityMaster;
+    // if(!chaincodeID){
+    //   // must be specified in network-config.json
+    //   throw new Error("No chaincode name for 'securityMaster' contract");
+    // }
+    // return chaincodeID;
   };
 
   SecurityService.getChannelID = function() {
@@ -68,9 +68,21 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
     //     .then(function(data){ return parseJson(data.result); });
   };
 
-  SecurityService.sendSecurity = function(){
-    $log.debug('SecurityService.sendSecurity');
-    throw new Error("sendSecurity incomplete");
+  SecurityService.sendSecurity = function(security){
+    $log.debug('SecurityService.sendSecurity', security);
+
+    var chaincodeID = SecurityService._getChaincodeID();
+    var channelID = SecurityService.getChannelID();
+    var peer = SecurityService._getQueryPeer();
+    var args = [
+      security.security,
+      SecurityService.STATUS_ACTIVE,
+      security.redeem.account,
+      security.redeem.division
+    ];
+
+    // We can safely use here the result of _getQueryPeer() fn.
+    return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'put', args);
   };
 
 
