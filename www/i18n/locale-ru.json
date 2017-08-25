@@ -20,5 +20,12 @@
   "SCHEDULE_LABEL": "Отложить",
   "OK_LABEL": "Сохранить",
   "CANCEL_LABEL": "Отмена",
+  "MENU_LABEL": "Меню",
+  "EXPLORER_LABEL": "Браузер",
+  "LOGOUT_LABEL": "Выйти из системы",
+  "LOGGED_IN_LABEL": "В системе",
+  "UNAUTHORIZED_LABEL": "Отказано в доступе",
+  "AGREE_LABEL": "Согласен",
+  "COPYRIGHT_LABEL": "&copy;2017 - Все права защищены",
   "NO_ITEMS_LABEL": "Нет записей"
 }
