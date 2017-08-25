@@ -443,7 +443,6 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 	history := [][]string{}
 
 	for _, element := range books {
-		//template := []string{"","","","","","","","","",""}
 		template := []string{}
 		template = append(template, element.Balance.Account)
 		template = append(template, element.Balance.Division)
