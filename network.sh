@@ -11,9 +11,9 @@ STARTTIME=$(date +%s)
 : ${IP2:="54.161.190.237"}
 : ${IP3:="54.166.77.150"}
 
-: ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'}
-: ${BOOK_INIT:='{"Args":["init","[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]"]}'}
-: ${SECURITY_INIT:='{"Args":["init","RU000ABC0001","active","AC0689654902","87680000045800005"]}'}
+: ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'}
+: ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'}
+: ${SECURITY_INIT:='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
 
 CLI_TIMEOUT=10000
@@ -162,7 +162,7 @@ function generatePeerArtifacts() {
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$ORG/g" artifacts/cryptogentemplate-peer.yaml > artifacts/"cryptogen-$ORG.yaml"
 
     # docker-compose.yaml
-    sed -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
+    sed -e "s/\$INSTRUCTION_INIT/$INSTRUCTION_INIT/g" -e "s/PEER_EXTRA_HOSTS/$PEER_EXTRA_HOSTS/g" -e "s/CLI_EXTRA_HOSTS/$CLI_EXTRA_HOSTS/g" -e "s/API_EXTRA_HOSTS/$API_EXTRA_HOSTS/g" -e "s/DOMAIN/$DOMAIN/g" -e "s/\([^ ]\)ORG/\1$ORG/g" -e "s/API_PORT/$API_PORT/g" -e "s/WWW_PORT/$WWW_PORT/g" -e "s/CA_PORT/$CA_PORT/g" -e "s/PEER0_PORT/$PEER0_PORT/g" -e "s/PEER0_EVENT_PORT/$PEER0_EVENT_PORT/g" -e "s/PEER1_PORT/$PEER1_PORT/g" -e "s/PEER1_EVENT_PORT/$PEER1_EVENT_PORT/g" ${COMPOSE_TEMPLATE} > ${COMPOSE_FILE}
 
     # fabric-ca-server-config.yaml
     sed -e "s/ORG/$ORG/g" artifacts/fabric-ca-server-configtemplate.yaml > artifacts/"fabric-ca-server-config-$ORG.yaml"
