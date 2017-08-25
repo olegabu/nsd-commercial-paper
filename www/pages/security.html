@@ -32,7 +32,7 @@
               <td translate>STATUS_{{::o.status}}</td>
               <td>
                 <ul ng-if="::o.entries.length">
-                  <li ng-repeat="e in o.entries">
+                  <li ng-repeat="e in o.entries|orderBy:'-date'">
                     <b>{{::e.code}}</b> <span translate>TIME_AT</span> <span>{{::e.date|date}}</span> {{::e.reference}}
                     <br/>
                     <i>{{::e.text}}</i>
