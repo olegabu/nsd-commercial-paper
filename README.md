@@ -197,18 +197,28 @@ exit
 
 ## Each member downloads software, generates crypto material and config files
 
-Each member clones the repo and generates artifacts. Pass organization name with `-o`. You can pass other ports as args
-`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used.
+Each member clones the repo and generates artifacts. Pass organization name with `-o`.
+
+### NSD
 
 ```bash
 git clone https://github.com/olegabu/nsd-commercial-paper
 cd nsd-commercial-paper
 ./network.sh -m generate-peer -o nsd
 ```
+You can pass other ports as args
+`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used.
+
+Other members generate their key pairs, create their root certs at the same time.
+
+### Megafon
 
 ```bash
 ./network.sh -m generate-peer -o megafon
 ```
+
+### Raiffeisen
+
 ```bash
 ./network.sh -m generate-peer -o raiffeisen
 ```
@@ -219,15 +229,19 @@ run on separate hosts:
 4000 8080 7054 7051 7053 7056 7058
 
 Each member has generated their crypto material and is now serving their cert files to be gathered during the orderer's
-generation process on depository host nsd:
+generation process on depository host nsd.
+
+### NSD
 
 ```bash
 ./network.sh -m generate-orderer && sleep 7m
 ```
 ## Each member starts their nodes
 
-After that you can start the orderer and the depository peers: nsd. Will create and join channels, 
-install and instantiate chaincodes on nsd peers:
+After all generation is done and over you can start the orderer and the depository peers on the host of the depository: nsd. 
+Will create and join channels, install and instantiate chaincodes on nsd peers:
+
+### NSD
 
 ```bash
 ./network.sh -m up-depository
@@ -237,6 +251,8 @@ Now the orderer has created channels, nsd peers instantiated chaincodes and othe
 downloading channel *.block files.
 
 Each member starts the ca server, peers and api servers:
+
+### Megafon
 
 ```bash
 ./network.sh -m up-2
@@ -251,6 +267,8 @@ members:
 
 Other members start their nodes:
 
+### Raiffeisen
+
 ```bash
 ./network.sh -m up-3
 ``` 
@@ -258,7 +276,7 @@ Other members start their nodes:
 You can tail the logs by passing your organization with `-o`:
 
 ```bash
-./network.sh -m logs -o nsd
+./network.sh -m logs -o raiffeisen
 ```
 ## Users of each member can now access web app and transact
 
