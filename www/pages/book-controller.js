@@ -34,11 +34,6 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
 
         BookService.list()
           .then(function(list){
-            // add 'org' and 'deponent' to the result, based on account+division
-            list.forEach(function(item){
-              item.org = ConfigLoader.getOrgByAccountDivision(item.balance.account, item.balance.division);
-              item.deponent = (ConfigLoader.getAccount(item.org) || {}).dep;
-            })
             ctrl.books = list;
           })
 
