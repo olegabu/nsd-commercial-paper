@@ -7,7 +7,7 @@
 <div class="row" role-show="nsd">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" modal href="#newSecurityEntry">New Security</button>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" modal href="#newSecurityEntry" translate>NEW_SECURITY_LABEL</button>
     </div>
   </div>
 </div>
@@ -18,8 +18,8 @@
     <table class="table-bordered highlight responsive-table">
       <thead>
           <tr>
-              <th>Security</th>
-              <th>Status</th>
+              <th translate>SECURITY_LABEL</th>
+              <th translate>STATUS_LABEL</th>
               <th width="20%"></th>
           </tr>
       </thead>
@@ -28,7 +28,7 @@
               <td>{{::o.security}}</td>
               <td>{{::o.status}}</td>
               <td>
-                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o)" href="#newCalendarEntry" modal>New Calendar Entry</button>
+                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o)" href="#newCalendarEntry" modal translate>NEW_CALENDAR_ENTRY_LABEL</button>
                   <!--
                   <input type="button" class="btn btn-default" ng-click="ctl.verify(o)" value="Verify" ng-hide="o.status"/>
                   <input type="button" class="btn btn-danger" ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
@@ -38,7 +38,7 @@
 
           <tr ng-hide="ctl.list.length">
               <td colspan="99" align="center">
-                  <i>No items</i>
+                  <i translate="NO_ITEMS_LABEL"></i>
               </td>
           </tr>
       </tbody>
@@ -52,22 +52,22 @@
 <div id="newCalendarEntry" class="modal modal-fixed-footer">
   <form name="calendarEntryForm" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4>Calendar Entry for {{centrySecurity.security}}</h4>
+      <h4 translate="CALENDAR_ENTRY_LABEL"></h4>
 
         <!-- transferer/From -->
         <div class="row" hidden>
           <div class="input-field col s12">
             <p>
               <input class="with-gap" name="ce_type" value="coupon" type="radio" ng-model="centry.type" id="ce_coupon"/>
-              <label for="ce_coupon">Coupon</label>
+              <label for="ce_coupon" translate>COUPON_LABEL</label>
             </p>
             <p>
               <input class="with-gap" name="ce_type" value="maturity" type="radio" ng-model="centry.type" id="ce_maturity" />
-              <label for="ce_maturity">Maturity</label>
+              <label for="ce_maturity" translate>MATURITY_LABEL</label>
             </p>
             <p>
               <input class="with-gap" name="ce_type" value="redemption" type="radio" ng-model="centry.type" id="ce_redemption"  />
-              <label for="ce_redemption">Redemption</label>
+              <label for="ce_redemption" translate>REDEMPTION_LABEL</label>
             </p>
             <label>Calendar entry type</label>
           </div>
@@ -83,7 +83,7 @@
           <div class="input-field col s12">
             <i class="material-icons postfix">schedule</i>
             <input name="ce_date" type="text" class="datepicker" ng-model="centry.date" input-date required>
-            <label for="ce_date">Calendar entry date</label>
+            <label for="ce_date" translate="CALENDAR_ENTRY_DATE_LABEL"></label>
           </div>
         </div>
 
@@ -103,7 +103,7 @@
         <div class="row">
           <div class="input-field col s12">
             <textarea id="ce_description" name="ce_description" class="materialize-textarea" ng-model="centry.description"></textarea>
-            <label for="ce_description">Description</label>
+            <label for="ce_description" translate="DESCRIPTION_LABEL"></label>
           </div>
         </div>
 
@@ -113,9 +113,9 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
             ng-disabled="calendarEntryForm.$invalid"
-            ng-click="ctl.sendCEntry(centry)" value="Ok"/>.
+            ng-click="ctl.sendCEntry(centry)" value="Ok" translate="OK_LABEL"/>.
       <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
-            ng-click="centry = null; calendarEntryForm.$setPristine();" value="Cancel"/>
+            ng-click="centry = null; calendarEntryForm.$setPristine();" value="Cancel" translate="CANCEL_LABEL"/>
     </div>
   </form>
 </div>

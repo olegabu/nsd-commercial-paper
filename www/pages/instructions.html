@@ -10,16 +10,15 @@
     <div class="col s12">
       <div>
         <!-- Modal Trigger -->
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer')" href="#transferInstruction" modal role-show="issuer, investor">
-          Transfer Instruction
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('transferer')" href="#transferInstruction" modal role-show="issuer, investor" translate="TRANSFER_INSTRUCTION_LABEL">
         </button>
 
-        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal role-show="issuer, investor">
-          Receive Instruction
+        <button class="btn btn-primary" type="button" ng-click="ctl.newInstructionTransfer('receiver')" href="#transferInstruction" modal role-show="issuer, investor" translate="RECEIVE_INSTRUCTION_LABEL">
+
         </button>
 
-        <button class="btn btn-primary" type="button" ng-click="ctl.newRedemption()" href="#redemption" modal role-show="nsd">
-          Create Redemption Instruction
+        <button class="btn btn-primary" type="button" ng-click="ctl.newRedemption()" href="#redemption" modal role-show="nsd" translate="CREATE_REDEMPTION_INSTRUCTION_LABEL">
+
         </button>
       </div>
     </div>
@@ -32,17 +31,17 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Transferer</th>
-                <th>Receiver</th>
-                <th>Security</th>
-                <th>Quantity</th>
-                <th>Reference</th>
-                <th>Member Instruction Id</th>
-                <th>Instruction Date</th>
-                <th>Trade Date</th>
-                <th>Status</th>
-                <th>Initiator</th>
-                <th>Reason</th>
+                <th translate="TRANSFERER_LABEL"></th>
+                <th translate="RECEIVER_LABEL"></th>
+                <th translate="SECURITY_LABEL"></th>
+                <th translate="QUANTITY_LABEL"></th>
+                <th translate="REFERENCE_LABEL"></th>
+                <th translate="MEMBER_INSTRUCTION_ID_LABEL"></th>
+                <th translate="INSTRUCTION_DATE_LABEL"></th>
+                <th translate="TRADE_DATE_LABEL"></th>
+                <th translate="STATUS_LABEL"></th>
+                <th translate="INITIATOR_LABEL"></th>
+                <th translate="REASON_LABEL"></th>
             </tr>
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
@@ -59,7 +58,7 @@
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
                   <div class="{{::ctl.getStatusClass(o.status)}}">{{::o.status}}</div>
-                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2" value="Cancel"
+                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2" translate="CANCEL_LABEL"
                       ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
                 <td>{{::o.initiator}}</td>
@@ -92,7 +91,7 @@
         <tbody ng-hide="ctl.list.length">
             <tr>
                 <td colspan="99" align="center">
-                    <i>No items</i>
+                    <i translate>NO_ITEMS_LABEL</i>
                 </td>
             </tr>
         </tbody>
@@ -112,7 +111,7 @@
 <div id="transferInstruction" class="modal modal-fixed-footer modal-70">
   <form name="formInstruction" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4>{{inst.initiator=='transferer'?'Transfer':'Receive'}} Instruction</h4>
+      <h4 translate="{{inst.initiator=='transferer'?'TRANSFER':'RECEIVE'}}_INSTRUCTION_LABEL"></h4>
 
         <div class="row">
           <!-- transferer/From -->
@@ -124,129 +123,127 @@
             <i class="material-icons postfix" ng-show="inst.initiator=='transferer'">lock</i>
             <input name="i_t_dep" type="text" class="uppercase locked" ng-model="inst.deponentFrom"
                    ng-disabled="inst.initiator=='transferer'" required ng-length="12">
-            <label for="i_t_dep">Deponent</label>
-            <span class="input-error-message" ng-show="formInstruction.i_t_dep.$error.length">Should be exactly 12 characters</span>
+            <label for="i_t_dep" translate="DEPONENT_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_t_dep.$error.length" translate="12_CHARACTERS_LABEL"></span>
           </div>
 
           <div class="input-field col s3" ng-show="inst.initiator=='transferer'">
             <select ng-model="inst.transferer.account" name="i_t_acc" material-select watch class=""
                     ng-options="n as n for (n, o) in ctl.accountFrom.acc" placeholder="Account" required></select>
-            <label for="i_t_acc">Account</label>
+            <label for="i_t_acc" translate="ACCOUNT_LABEL"></label>
           </div>
           <div class="input-field col s3" ng-hide="inst.initiator=='transferer'">
             <input name="i_t_acc" type="text" class="uppercase" ng-model="inst.transferer.account" required ng-length="12">
-            <label for="i_t_acc">Account</label>
-            <span class="input-error-message" ng-show="formInstruction.i_t_acc.$error.length">Should be exactly 12 characters</span>
+            <label for="i_t_acc" translate="ACCOUNT_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_t_acc.$error.length" translate="12_CHARACTERS_LABEL"></span>
           </div>
 
 
           <div class="input-field col s4" ng-show="inst.initiator=='transferer'">
             <select ng-model="inst.transferer.division" name="i_t_div" material-select watch class=""
                     ng-options="o for o in ctl.accountFrom.acc[inst.transferer.account]" placeholder="Division" required></select>
-            <label for="i_t_div">Division</label>
+            <label for="i_t_div" translate="DIVISION_LABEL"></label>
           </div>
           <div class="input-field col s4" ng-hide="inst.initiator=='transferer'">
             <input name="i_t_div" type="text" class="uppercase" ng-model="inst.transferer.division" required ng-length="17">
-            <label for="i_t_div">Division</label>
-            <span class="input-error-message" ng-show="formInstruction.i_t_div.$error.length">Should be exactly 17 characters</span>
+            <label for="i_t_div" translate="DIVISION_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_t_div.$error.length" translate="17_CHARACTERS_LABEL"></span>
           </div>
         </div>
 
         <div class="row">
           <!-- receiver/To -->
           <div class="input-field col s2">
-            <h5>Receiver</h5>
+            <h5 translate="RECEIVER_LABEL"></h5>
           </div>
 
           <div class="input-field col s3">
-            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'">lock</i>
+            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'" translate="LOCK_LABEL"></i>
             <input name="i_r_dep" type="text" class="uppercase locked" ng-model="inst.deponentTo"
                    ng-disabled="inst.initiator=='receiver'" required ng-length="12">
-            <label for="i_r_dep">Deponent</label>
-            <span class="input-error-message" ng-show="formInstruction.i_r_dep.$error.length">Should be exactly 12 characters</span>
+            <label for="i_r_dep" translate="DEPONENT_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_r_dep.$error.length" translate="12_CHARACTERS_LABEL"></span>
           </div>
 
           <div class="input-field col s3" ng-show="inst.initiator=='receiver'">
             <select name="i_r_acc" material-select watch class="" ng-model="inst.receiver.account"
                     ng-options="n as n for (n, o) in ctl.accountTo.acc" placeholder="Account" required></select>
-            <label for="i_r_acc">Account</label>
+            <label for="i_r_acc" translate="ACCOUNT_LABEL"></label>
           </div>
           <div class="input-field col s3" ng-hide="inst.initiator=='receiver'">
             <input name="i_r_acc" type="text" class="uppercase" ng-model="inst.receiver.account" required ng-length="12">
-            <label for="i_r_acc">Account</label>
-            <span class="input-error-message" ng-show="formInstruction.i_r_acc.$error.length">Should be exactly 12 characters</span>
+            <label for="i_r_acc" translate="ACCOUNT_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_r_acc.$error.length" translate="12_CHARACTERS_LABEL"></span>
           </div>
 
 
           <div class="input-field col s4" ng-show="inst.initiator=='receiver'">
             <select name="i_r_div" material-select watch class="" ng-model="inst.receiver.division"
                     ng-options="o for o in ctl.accountTo.acc[inst.receiver.account]" placeholder="Division" required></select>
-            <label for="i_r_div">Division</label>
+            <label for="i_r_div" translate="DIVISION_LABEL"></label>
           </div>
           <div class="input-field col s4" ng-hide="inst.initiator=='receiver'">
             <input name="i_r_div" type="text" class="uppercase" ng-model="inst.receiver.division" required ng-length="17">
-            <label for="i_r_div">Division</label>
-            <span class="input-error-message" ng-show="formInstruction.i_r_div.$error.length">Should be exactly 17 characters</span>
+            <label for="i_r_div" translate="DIVISION_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_r_div.$error.length" translate="17_CHARACTERS_LABEL"></span>
           </div>
         </div>
 
         <div class="row">
           <div class="input-field col s6">
             <input name="i_security" type="text" class="uppercase" ng-model="inst.security" required ng-length="12">
-            <label for="i_security">Security</label>
-            <span class="input-error-message" ng-show="formInstruction.i_security.$error.length">Should be exactly 12 characters</span>
+            <label for="i_security" translate="SECURITY_LABEL"></label>
+            <span class="input-error-message" ng-show="formInstruction.i_security.$error.length" translate="12_CHARACTERS_LABEL"></span>
           </div>
           <div class="input-field col s6">
             <input name="i_quantity" type="number" min="0" class="" ng-model="inst.quantity" required>
-            <label for="i_quantity">Quantity</label>
+            <label for="i_quantity" translate="QUANTITY_LABEL"></label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s6">
             <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16" required>
-            <label for="i_reference">Reference</label>
-            <span class="input-error-message" ng-show="formInstruction.i_reference.$error.maxlength">Maximum 16 characters</span>
+            <label for="i_reference" translate="REFERENCE_LABEL"></label>
           </div>
           <div class="input-field col s6">
             <input name="i_miid" type="text" class="" ng-model="inst.memberInstructionId" required ng-maxlength="16" required>
-            <label for="i_miid">Instruction ID</label>
-            <span class="input-error-message" ng-show="formInstruction.i_miid.$error.maxlength">Maximum 16 characters</span>
+            <label for="i_miid" translate="INSTRUCTION_ID_LABEL"></label>
           </div>
         </div>
 
 
         <div class="row">
           <div class="input-field col s6">
-            <i class="material-icons postfix">schedule</i>
+            <i class="material-icons postfix" translate="SCHEDULE_LABEL"></i>
             <input name="i_trade_date" type="text" class="datepicker" ng-model="inst.tradeDate" input-date required>
-            <label for="i_trade_date">Trade Date</label>
+            <label for="i_trade_date" translate="TRADE_DATE_LABEL"></label>
           </div>
 
           <div class="input-field col s6">
-            <i class="material-icons postfix">schedule</i>
+            <i class="material-icons postfix" translate="SCHEDULE_LABEL"></i>
             <input name="i_instruction_date" type="text" class="datepicker" ng-model="inst.instructionDate" input-date required>
-            <label for="i_instruction_date">Instruction Date</label>
+            <label for="i_instruction_date" translate="INSTRUCTION_DATE_LABEL"></label>
           </div>
         </div>
 
         <div class="row">
-            <h5 class="col s12">Reason</h5>
+            <h5 class="col s12" translate="REASON_LABEL"></h5>
         </div>
         <div class="row">
           <div class="input-field col s12">
             <textarea name="i_a_description" class="materialize-textarea" ng-model="inst.reason.description"></textarea>
-            <label for="i_a_description">Description</label>
+            <label for="i_a_description" translate="DESCRIPTION_LABEL"></label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s8">
             <input name="i_a_document" type="text" class="" ng-model="inst.reason.document">
-            <label for="i_a_document">Document number</label>
+            <label for="i_a_document" translate="DOCUMENT_NUMBER_LABEL"></label>
           </div>
           <div class="input-field col s4">
-            <i class="material-icons postfix">schedule</i>
+            <i class="material-icons postfix" translate="SCHEDULE_LABEL"></i>
             <input name="i_a_created" type="text" class="datepicker" ng-model="inst.reason.created" input-date>
-            <label for="i_a_created">Document date</label>
+            <label for="i_a_created" translate="DOCUMENT_DATE_LABEL"></label>
           </div>
         </div>
     </div>
@@ -257,8 +254,8 @@
       <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat"
              ng-click="ctl.sendInstruction(inst)"
              ng-disabled="formInstruction.$invalid"
-             value="Ok"/>
-      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" value="Cancel"/>
+             translate="OK_LABEL"/>
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" translate="CANCEL_LABEL"/>
     </div>
   </form>
 </div>
@@ -270,20 +267,20 @@
 <div id="redemption" class="modal modal-fixed-footer">
   <form name="formRedemption" class="form-horizontal" novalidate>
     <div class="modal-content">
-      <h4>Create Redemption Instruction</h4>
+      <h4 translate="CREATE_REDEMPTION_INSTRUCTION_LABEL"></h4>
 
 
       <div class="row">
         <div class="input-field col s12">
           <input name="r_security" type="text" class="" ng-model="redemption.security" required>
-          <label for="r_security">Security</label>
+          <label for="r_security" translate>SECURITY_LABEL</label>
         </div>
       </div>
 
       <div class="row" hidden>
         <div class="input-field col s12">
           <input name="r_reference" type="text" class="" ng-model="inst.instructionNum">
-          <label for="r_reference">Instruction ID</label>
+          <label for="r_reference" translate="INSTRUCTION_ID_LABEL"></label>
         </div>
       </div>
 <!--
@@ -295,23 +292,23 @@
       </div>
 -->
       <div class="row">
-          <h5 class="col s12">Reason</h5>
+          <h5 class="col s12" translate="REASON_LABEL"></h5>
       </div>
       <div class="row">
         <div class="input-field col s12">
           <textarea name="r_a_description" class="materialize-textarea" ng-model="redemption.reason.description"></textarea>
-          <label for="r_a_description">Description</label>
+          <label for="r_a_description" translate="DESCRIPTION_LABEL"></label>
         </div>
       </div>
       <div class="row">
         <div class="input-field col s8">
           <input name="r_a_document" type="text" class="" ng-model="redemption.reason.document">
-          <label for="r_a_document">Document number</label>
+          <label for="r_a_document" translate="DOCUMENT_NUMBER_LABEL"></label>
         </div>
         <div class="input-field col s4">
           <i class="material-icons prefix">schedule</i>
           <input name="r_a_created" type="text" class="datepicker" ng-model="redemption.reason.created" input-date>
-          <label for="r_a_created">Document date</label>
+          <label for="r_a_created" translate="DOCUMENT_DATE_LABEL"></label>
         </div>
       </div>
 
@@ -320,8 +317,8 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
             ng-disabled="formRedemption.$invalid"
-            ng-click="ctl.sendRedemption(redemption)" value="Ok"/>
-      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" value="Cancel"/>
+            ng-click="ctl.sendRedemption(redemption)" value="Ok" translate="OK_LABEL"/>
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" value="Cancel" translate="CANCEL_LABEL"/>
     </div>
   </form>
 </div>
@@ -337,16 +334,16 @@
           <table class="table-bordered highlight responsive-table">
           <thead>
               <tr>
-                  <th>Created</th>
-                  <th>Transferer</th>
-                  <th>Receiver</th>
-                  <th>Security</th>
-                  <th>Quantity</th>
-                  <th>Reference</th>
-                  <th>Instruction Date</th>
-                  <th>Trade Date</th>
-                  <th>Status</th>
-                  <th>Reason</th>
+                  <th translate="CREATED_LABEL"></th>
+                  <th translate="TRANSFERER_LABEL"></th>
+                  <th translate="RECEIVER_LABEL"></th>
+                  <th translate="SECURITY_LABEL"></th>
+                  <th translate="QUANTITY_LABEL"></th>
+                  <th translate="REFERENCE_LABEL"></th>
+                  <th translate="INSTRUCTION_DATE_LABEL"></th>
+                  <th translate="TRADE_DATE_LABEL"></th>
+                  <th translate="STATUS_LABEL"></th>
+                  <th translate="REASON_LABEL"></th>
               </tr>
           </thead>
           <tbody>
@@ -374,7 +371,7 @@
           <tbody ng-hide="$options.history.length">
               <tr>
                   <td colspan="99" align="center">
-                      <i>No items</i>
+                      <i translate="NO_ITEMS_LABEL"></i>
                   </td>
               </tr>
           </tbody>
@@ -382,7 +379,7 @@
 
       </div>
       <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()">Close</a>
+        <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()" translate="CLOSE_LABEL"></a>
       </div>
     </form>
   </div>
