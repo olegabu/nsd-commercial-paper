@@ -2,19 +2,19 @@
 
 STARTTIME=$(date +%s)
 
-DOMAIN=nsd.ru
-ORG1=nsd
-ORG2=megafon
-ORG3=raiffeisen
+# defaults; export these variables before executing this script
+: ${DOMAIN:="nsd.ru"}
+: ${ORG1:="nsd"}
+: ${ORG2:="megafon"}
+: ${ORG3:="raiffeisen"}
+: ${IP1:="54.173.221.247"}
+: ${IP2:="54.161.190.237"}
+: ${IP3:="54.166.77.150"}
 
-IP1=54.173.221.247
-IP2=54.161.190.237
-IP3=54.166.77.150
-
-INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'
-BOOK_INIT='{"Args":["init","[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]"]}'
-SECURITY_INIT='{"Args":["init","RU000ABC0001","active","AC0689654902","87680000045800005"]}'
-POSITION_INIT='{"Args":["init"]}'
+: ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\"},{\"account\":\"AC0689654902\",\"division\":\"69070000982300006\"},{\"account\":\"AC0191654904\",\"division\":\"80120002322000007\"},{\"account\":\"AC0191654904\",\"division\":\"36060003558300008\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"WD0D00654903\",\"division\":\"58680002816000009\"},{\"account\":\"WD0D00654903\",\"division\":\"11560007930600010\"},{\"account\":\"WD0H7B654905\",\"division\":\"51630003768000011\"},{\"account\":\"WD0H7B654905\",\"division\":\"36090008645500012\"}]},{\"organization\":\"c.nsd.ru\",\"balances\":[{\"account\":\"YN0000654906\",\"division\":\"6294000472000013\"},{\"account\":\"YN0000654906\",\"division\":\"57680007190700014\"},{\"account\":\"YN0927654908\",\"division\":\"9384000328700015\"},{\"account\":\"YN0927654908\",\"division\":\"37800007360900016\"}]}]"]}'}
+: ${BOOK_INIT:='{"Args":["init","[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]"]}'}
+: ${SECURITY_INIT:='{"Args":["init","RU000ABC0001","active","AC0689654902","87680000045800005"]}'}
+: ${POSITION_INIT:='{"Args":["init"]}'}
 
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
@@ -541,6 +541,14 @@ function generatePeerArtifacts3() {
   generatePeerArtifacts ${ORG3} 4002 8082 9054 9051 9053 9056 9058
 }
 
+function printArgs() {
+echo "$DOMAIN, $ORG1, $ORG2, $ORG3, $IP1, $IP2, $IP3"
+echo "INSTRUCTION_INIT=$INSTRUCTION_INIT"
+echo "BOOK_INIT=$BOOK_INIT"
+echo "SECURITY_INIT=$SECURITY_INIT"
+echo "POSITION_INIT=$POSITION_INIT"
+}
+
 # Print the usage message
 function printHelp () {
   echo "Usage: "
@@ -660,6 +668,8 @@ elif [ "${MODE}" == "devlogs" ]; then
   devLogs
 elif [ "${MODE}" == "devdown" ]; then
   devNetworkDown
+elif [ "${MODE}" == "print-args" ]; then
+  printArgs
 else
   printHelp
   exit 1
