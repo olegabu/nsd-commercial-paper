@@ -1,8 +1,18 @@
 {
+
+  "NEW_BOOK_FOR_LABEL":"Кому",
+  "ACCOUNT_INPUT_PLACEHOLDER":"Счет",
+  "DIVISION_INPUT_PLACEHOLDER":"Раздел",
+  "SECURITY_INPUT_PLACEHOLDER":"Security",
+
+  "BOOK_HISTORY_LABEL":"История баланса",
+  "POSITION_HISTORY_LABEL":"История баланса",
+
+
   "ORGANISATION_LABEL": "Организация",
-  "ACCOUNT_LABEL": "Учетная запись",
-  "SECURITY_LABEL": "Безопасность",
-  "QUANTITY_LABEL": "Колличество",
+  "ACCOUNT_LABEL": "Счет",
+  "SECURITY_LABEL": "Ценная бумага",
+  "QUANTITY_LABEL": "Количество",
   "CREATED_LABEL": "Создано",
   "CLOSE_LABEL": "Закрыть",
   "USERNAME_LABEL": "Имя Пользователя",
@@ -11,6 +21,7 @@
   "DESCRIPTION_LABEL" : "Описание",
   "NEW_SECURITY_LABEL" : "Новая запись в разделе Безопасность",
   "NEW_CALENDAR_ENTRY_LABEL" : "Новая запись в Календаре",
+  "NEW_BOOK_LABEL" : "Новая запись",
   "CALENDAR_ENTRY_DATE_LABEL": "Дата календарной записи",
   "STATUS_LABEL": "Статус",
   "CALENDAR_ENTRY_LABEL": "Календарная запись",
@@ -40,8 +51,8 @@
   "INITIATOR_LABEL": "Initiator (Переводить)",
   "REASON_LABEL": "Причина",
   "LOCK_LABEL": "Блокировано",
-  "DEPONENT_LABEL": "Deponent (Переводить)",
-  "DIVISION_LABEL": "Division (Переводить)",
+  "DEPONENT_LABEL": "Депонент",
+  "DIVISION_LABEL": "Раздел",
   "12_CHARACTERS_LABEL": "Должно быть ровно 12 символов",
   "17_CHARACTERS_LABEL": "Должно быть ровно 17 символов",
   "DOCUMENT_NUMBER_LABEL": "Номер документа",

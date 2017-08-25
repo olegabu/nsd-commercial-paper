@@ -2,22 +2,22 @@
     <form name="form" class="form-horizontal" novalidate>
       <div class="modal-content">
 
-        <h4 role-show="nsd">Book History</h4>
-        <h4 role-hide="nsd">Position History</h4>
+        <h4 role-show="nsd" translate>BOOK_HISTORY_LABEL</h4>
+        <h4 role-hide="nsd" translate>POSITION_HISTORY_LABEL</h4>
         <table class="table-bordered highlight responsive-table">
             <thead>
                 <tr>
-                    <th translate="CREATED_LABEL"></th>
-                    <th role-show="nsd" translate="ORGANISATION_LABEL"></th>
-                    <th translate="ACCOUNT_LABEL"></th>
-                    <th translate="SECURITY_LABEL"></th>
-                    <th translate="QUANTITY_LABEL"></th>
+                    <th translate>CREATED_LABEL</th>
+                    <th role-show="nsd" translate>ORGANISATION_LABEL</th>
+                    <th translate>ACCOUNT_LABEL</th>
+                    <th translate>SECURITY_LABEL</th>
+                    <th translate>QUANTITY_LABEL</th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="o in $options.history|orderBy:['-_created']">
                     <td class="grey-text nowrap">{{::o._created|date:'M/d/yy H:mm:ss'}}</td>
-                    <td role-show="nsd">{{::o.org}}</td>
+                    <td role-show="nsd" class="nowrap">{{::o.org}}</td>
                     <td>{{::o.deponent}} / {{::o.balance.account}} / {{::o.balance.division}}</td>
                     <td>{{::o.security}}</td>
                     <td>{{::o.quantity}}</td>
@@ -25,7 +25,7 @@
 
                 <tr ng-hide="$options.history.length">
                     <td colspan="99" align="center">
-                        <i translate="NO_ITEMS_LABEL"></i>
+                        <i translate>NO_ITEMS_LABEL</i>
                     </td>
                 </tr>
             </tbody>
@@ -33,7 +33,7 @@
 
       </div>
       <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()" translate="CLOSE_LABEL"></a>
+        <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()" translate>CLOSE_LABEL</a>
       </div>
     </form>
 </div>
