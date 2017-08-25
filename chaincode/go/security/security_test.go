@@ -14,7 +14,7 @@ func getStub(t *testing.T) *shim.MockStub{
 }
 func getInitializedStub(t *testing.T) *shim.MockStub{
 	stub := getStub(t)
-	stub.MockInit("1", [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active")})
+	stub.MockInit("1", [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active"), []byte("AC0689654902"), []byte("87680000045800005")})
 	return stub
 }
 
@@ -42,7 +42,7 @@ func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [
 }
 
 func TestSecurity_Init(t *testing.T) {
-	checkInit(t, getStub(t), [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active")})
+	checkInit(t, getStub(t), [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active"), []byte("AC0689654902"), []byte("87680000045800005")})
 }
 
 func TestSecurity_Query(t *testing.T){
@@ -50,6 +50,8 @@ func TestSecurity_Query(t *testing.T){
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 	securityName := "RU000ABC0001"
 	securityStatus:= "active"
+	redeemAccount := "AC0689654902"
+	redeemDivision:= "87680000045800005"
 
 	if len(securities) != 1{
 		fmt.Println("Security not found")
@@ -61,6 +63,14 @@ func TestSecurity_Query(t *testing.T){
 	}
 	if securities[0].Status != securityStatus {
 		fmt.Println("Newly created security has wrong status :", securities[0].Status, " , expected: ", securityStatus)
+		t.FailNow()
+	}
+	if securities[0].RedeemAccount !=  redeemAccount{
+		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].RedeemAccount, " , expected: ", redeemAccount)
+		t.FailNow()
+	}
+	if securities[0].RedeemDivision != redeemDivision {
+		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].RedeemDivision, " , expected: ", redeemDivision)
 		t.FailNow()
 	}
 	if len(securities[0].Entries) != 0 {
@@ -75,8 +85,10 @@ func TestSecurity_Put(t *testing.T){
 
 	securityName := "RU000ABC0002"
 	securityStatus:= "created"
+	redeemAccount := "AC0689654902"
+	redeemDivision:= "87680000045800005"
 
-	stub.MockInvoke("1", [][]byte{[]byte("put"), []byte(securityName), []byte(securityStatus)})
+	stub.MockInvoke("1", [][]byte{[]byte("put"), []byte(securityName), []byte(securityStatus), []byte(redeemAccount), []byte(redeemDivision)})
 
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 
@@ -90,6 +102,14 @@ func TestSecurity_Put(t *testing.T){
 	}
 	if securities[0].Status != securityStatus {
 		fmt.Println("Newly created security has wrong status :", securities[0].Status, " , expected: ", securityStatus)
+		t.FailNow()
+	}
+	if securities[0].RedeemAccount !=  redeemAccount{
+		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].RedeemAccount, " , expected: ", redeemAccount)
+		t.FailNow()
+	}
+	if securities[0].RedeemDivision != redeemDivision {
+		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].RedeemDivision, " , expected: ", redeemDivision)
 		t.FailNow()
 	}
 	if len(securities[0].Entries) != 0 {
@@ -191,6 +211,9 @@ func TestSecurity_Update(t *testing.T){
 
 	securityName := "RU000ABC0001"
 	newStatus:= "created"
+	redeemAccount := "AC0689654902"
+	redeemDivision:= "87680000045800005"
+
 	code := "updated"
 	date := "12/12/17"
 	text := "Some message"
@@ -199,7 +222,7 @@ func TestSecurity_Update(t *testing.T){
 	stub.MockInvoke("1", [][]byte{[]byte("addEntry"), []byte(securityName), []byte(code), []byte(date), []byte(text), []byte(reference)})
 
 
-	stub.MockInvoke("1", [][]byte{[]byte("put"), []byte(securityName), []byte(newStatus)})
+	stub.MockInvoke("1", [][]byte{[]byte("put"), []byte(securityName), []byte(newStatus), []byte(redeemAccount), []byte(redeemDivision)})
 
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 
@@ -214,6 +237,14 @@ func TestSecurity_Update(t *testing.T){
 	}
 	if securities[0].Status != newStatus {
 		fmt.Println("Newly created security has wrong status")
+		t.FailNow()
+	}
+	if securities[0].RedeemAccount !=  redeemAccount{
+		fmt.Println("Newly created security has wrong RedeemAccount :", securities[0].RedeemAccount, " , expected: ", redeemAccount)
+		t.FailNow()
+	}
+	if securities[0].RedeemDivision != redeemDivision {
+		fmt.Println("Newly created security has wrong RedeemDivision :", securities[0].RedeemDivision, " , expected: ", redeemDivision)
 		t.FailNow()
 	}
 	if len(securities[0].Entries) != 1 {

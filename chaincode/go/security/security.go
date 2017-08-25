@@ -26,12 +26,16 @@ type SecurityChaincode struct {
 type SecurityValue struct {
 	Status      	string 				`json:"status"`
 	Entries			[]CalendarEntries	`json:"entries"`
+	RedeemAccount	string				`json:"raccount"`
+	RedeemDivision	string				`json:"rdivision"`
 }
 
 type Security struct {
 	Security        string 				`json:"security"`
 	Status      	string 				`json:"status"`
 	Entries			[]CalendarEntries	`json:"entries"`
+	RedeemAccount	string				`json:"raccount"`
+	RedeemDivision	string				`json:"rdivision"`
 }
 
 type CalendarEntries struct {
@@ -79,9 +83,9 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 }
 
 func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 2 {
+	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. " +
-			"Expecting security, status")
+			"Expecting security, status, Redeem Account, Redeem Division")
 	}
 
 	s, err := t.findByKey(stub, args[0])
@@ -91,6 +95,8 @@ func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string)
 	}
 
 	s.Status = args[1]
+	s.RedeemAccount = args[2]
+	s.RedeemDivision = args[3]
 
 	return t.save(stub, s)
 }
@@ -101,7 +107,7 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 		return shim.Error(err.Error())
 	}
 
-	value, err := json.Marshal(SecurityValue{Status: item.Status, Entries: item.Entries})
+	value, err := json.Marshal(SecurityValue{Status: item.Status, Entries: item.Entries, RedeemAccount:item.RedeemAccount, RedeemDivision:item.RedeemDivision})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -165,6 +171,8 @@ func (t *SecurityChaincode) findByKey(stub shim.ChaincodeStubInterface, security
 	security := Security {
 		Security: securityName,
 		Status: value.Status,
+		RedeemAccount: value.RedeemAccount,
+		RedeemDivision: value.RedeemDivision,
 		Entries:value.Entries,
 	}
 
@@ -200,6 +208,8 @@ func (t *SecurityChaincode) query(stub shim.ChaincodeStubInterface, args []strin
 		security := Security {
 			Security: compositeKeyParts[0],
 			Status: value.Status,
+			RedeemAccount: value.RedeemAccount,
+			RedeemDivision: value.RedeemDivision,
 			Entries:value.Entries,
 		}
 
