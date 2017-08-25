@@ -8,6 +8,9 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
   // jshint shadow: true
   var SecurityService = this;
 
+
+  SecurityService.STATUS_ACTIVE = 'active';
+
   /**
    *
    */
@@ -30,9 +33,9 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
 
 
   /**
-   *
+   * @param {string} [status] - security status to fetch
    */
-  SecurityService.list = function() {
+  SecurityService.list = function(status) {
     $log.debug('SecurityService.list');
 
     var chaincodeID = SecurityService._getChaincodeID();
@@ -40,7 +43,14 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
     var peer = SecurityService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
-        .then(function(data){ return parseJson(data.result); });
+        .then(function(data){ return data.result; })
+        .then(function(list){
+          if(status){
+            return list.filter(function(s){ return s.status == status; });
+          } else {
+            return list;
+          }
+        });
   };
 
   /**
@@ -58,19 +68,10 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
     //     .then(function(data){ return parseJson(data.result); });
   };
 
-  /**
-   *
-   */
-  function parseJson(data){
-    if(typeof data == "string"){
-      try{
-        data = JSON.parse(data);
-      }catch(e){
-        $log.warn(e, data);
-      }
-    }
-    return data;
-  }
+  SecurityService.sendSecurity = function(){
+    $log.debug('SecurityService.sendSecurity');
+    throw new Error("sendSecurity incomplete");
+  };
 
 
   /**

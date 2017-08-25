@@ -57,6 +57,12 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
   };
 
 
+  BookService.put = function(book){
+    $log.debug('BookService.put', book);
+
+    throw new Error('put is incomplete');
+  }
+
 
   BookService.redeem = function(redemption){
     $log.debug('BookService.redeem', redemption);

@@ -7,8 +7,7 @@
 <div class="row" role-show="nsd">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()">New Security</button>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry()" href="#newCalendarEntry" modal>New Calendar Entry</button>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" modal href="#newSecurityEntry">New Security</button>
     </div>
   </div>
 </div>
@@ -21,16 +20,20 @@
           <tr>
               <th>Security</th>
               <th>Status</th>
+              <th width="15%"></th>
           </tr>
       </thead>
       <tbody>
           <tr ng-repeat="o in ctl.list">
               <td>{{::o.security}}</td>
               <td>{{::o.status}}</td>
-             <!--  <td>
+              <td>
+                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry()" href="#newCalendarEntry" modal>New Calendar Entry</button>
+                  <!--
                   <input type="button" class="btn btn-default" ng-click="ctl.verify(o)" value="Verify" ng-hide="o.status"/>
                   <input type="button" class="btn btn-danger" ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
-              </td> -->
+                  -->
+              </td>
           </tr>
 
           <tr ng-hide="ctl.list.length">
@@ -55,17 +58,18 @@
         <div class="row" hidden>
           <div class="input-field col s12">
             <p>
-              <input class="with-gap" name="eventType" value="coupon" type="radio" id="coupon" />
+              <input class="with-gap" name="eventType" value="coupon" type="radio" ng-model="centry.type" id="coupon"/>
               <label for="coupon">Coupon</label>
             </p>
             <p>
-              <input class="with-gap" name="eventType" value="maturity" type="radio" id="maturity" />
+              <input class="with-gap" name="eventType" value="maturity" type="radio" ng-model="centry.type" id="maturity" />
               <label for="maturity">Maturity</label>
             </p>
             <p>
-              <input class="with-gap" name="eventType" value="redemption" type="radio" id="redemption"  />
+              <input class="with-gap" name="eventType" value="redemption" type="radio" ng-model="centry.type" id="redemption"  />
               <label for="redemption">Redemption</label>
             </p>
+            <label for="ce_date">Calendar entry type</label>
           </div>
         </div>
 
@@ -79,8 +83,8 @@
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="ce_reference" type="text" class="" ng-model="centry.code" required>
-            <label for="ce_reference">Code</label>
+            <input name="ce_reference" type="text" class="" ng-model="centry.security" required>
+            <label for="ce_reference">Security</label>
           </div>
         </div>
         <div class="row">
@@ -96,8 +100,108 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
             ng-disabled="calendarEntryForm.$invalid"
-            ng-click="ctl.sendCEntry(redemption)" value="Ok"/>.
+            ng-click="ctl.sendCEntry(centry)" value="Ok"/>.
       <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="centry = null" value="Cancel"/>
+    </div>
+  </form>
+</div>
+
+
+
+
+
+
+
+
+
+<!-- Modal Structure -->
+<div id="newSecurityEntry" class="modal modal-fixed-footer">
+  <form name="securityForm" class="form-horizontal" novalidate>
+    <div class="modal-content">
+      <h4>New Security</h4>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <input name="s_security" type="text" class="" ng-model="security.code" required>
+            <label for="s_security">Security</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <textarea id="s_description" name="s_description" class="materialize-textarea" ng-model="security.description"></textarea>
+            <label for="s_description">Description</label>
+          </div>
+        </div>
+
+
+
+        <div class="row" hidden>
+          <!-- transferer/From -->
+          <div class="input-field col s2">
+            <h5>Initiator</h5>
+          </div>
+          <div class="input-field col s5" hidden>
+            <select ng-model="security.initiator.account" name="s_t_acc" material-select watch class=""
+                    ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts" placeholder="Account"> </select>
+            <label for="s_t_acc">Account</label>
+          </div>
+          <div class="input-field col s5">
+            <input name="s_t_acc" type="text" class="uppercase" ng-model="security.initiator.account" ng-length="12">
+            <label for="s_t_acc">Account</label>
+            <span class="input-error-message" ng-show="formInstruction.s_t_acc.$error.length">Should be exactly 12 characters</span>
+          </div>
+
+          <div class="input-field col s5" hidden>
+            <select ng-model="security.initiator.division" name="s_t_div" material-select watch class=""
+                    ng-options="o for o in ctl.accounts[security.initiator.account]" placeholder="Division"> </select>
+            <label for="s_t_div">Division</label>
+          </div>
+          <div class="input-field col s5">
+            <input name="s_t_div" type="text" class="uppercase" ng-model="security.initiator.division" ng-length="17">
+            <label for="s_t_div">Division</label>
+            <span class="input-error-message" ng-show="formInstruction.s_t_div.$error.length">Should be exactly 17 characters</span>
+          </div>
+        </div>
+
+
+        <div class="row">
+          <!-- transferer/From -->
+          <div class="input-field col s2">
+            <h5 class="nowrap">Redeem to</h5>
+          </div>
+          <div class="input-field col s5">
+            <select ng-model="security.redeem.account" name="s_r_acc" material-select watch class=""
+                    ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts" placeholder="Account" required></select>
+            <label for="s_r_acc">Account</label>
+          </div>
+          <div class="input-field col s5" hidden>
+            <input name="s_r_acc" type="text" class="uppercase" ng-model="security.redeem.account" required ng-length="12">
+            <label for="s_r_acc">Account</label>
+            <span class="input-error-message" ng-show="formInstruction.s_r_acc.$error.length">Should be exactly 12 characters</span>
+          </div>
+
+          <div class="input-field col s5">
+            <select ng-model="security.redeem.division" name="s_r_div" material-select watch class=""
+                    ng-options="o for o in ctl.accounts[security.redeem.account]" placeholder="Division" required></select>
+            <label for="s_r_div">Division</label>
+          </div>
+          <div class="input-field col s5" hidden>
+            <input name="s_r_div" type="text" class="uppercase" ng-model="security.redeem.division" required ng-length="17">
+            <label for="s_r_div">Division</label>
+            <span class="input-error-message" ng-show="formInstruction.s_r_div.$error.length">Should be exactly 17 characters</span>
+          </div>
+        </div>
+
+    </div>
+    <div class="modal-footer">
+
+      <input type="submit"
+            class="modal-action modal-close waves-effect waves-green btn-flat"
+            ng-disabled="securityForm.$invalid"
+            ng-click="ctl.sendSecurity(redemption)" value="Ok"/>
+
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
+            ng-click="security = null; securityForm.$setPristine();" value="Cancel"/>
     </div>
   </form>
 </div>

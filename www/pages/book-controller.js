@@ -3,11 +3,13 @@
  * @classdesc
  * @ngInject
  */
-function BookController($scope, BookService, ConfigLoader, DialogService) {
+function BookController($scope, $q, BookService, ConfigLoader, DialogService, SecurityService) {
 
   var ctrl = this;
 
-  ctrl.list = [];
+  ctrl.books = [];
+  ctrl.securities = [];
+  ctrl.accounts = ConfigLoader.getAllAccounts();
 
   /**
    *
@@ -22,18 +24,29 @@ function BookController($scope, BookService, ConfigLoader, DialogService) {
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return BookService.list()
-      .then(function(list){
-        // add 'org' and 'deponent' to the result, based on account+division
-        list.forEach(function(item){
-          item.org = ConfigLoader.getOrgByAccountDivision(item.balance.account, item.balance.division);
-          item.deponent = (ConfigLoader.getAccount(item.org) || {}).dep;
-        })
-        ctrl.list = list;
-      })
+
+    return $q.all([
+
+        SecurityService.list(SecurityService.STATUS_ACTIVE)
+          .then(function(list){
+            ctrl.securities = list;
+          }),
+
+        BookService.list()
+          .then(function(list){
+            // add 'org' and 'deponent' to the result, based on account+division
+            list.forEach(function(item){
+              item.org = ConfigLoader.getOrgByAccountDivision(item.balance.account, item.balance.division);
+              item.deponent = (ConfigLoader.getAccount(item.org) || {}).dep;
+            })
+            ctrl.books = list;
+          })
+
+      ])
       .finally(function(){
         ctrl.invokeInProgress = false;
       });
+
   }
 
 
@@ -46,6 +59,14 @@ function BookController($scope, BookService, ConfigLoader, DialogService) {
       .then(function(result){
         var scope = {history: result};
         return DialogService.dialog('book-history.html', scope);
+      });
+  }
+
+  ctrl.sendBook = function(book){
+    ctrl.invokeInProgress = true;
+    return BookService.put(book)
+      .finally(function(){
+        ctrl.invokeInProgress = false;
       });
   }
 

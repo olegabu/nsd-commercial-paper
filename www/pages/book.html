@@ -3,6 +3,14 @@
     <div class="indeterminate"></div>
 </div>
 
+<div class="row" role-show="nsd">
+  <div class="col s12">
+    <div>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newBook()" modal href="#newBookEntry">New Book Entry</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="row">
   <div class="col s12">
@@ -16,7 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in ctl.list" ng-click="ctl.showHistory(o)">
+            <tr ng-repeat="o in ctl.books" ng-click="ctl.showHistory(o)">
                 <td>{{::o.org}}</td>
                 <td>{{::o.deponent}} / {{::o.balance.account}} / {{::o.balance.division}}</td>
                 <td>{{::o.security}}</td>
@@ -27,7 +35,7 @@
                 </td> -->
             </tr>
 
-            <tr ng-hide="ctl.list.length">
+            <tr ng-hide="ctl.books.length">
                 <td colspan="99" align="center">
                     <i>No items</i>
                 </td>
@@ -38,3 +46,72 @@
 
 </div>
 
+
+
+
+
+
+
+<!-- Modal Structure -->
+<div id="newBookEntry" class="modal modal-fixed-footer">
+  <form name="bookForm" class="form-horizontal" novalidate>
+    <div class="modal-content">
+      <h4>New Book Entry</h4>
+
+        <div class="row">
+          <!-- transferer/From -->
+          <div class="input-field col s2">
+            <h5 class="nowrap">For</h5>
+          </div>
+          <div class="input-field col s5">
+            <select ng-model="book.account" name="b_acc" material-select watch class=""
+                    ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts" placeholder="Account" required></select>
+            <label for="b_acc">Account</label>
+          </div>
+          <div class="input-field col s5" hidden>
+            <input name="b_acc" type="text" class="uppercase" ng-model="book.account" required ng-length="12">
+            <label for="b_acc">Account</label>
+            <span class="input-error-message" ng-show="bookForm.b_acc.$error.length">Should be exactly 12 characters</span>
+          </div>
+
+          <div class="input-field col s5">
+            <select ng-model="book.division" name="b_div" material-select watch class=""
+                    ng-options="o for o in ctl.accounts[book.account]" placeholder="Division" required></select>
+            <label for="b_div">Division</label>
+          </div>
+          <div class="input-field col s5" hidden>
+            <input name="b_div" type="text" class="uppercase" ng-model="book.division" required ng-length="17">
+            <label for="b_div">Division</label>
+            <span class="input-error-message" ng-show="bookForm.b_div.$error.length">Should be exactly 17 characters</span>
+          </div>
+        </div>
+
+
+        <div class="row">
+          <div class="input-field col s6">
+            <select ng-model="book.security" name="b_security" material-select watch class=""
+                    ng-options="o.security as o.security for o in ctl.securities" placeholder="Division" required></select>
+            <label for="b_security">Security</label>
+          </div>
+
+          <div class="input-field col s6">
+            <input name="i_quantity" type="number" min="0" class="" ng-model="inst.quantity" required>
+            <label for="i_quantity">Quantity</label>
+          </div>
+
+        </div>
+
+    </div>
+    <div class="modal-footer">
+
+      <input type="submit"
+            class="modal-action modal-close waves-effect waves-green btn-flat"
+            ng-disabled="bookForm.$invalid"
+            ng-click="ctl.sendBook(book)" value="Ok"/>
+
+      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
+            ng-click="centry = null; bookForm.$setPristine();" value="Cancel"/>
+
+    </div>
+  </form>
+</div>

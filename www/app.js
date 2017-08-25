@@ -356,6 +356,21 @@ angular.module('nsd.app',[
       return accountConfig[orgID];
     }
 
+    /**
+     * @return {Object<Array<string>>} key-value of account => [divisions]
+     */
+    function getAllAccounts(){
+      var accountConfig = _config['account-config'] || {};
+      return Object.keys(accountConfig).reduce(function(result, orgID){
+
+        Object.keys( accountConfig[orgID].acc ).forEach(function(account){
+          result[account] = angular.copy(accountConfig[orgID].acc[account]);
+          result[account].org = orgID;
+        });
+        return result;
+      }, {});
+    }
+
     function getOrg(){
       return _config.org;
     }
@@ -413,6 +428,7 @@ angular.module('nsd.app',[
       getAccount : getAccount,
       getPeers   : getPeers,
       getOrgs    : getOrgs,
+      getAllAccounts : getAllAccounts,
 
       getOrgByAccountDivision : getOrgByAccountDivision,
       getOrgByDepcode:getOrgByDepcode,

@@ -212,7 +212,12 @@ function InstructionsController($scope, InstructionService, BookService, DialogS
     return DialogService.confirm( 'Redeem '+redemption.security+' ?', {yesTitle:'Yes, redeem it', yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){
-          return BookService.redeem(redemption);
+
+          ctrl.invokeInProgress = true;
+          return BookService.redeem(redemption)
+            .finally(function(){
+              ctrl.invokeInProgress = false;
+            });
         }
       })
       .then(function(){

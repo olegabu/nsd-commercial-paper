@@ -274,7 +274,7 @@
       <div class="row">
         <div class="input-field col s12">
           <input name="r_security" type="text" class="" ng-model="redemption.security" required>
-          <label for="r_security">ISIN</label>
+          <label for="r_security">Security</label>
         </div>
       </div>
 
@@ -318,7 +318,7 @@
       <input type="submit"
             class="modal-action modal-close waves-effect waves-green btn-flat red white-text"
             ng-disabled="formRedemption.$invalid"
-            ng-click="ctl.sendRedemption(redemption)" value="Ok"/>.
+            ng-click="ctl.sendRedemption(redemption)" value="Ok"/>
       <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="inst = null" value="Cancel"/>
     </div>
   </form>
