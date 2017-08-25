@@ -40,7 +40,8 @@ angular.module('nsd.app',[
    'nsd.directive.certificate',
    'nsd.directive.blockchain',
    'nsd.directive.role',
-   'nsd.directive.nsd'
+   'nsd.directive.nsd',
+   'pascalprecht.translate'
 ])
 .config(function($stateProvider) {
 
@@ -229,6 +230,18 @@ angular.module('nsd.app',[
 .config(function($httpProvider) {
   $httpProvider.interceptors.push('bearerAuthIntercepter');
 })
+
+/**
+ *
+ */
+.config(['$translateProvider', function ($translateProvider) {
+    $translateProvider.useStaticFilesLoader({
+        prefix: 'i18n/locale-',
+        suffix: '.json'
+    });
+    $translateProvider.preferredLanguage('en');
+    $translateProvider.useSanitizeValueStrategy('escape');
+}])
 
 /**
  * inject 'X-Requested-With' header
