@@ -22,6 +22,7 @@
           <tr>
               <th translate>SECURITY_LABEL</th>
               <th translate>STATUS_LABEL</th>
+              <th translate>EVENTS_LABEL</th>
               <th width="20%"></th>
           </tr>
       </thead>
@@ -30,7 +31,18 @@
               <td>{{::o.security}}</td>
               <td translate>STATUS_{{::o.status}}</td>
               <td>
-                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o)" href="#newCalendarEntry" modal>
+                <ul ng-if="::o.entries.length">
+                  <li ng-repeat="e in o.entries">
+                    <b>{{::e.code}}</b> <span translate>TIME_AT</span> <span>{{::e.date|date}}</span> {{::e.reference}}
+                    <br/>
+                    <i>{{::e.text}}</i>
+                  </li>
+                </ul>
+                <i ng-if="::!o.entries.length" translate>NO_ITEMS_LABEL</i>
+              </td>
+              <td>
+                  <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o); calendarEntryForm.$setPristine();"
+                          href="#newCalendarEntry" modal>
                     <span translate>NEW_CALENDAR_ENTRY_LABEL</span>
                   </button>
                   <!--
@@ -121,7 +133,7 @@
             ng-click="ctl.sendCEntry(centry)" value="OK_LABEL" translate-attr="{value:'OK_LABEL'}"/>
 
       <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
-            ng-click="centry = null; calendarEntryForm.$setPristine();" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
+            ng-click="centry = null" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
     </div>
   </form>
 </div>

@@ -71,7 +71,7 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
     ];
 
     // We can safely use here the result of _getQueryPeer() fn.
-    return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'addToCalendar', args);
+    return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'addEntry', args);
   };
 
   SecurityService.sendSecurity = function(security){

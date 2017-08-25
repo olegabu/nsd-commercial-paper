@@ -13,6 +13,11 @@
   "STATUS_declined":"declined",
   "STATUS_canceled":"canceled",
 
+  "INITIATOR_transferer":"transferer",
+  "INITIATOR_receiver":"receiver",
+
+  "TIME_AT":"at",
+  "EVENTS_LABEL":"Events",
   "NEW_BOOK_FOR_LABEL":"For",
   "LOGIN_TO_LABEL":"Login to",
   "LOGIN_WELCOME_TEXT":"Register and enroll new user in the organization",

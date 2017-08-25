@@ -16,6 +16,8 @@
   "INITIATOR_transferer":"отправитель",
   "INITIATOR_receiver":"получатель",
 
+  "TIME_AT":"в",
+  "EVENTS_LABEL":"События календаря",
   "NEW_BOOK_FOR_LABEL":"Кому",
   "LOGIN_TO_LABEL":"Авторизоваться в",
   "LOGIN_WELCOME_TEXT":"Авторизируйтесь в системе",
