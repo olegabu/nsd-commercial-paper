@@ -118,6 +118,30 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
 
 
   /**
+   *
+   */
+  BookService.redeemHistory = function(){
+    $log.debug('BookService.redeemHistory');
+
+    var chaincodeID = BookService._getChaincodeID();
+    var channelID = BookService.getChannelID();
+    var peer = BookService._getQueryPeer();
+
+    return ApiService.sc.query(channelID, chaincodeID, peer, 'redeemHistory')
+      .then(function(result){ return result.result; })
+      // .then(function(list){
+      //   return list.map(function(singleValue){
+      //     return Object.assign(singleValue.value, bookKey, {_created:new Date(singleValue.timestamp) });
+      //   });
+      // })
+  };
+
+
+
+
+
+
+  /**
    * return basic fields for any instruction request
    * @return {Array<string>}
    */
