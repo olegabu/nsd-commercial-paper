@@ -241,7 +241,7 @@ angular.module('nsd.app',[
     });
     $translateProvider.preferredLanguage('ru');
     // $translateProvider.preferredLanguage('en');
-    // $translateProvider.useSanitizeValueStrategy('escape');
+    $translateProvider.useSanitizeValueStrategy(null); // escape|sanitize
     // $translateProvider.usePostCompiling(true);
 }])
 
