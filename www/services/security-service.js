@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function SecurityService(ApiService, ConfigLoader, $q, $log) {
+function SecurityService(ApiService, ConfigLoader, BookService, $q, $log) {
 
   // jshint shadow: true
   var SecurityService = this;
@@ -34,8 +34,9 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
 
   /**
    * @param {string} [status] - security status to fetch
+   * @param {boolean} [withRedeem] - fetch redeem instructions for each security
    */
-  SecurityService.list = function(status) {
+  SecurityService.list = function(status, withRedeem) {
     $log.debug('SecurityService.list');
 
     var chaincodeID = SecurityService._getChaincodeID();
@@ -50,6 +51,17 @@ function SecurityService(ApiService, ConfigLoader, $q, $log) {
           } else {
             return list;
           }
+        })
+        .then(function(list){
+          if(!withRedeem) return list;
+
+          return $q.all(list.map(function(security){
+            return BookService.redeemHistory(security.security)
+              .then(function(reddeemList){
+                security.redeem = reddeemList;
+                return security;
+              });
+          }))
         });
   };
 

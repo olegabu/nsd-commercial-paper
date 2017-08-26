@@ -27,7 +27,6 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return chaincodeID;
   };
 
-
   /**
    *
    */

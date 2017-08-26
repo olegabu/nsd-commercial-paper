@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, $filter, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -38,13 +38,15 @@ function InstructionsController($scope, $filter, InstructionService, BookService
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return InstructionService.listAll()
-      .then(function(list){
-        ctrl.list = list;
-      })
-      .finally(function(){
-        ctrl.invokeInProgress = false;
-      });
+    return $q.all([
+      InstructionService.listAll()
+        .then(function(list){
+          ctrl.list = list;
+        })
+    ])
+    .finally(function(){
+      ctrl.invokeInProgress = false;
+    });
   }
 
 

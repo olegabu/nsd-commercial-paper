@@ -27,7 +27,8 @@ function SecurityController($scope, SecurityService, ConfigLoader) {
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return SecurityService.list()
+    // TODO: not request redeems because redeem list always empty
+    return SecurityService.list(/*null, !!'withRedeem'*/)
       .then(function(list){
         ctrl.list = list;
       })
