@@ -46,18 +46,21 @@ as they run on separate hosts: `4000 8080 7054 7051 7053 7056 7058`.
 ### NSD
 
 ```bash
+export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
 ./network.sh -m generate-peer -o nsd
 ```
 
 ### Megafon
 
 ```bash
+export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
 ./network.sh -m generate-peer -o megafon
 ```
 
 ### Raiffeisen
 
 ```bash
+export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
 ./network.sh -m generate-peer -o raiffeisen
 ```
 
@@ -73,7 +76,7 @@ Depository creates ledger and channel config files:
 ```
 ## Each member starts their nodes
 
-After all generation is done and over you can start the orderer and the depository peers on on depository host nsd. 
+After all generation is done and over you can start the orderer and the depository peers on depository host nsd. 
 This command creates and joins channels, installs and instantiates chaincodes on nsd peers:
 
 ### NSD

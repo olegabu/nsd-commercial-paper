@@ -1,7 +1,7 @@
 {
 
   "STATUS_active":"Активен",
-  "STATUS_matured":"Выведен",
+  "STATUS_matured":"Погашено",
 
   "STATUS_initiated":"создано",
   "STATUS_matched":"сквитовано",
