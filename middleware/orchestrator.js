@@ -17,6 +17,11 @@ module.exports = function (require) {
     return;
   }
 
+  /**
+   * @type {number} time in seconds for dirty-checking 
+   */
+  const CHECK_INTERVAL = parseInt(process.env.CHECK_INTERVAL) || 1000;
+
   var tools = require('../lib/tools');
   let hfc = require('../lib-fabric/hfc.js');
   var config = hfc.getConfigSetting('config');
@@ -104,6 +109,11 @@ module.exports = function (require) {
     updatePositionsFromBook();
   });
 
+  // dirty-checking
+  setInterval(function(){
+    _processMatchedInstructions();
+    updatePositionsFromBook();    
+  }, CHECK_INTERVAL);
 
 
   // QUERY INSTRUCTIONS
