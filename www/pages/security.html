@@ -23,7 +23,7 @@
               <th translate>SECURITY_LABEL</th>
               <th translate>STATUS_LABEL</th>
               <th translate>EVENTS_LABEL</th>
-              <th width="20%"></th>
+              <th width="20%"  role-show="nsd"></th>
           </tr>
       </thead>
       <tbody>
@@ -40,7 +40,7 @@
                 </ul>
                 <i ng-if="::!o.entries.length" translate>NO_ITEMS_LABEL</i>
               </td>
-              <td>
+              <td role-show="nsd">
                   <button class="btn btn-primary" type="button" ng-click="ctl.newCalendarEntry(o); calendarEntryForm.$setPristine();"
                           href="#newCalendarEntry" modal>
                     <span translate>NEW_CALENDAR_ENTRY_LABEL</span>
