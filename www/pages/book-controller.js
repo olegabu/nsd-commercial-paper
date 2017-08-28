@@ -60,6 +60,10 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
   ctrl.addBook = function(book){
     ctrl.invokeInProgress = true;
     return BookService.put(book)
+      .then(function(){
+        $scope.book = null;
+        $scope.bookForm.$setPristine();
+      })
       .finally(function(){
         ctrl.invokeInProgress = false;
       });
