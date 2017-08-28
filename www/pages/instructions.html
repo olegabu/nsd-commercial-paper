@@ -109,7 +109,7 @@
     <!-- <json-formatter open="1" json="ctl.redeemList" ng-show="ctl.redeemList.length"></json-formatter> -->
 
     <div class="col s12" ng-repeat="redeem in ctl.redeemList">
-      <h5>{{::redeem.security}}</h5>
+      <h4>{{::redeem.security}}</h4>
       <table class="table-bordered highlight responsive-table" >
         <thead>
             <tr>
@@ -118,17 +118,19 @@
                 <th translate>RECEIVER_LABEL</th>
                 <th translate>SECURITY_LABEL</th>
                 <th translate>QUANTITY_LABEL</th>
+                <th translate>REFERENCE_LABEL</th>
                 <th translate>TRADE_DATE_LABEL</th>
                 <th translate>REASON_LABEL</th>
             </tr>
         </thead>
-        <tbody ng-repeat="o in redeem.instructions|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
+        <tbody ng-repeat="o in redeem.instructions|orderBy:['-instructionDate', '-reference']">
             <tr class="odd-{{::$index % 2}}">
                 <th translate>INSTRUCTION_REDEEM_ID</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
+                <td>{{::o.reference}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>
                   <span>{{::o.reason.description}}</span>

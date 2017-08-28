@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function BookService(ApiService, ConfigLoader, UserService, $q, $log) {
+function BookService(ApiService, ConfigLoader, UserService, InstructionService, $q, $log) {
 
   // jshint shadow: true
   var BookService = this;
@@ -135,7 +135,13 @@ function BookService(ApiService, ConfigLoader, UserService, $q, $log) {
     var args = security ? [ security ] : [];
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'redeemHistory', args)
-      .then(function(result){ return result.result || null; }) // return null instead of empty string ""
+      .then(function(result){ return result.result || []; }) // return null instead of empty string ""
+      .then(function(redeemList){
+        redeemList.forEach(function(redeem){
+          redeem.instructions.forEach(InstructionService._processItem);
+        });
+        return redeemList;
+      });
       // .then(function(list){
       //   return list.map(function(singleValue){
       //     return Object.assign(singleValue.value, bookKey, {_created:new Date(singleValue.timestamp) });

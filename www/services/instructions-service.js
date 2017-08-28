@@ -292,6 +292,26 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   };
 
 
+  // add 'org' and 'deponent' to the result, based on account+division
+  InstructionService._processItem = function(instruction){
+    instruction._orgFrom = ConfigLoader.getOrgByAccountDivision(instruction.transferer.account, instruction.transferer.division);
+    instruction._orgTo = ConfigLoader.getOrgByAccountDivision(instruction.transferer.account, instruction.transferer.division);
+    instruction.deponentFrom = (ConfigLoader.getAccount(instruction._orgFrom) || {}).dep;
+    instruction.deponentTo = (ConfigLoader.getAccount(instruction._orgTo) || {}).dep;
+
+    if(instruction.reason){
+      instruction.reason     = parseJsonSafe(instruction.reason); // for redeem instruction
+    }
+  }
+
+  function parseJsonSafe(str){
+    try{
+      return JSON.parse(str);
+    }catch(e){
+      return str;
+    }
+  }
+
 }
 
 angular.module('nsd.service.instructions', ['nsd.service.api'])
