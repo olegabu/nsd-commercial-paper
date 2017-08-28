@@ -7,7 +7,7 @@
 <div class="row" role-show="nsd">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newSecurityItem()" modal href="#newSecurityEntry">
+      <button class="btn btn-primary" type="button" ng-click="securityForm.$setPristine(); ctl.newSecurityItem();" modal href="#newSecurityEntry">
         <span translate>NEW_SECURITY_LABEL</span>
       </button>
     </div>
