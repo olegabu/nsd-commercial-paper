@@ -27,7 +27,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    */
   ctrl.init = function(){
       $scope.$on('chainblock', function(e, block){
-        if( InstructionService.isBilateralChannel(block.getChannel()) ){
+        if( InstructionService.isBilateralChannel(block.getChannel()) || block.getChannel() == BookService.getChannelID()){
           ctrl.reload();
         }
       });
