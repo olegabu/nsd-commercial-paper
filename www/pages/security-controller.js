@@ -20,6 +20,7 @@ function SecurityController($scope, $q, SecurityService, ConfigLoader) {
   ctrl.init = function(){
       // $scope.$on('chainblock', ctrl.reload);
       $scope.$on('chainblock-ch-'+ SecurityService.getChannelID(), ctrl.reload);
+      // $scope.$on('chainblock-ch-'+ BookService.getChannelID(), ctrl.reload); // not work
       ctrl.reload();
   }
 

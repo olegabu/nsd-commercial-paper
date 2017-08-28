@@ -51,6 +51,7 @@ function SocketService(env, $rootScope, $log) {
 
       // emit channel specific event ('-c-' - is a first letter from 'channel')
       var blockChannel = SocketService.getBlockChannel(block);
+      $log.debug('server block channel:', blockChannel);
       $rootScope.$broadcast('chainblock-ch-'+blockChannel, block);
 
       // emit type specific event ('-t-' - is a first letter from 'type')

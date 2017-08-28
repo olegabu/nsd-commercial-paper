@@ -318,8 +318,9 @@
 
       <div class="row">
         <div class="input-field col s12">
-          <input name="r_security" type="text" class="" ng-model="redemption.security" required>
+          <input name="r_security" type="text" class="" ng-model="redemption.security" required ng-length="12">
           <label for="r_security" translate>SECURITY_LABEL</label>
+          <span class="input-error-message" ng-show="formRedemption.r_security.$error.length" translate>12_CHARACTERS_LABEL</span>
         </div>
       </div>
 
