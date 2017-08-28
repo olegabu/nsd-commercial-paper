@@ -3,10 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "s3KQCPQuSfFEbGwGpv9tqP61QyM=",
+			"checksumSHA1": "3dh2U+LDv+qHNkcke/M1KZOqrm0=",
 			"path": "github.com/olegabu/nsd-commercial-paper-common",
-			"revision": "8c56c45428c116209db7729568e69c91cd1c4048",
-			"revisionTime": "2017-08-24T08:57:04Z"
+			"revision": "57cdf263e5f052b92f1724a269f11950ac3c1075",
+			"revisionTime": "2017-08-28T16:43:09Z"
 		}
 	],
 	"rootPath": "github.com/olegabu/nsd-commercial-paper/chaincode/go/security"
