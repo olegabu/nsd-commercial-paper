@@ -5,8 +5,8 @@
 		{
 			"checksumSHA1": "3dh2U+LDv+qHNkcke/M1KZOqrm0=",
 			"path": "github.com/olegabu/nsd-commercial-paper-common",
-			"revision": "57cdf263e5f052b92f1724a269f11950ac3c1075",
-			"revisionTime": "2017-08-28T16:43:09Z"
+			"revision": "378ea8ce6181e9459e076febfb2cfa622e622f58",
+			"revisionTime": "2017-08-28T21:07:15Z"
 		}
 	],
 	"rootPath": "github.com/olegabu/nsd-commercial-paper/chaincode/go/security"
