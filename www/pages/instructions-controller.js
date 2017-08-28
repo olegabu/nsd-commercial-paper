@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, $filter, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
@@ -38,13 +38,15 @@ function InstructionsController($scope, $filter, InstructionService, BookService
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return InstructionService.listAll()
-      .then(function(list){
-        ctrl.list = list;
-      })
-      .finally(function(){
-        ctrl.invokeInProgress = false;
-      });
+    return $q.all([
+      InstructionService.listAll()
+        .then(function(list){
+          ctrl.list = list;
+        })
+    ])
+    .finally(function(){
+      ctrl.invokeInProgress = false;
+    });
   }
 
 
@@ -243,14 +245,14 @@ function InstructionsController($scope, $filter, InstructionService, BookService
       deponentFrom: 'CA9861913023',
       deponentTo:   'DE000DB7HWY7',
 
-      security:'RU000ABC0001',
+      security:'RU0DLTMFONCB',
       transferer:{
-        account: "AC0689654902",
-        division: "87680000045800005",
+        account: "MFONISSUEACC",
+        division: "19000000000000000",
       },
       receiver:{
-        account: "WD0D00654903",
-        division: "58680002816000009",
+        account: "RBIOWNER0ACC",
+        division: "00000000000000000",
       },
       initiator: transferSide,
       quantity: 1,
@@ -267,7 +269,7 @@ function InstructionsController($scope, $filter, InstructionService, BookService
       deponentFrom: 'CA9861913023',
       deponentTo:   'NL0000729408',
 
-      security:'RU000ABC0001',
+      security:'RU0DLTMFONCB',
       transferer:{
         account: "AC0689654902",
         division: "87680000045800005",

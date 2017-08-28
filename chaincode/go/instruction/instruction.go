@@ -97,7 +97,7 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 
 	dateLayout := "2006-01-02"
 	expirationDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
-	expirationDate = expirationDate.Truncate(time.Hour*24).Add(time.Hour*47 + time.Minute*59 + time.Second*59)
+	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*47 + time.Minute*59 + time.Second*59)
 
 	instructionWrapper := InstructionWrapper{
 		Instruction:    *this,
@@ -106,7 +106,7 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 		InstructionID:  this.Value.MemberInstructionIdFrom,
 		OperationCode:  "16",
 		ExpirationDate: expirationDate.Format("2006-01-02 15:04:05"),
-		Reason: this.Value.ReasonFrom,
+		Reason:         this.Value.ReasonFrom,
 	}
 
 	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
@@ -136,8 +136,8 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 	logger.Info("########### " + getCreatorOrganization(stub) + " ###########")
 
 	type Organization struct {
-		Name     string         `json:"organization"`
-		Balances []nsd.Balance  `json:"balances"`
+		Name     string        `json:"organization"`
+		Balances []nsd.Balance `json:"balances"`
 	}
 
 	var organizations []Organization
@@ -157,44 +157,51 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 
 func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### InstructionChaincode Invoke ###########")
+	const numberOfBaseArgs = 9
 
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "receive" {
+		if len(args) < numberOfBaseArgs+4 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.receive(stub, args)
 	}
 	if function == "transfer" {
+		if len(args) < numberOfBaseArgs+4 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.transfer(stub, args)
 	}
 	if function == "status" {
+		if len(args) < numberOfBaseArgs+1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.status(stub, args)
 	}
 	if function == "query" {
+		if len(args) < 0 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.query(stub, args)
 	}
 	if function == "queryByType" {
+		if len(args) < 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.queryByType(stub, args)
 	}
 	if function == "history" {
+		if len(args) < numberOfBaseArgs {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.history(stub, args)
 	}
 	if function == "sign" {
+		if len(args) < numberOfBaseArgs+1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
 		return t.sign(stub, args)
-	}
-
-	// for debugging only
-	if function == "check" {
-		if len(args) != 4 {
-			return shim.Error("Incorrect number of arguments. " +
-				"Expecting account, division, security, quantity")
-		}
-		quantity, _ := strconv.Atoi(args[3])
-
-		if t.check(stub, args[0], args[1], args[2], quantity) {
-			return shim.Success(nil)
-		} else {
-			return shim.Error("book returned false")
-		}
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
@@ -322,8 +329,8 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
-		 callerIsNSD && status == nsd.InstructionExecuted,
-		 callerIsNSD && status == nsd.InstructionDownloaded:
+		callerIsNSD && status == nsd.InstructionExecuted,
+		callerIsNSD && status == nsd.InstructionDownloaded:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -432,11 +439,10 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 }
 
 func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
 	// status
 	if len(args) != 1 {
-		return pb.Response{Status:400, Message: fmt.Sprintf("Incorrect number of arguments. " +
-			"Expecting 'status'. " +
+		return pb.Response{Status: 400, Message: fmt.Sprintf("Incorrect number of arguments. "+
+			"Expecting 'status'. "+
 			"But got %d args: %s", len(args), args)}
 	}
 

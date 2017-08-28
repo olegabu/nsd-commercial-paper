@@ -101,6 +101,7 @@ module.exports = function (require) {
   peerListener.eventHub.on('connected', function(){
     // run check on connect/reconnect, so we'll process all missed records
     _processMatchedInstructions();
+    updatePositionsFromBook();
   });
 
 

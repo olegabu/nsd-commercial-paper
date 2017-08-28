@@ -35,8 +35,20 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
     var peer = PositionsService._getQueryPeer();
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
-        .then(function(data){ return data.result; });
+        .then(function(data){ return data.result; })
+        .then(function(list){
+          list.forEach(PositionsService._processBookItem);
+          return list;
+        });
+
   };
+
+
+  // add 'org' and 'deponent' to the result, based on account+division
+  PositionsService._processBookItem = function(book){
+    book.org = ConfigLoader.getOrgByAccountDivision(book.balance.account, book.balance.division);
+    book.deponent = (ConfigLoader.getAccount(book.org) || {}).dep;
+  }
 
 
   /**
