@@ -286,10 +286,6 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 }
 
 func (t *BookChaincode) getRedeemHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
-			"Expecting security"}
-	}
 	key, err := stub.CreateCompositeKey(redeemIndex, args)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -416,55 +412,126 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
 			"Expecting security, reason"}
 	}
-	key, err := stub.CreateCompositeKey(redeemIndex, args[0:1])
+
+	securityId := args[0]
+
+	redeemHistoryKey, err := stub.CreateCompositeKey(redeemIndex, []string{securityId})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if data, err := stub.GetState(key); err != nil || data != nil {
+	if data, err := stub.GetState(redeemHistoryKey); err != nil || data != nil {
 		return pb.Response{Status:400, Message: "Security already redeemed. "}
 	}
 
-	response := stub.InvokeChaincode("security", [][]byte{[]byte("find"), []byte(args[0])}, "common")
+	var redeemBalance nsd.Balance
 
-	if response.Status != shim.OK {
+	if response := stub.InvokeChaincode("security", [][]byte{[]byte("find"), []byte(securityId)}, "common"); response.Status != shim.OK {
 		return shim.Error("Cannot load information about security from another channel. " + response.Message)
-	}
-	var security SecurityValue
-	err = json.Unmarshal(response.Payload, &security)
-	if err != nil {
-		return shim.Error("Cannot unmarshal response: " + err.Error())
+	} else {
+		var securityValue SecurityValue
+		if err := json.Unmarshal(response.Payload, &securityValue); err != nil {
+			return shim.Error("Cannot unmarshal response: " + err.Error())
+		}
+		redeemBalance = securityValue.Redeem
 	}
 
-	books, err := t.find(stub, args[0])
+	books, err := t.find(stub, securityId)
 	if err != nil {
 		return shim.Error("Cannot load all records for selected security. " + err.Error())
 	}
 
+	// placeholder for composite history
 	history := [][]string{}
 
-	for _, element := range books {
-		template := []string{}
-		template = append(template, element.Balance.Account)
-		template = append(template, element.Balance.Division)
-		template = append(template, security.Redeem.Account)
-		template = append(template, security.Redeem.Division)
-		template = append(template, args[0])
-		template = append(template, strconv.Itoa(element.Quantity))
-		template = append(template, "redeem")
-		template = append(template, time.Now().Format("20060102150405"))
-		template = append(template, "")
-		template = append(template, args[1])
-		t.move(stub, template)
-
-		history = append(history, template)
+	// prepare data for redeem account
+	keyTo, err := stub.CreateCompositeKey(bookIndex,
+		[]string{redeemBalance.Account, redeemBalance.Division, securityId})
+	if err != nil {
+		return pb.Response{Status:400, Message: "Can't create redeem key."}
 	}
 
-	result, err := json.Marshal(history)
+	var valueTo BookValue
+	if bytes, err := stub.GetState(keyTo); err != nil {
+		return shim.Error(err.Error())
+	} else if bytes != nil {
+		if err = json.Unmarshal(bytes, &valueTo); err != nil {
+			return shim.Error(err.Error())
+		}
+	}
+
+	for _, source := range books {
+		if source.Balance.Account == redeemBalance.Account && source.Balance.Division == redeemBalance.Division {
+			continue
+		}
+
+		sourceKey, err := stub.CreateCompositeKey(bookIndex,
+			[]string{source.Balance.Account, source.Balance.Division, securityId})
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		bytes, err := stub.GetState(sourceKey)
+		if err != nil || bytes == nil {
+			return pb.Response{Status:404, Message: "cannot find position"}
+		}
+
+		var valueFrom BookValue
+		err = json.Unmarshal(bytes, &valueFrom)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		if valueFrom.Quantity < source.Quantity {
+			return pb.Response{Status:409, Message: "cannot move quantity less than current balance"}
+		}
+
+		valueFrom.Quantity = valueFrom.Quantity - source.Quantity
+
+		newBytes, err := json.Marshal(valueFrom)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		err = stub.PutState(sourceKey, newBytes)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		// end update from
+
+		// begin update to
+		valueTo.Quantity = valueTo.Quantity + source.Quantity
+		//end update to
+
+		history = append(history, []string{
+			source.Balance.Account,
+			source.Balance.Division,
+			redeemBalance.Account,
+			redeemBalance.Division,
+			securityId,
+			strconv.Itoa(source.Quantity),
+			"redeem",
+			time.Now().Format("20060102150405"),
+			"",
+			args[1],
+		})
+	}
+
+	newBytes, err := json.Marshal(valueTo)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	if err = stub.PutState(key, result); err != nil {
+	err = stub.PutState(keyTo, newBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	redeemHistoryBytes, err := json.Marshal(history)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if err = stub.PutState(redeemHistoryKey, redeemHistoryBytes); err != nil {
 		return shim.Error(err.Error())
 	}
 
