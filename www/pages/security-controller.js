@@ -3,13 +3,14 @@
  * @classdesc
  * @ngInject
  */
-function SecurityController($scope, SecurityService, ConfigLoader) {
+function SecurityController($scope, $q, SecurityService, BookService, UserService, ConfigLoader) {
 
   var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
 
   var ctrl = this;
 
   ctrl.list = [];
+  ctrl.redeemList = [];
 
   ctrl.accounts = ConfigLoader.getAllAccounts();
 
@@ -27,14 +28,25 @@ function SecurityController($scope, SecurityService, ConfigLoader) {
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    // TODO: not request redeems because redeem list always empty
-    return SecurityService.list(/*null, !!'withRedeem'*/)
-      .then(function(list){
-        ctrl.list = list;
-      })
-      .finally(function(){
-        ctrl.invokeInProgress = false;
-      });
+    return $q.all([
+
+      SecurityService.list()
+        .then(function(list){
+          ctrl.list = list;
+        })
+        .finally(function(){
+          ctrl.invokeInProgress = false;
+        }),
+
+      UserService.getOrgRole() !== 'nsd'
+      ? true
+      : BookService.redeemHistory()
+        .then(function(redeemList){
+          ctrl.redeemList = redeemList;
+          return security;
+        })
+
+    ]);
   }
 
 

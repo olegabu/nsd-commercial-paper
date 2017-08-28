@@ -118,7 +118,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
 
 
   /**
-   * @param {string} security
+   * @param {string} [security]
    */
   BookService.redeemHistory = function(security){
     $log.debug('BookService.redeemHistory');
@@ -126,7 +126,7 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
     var chaincodeID = BookService._getChaincodeID();
     var channelID = BookService.getChannelID();
     var peer = BookService._getQueryPeer();
-    var args = [security];
+    var args = security ? [ security ] : [];
 
     return ApiService.sc.query(channelID, chaincodeID, peer, 'redeemHistory', args)
       .then(function(result){ return result.result || null; }) // return null instead of empty string ""
