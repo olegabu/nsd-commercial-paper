@@ -135,10 +135,14 @@
                 </td>
             </tr>
         </tbody>
+        <tbody ng-hide="::redeem.instructions.length">
+            <tr>
+                <td colspan="99" align="center">
+                    <i translate>NO_ITEMS_LABEL</i>
+                </td>
+            </tr>
+        </tbody>
       </table>
-      <div ng-hide="redeem.instructions.length">
-        <i translate>NO_ITEMS_LABEL</i>
-      </div>
     </div>
 
 
