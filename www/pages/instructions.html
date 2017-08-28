@@ -106,7 +106,43 @@
 
   <div role-show="nsd">
     <h2 translate>REDEEM_INSTRUCTIONS_TITLE</h2>
-    <json-formatter open="1" json="ctl.redeemList" ng-show="ctl.redeemList.length"></json-formatter>
+    <!-- <json-formatter open="1" json="ctl.redeemList" ng-show="ctl.redeemList.length"></json-formatter> -->
+
+    <div class="col s12" ng-repeat="redeem in ctl.redeemList">
+      <h5>{{::redeem.security}}</h5>
+      <table class="table-bordered highlight responsive-table" >
+        <thead>
+            <tr>
+                <th>#</th>
+                <th translate>TRANSFERER_LABEL</th>
+                <th translate>RECEIVER_LABEL</th>
+                <th translate>SECURITY_LABEL</th>
+                <th translate>QUANTITY_LABEL</th>
+                <th translate>TRADE_DATE_LABEL</th>
+                <th translate>REASON_LABEL</th>
+            </tr>
+        </thead>
+        <tbody ng-repeat="o in redeem.instructions|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
+            <tr class="odd-{{::$index % 2}}">
+                <th translate>INSTRUCTION_REDEEM_ID</th>
+                <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
+                <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
+                <td>{{::o.security}}</td>
+                <td>{{::o.quantity}}</td>
+                <td>{{::o.instructionDate|date}}</td>
+                <td>
+                  <span>{{::o.reason.description}}</span>
+                  <span ng-if="::o.reason.document">{{::o.reason.document}}/{{::o.reason.created}}</span>
+                </td>
+            </tr>
+        </tbody>
+      </table>
+      <div ng-hide="redeem.instructions.length">
+        <i translate>NO_ITEMS_LABEL</i>
+      </div>
+    </div>
+
+
     <div ng-hide="ctl.redeemList.length">
       <i translate>NO_ITEMS_LABEL</i>
     </div>
