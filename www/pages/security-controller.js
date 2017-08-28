@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function SecurityController($scope, $q, SecurityService, BookService, UserService, ConfigLoader) {
+function SecurityController($scope, $q, SecurityService, ConfigLoader) {
 
   var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
 
@@ -36,16 +36,7 @@ function SecurityController($scope, $q, SecurityService, BookService, UserServic
         })
         .finally(function(){
           ctrl.invokeInProgress = false;
-        }),
-
-      UserService.getOrgRole() !== 'nsd'
-      ? true
-      : BookService.redeemHistory()
-        .then(function(redeemList){
-          ctrl.redeemList = redeemList;
-          return security;
         })
-
     ]);
   }
 
