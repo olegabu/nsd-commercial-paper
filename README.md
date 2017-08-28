@@ -43,21 +43,34 @@ You can pass ports as args
 These commands create docker-compose files with default mapped ports that don't have to be different for each member 
 as they run on separate hosts: `4000 8080 7054 7051 7053 7056 7058`.
 
+Note the members' IP addresses need to be exported into env variables before invoking `generate`: they will end up in 
+config files:
+
+- IP1 nsd
+- IP2 megafon
+- IP3 raiffeisen
+
 ### NSD
 
 ```bash
+export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
+
 ./network.sh -m generate-peer -o nsd
 ```
 
 ### Megafon
 
 ```bash
+export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
+
 ./network.sh -m generate-peer -o megafon
 ```
 
 ### Raiffeisen
 
 ```bash
+export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
+
 ./network.sh -m generate-peer -o raiffeisen
 ```
 
@@ -73,12 +86,19 @@ Depository creates ledger and channel config files:
 ```
 ## Each member starts their nodes
 
-After all generation is done and over you can start the orderer and the depository peers on on depository host nsd. 
-This command creates and joins channels, installs and instantiates chaincodes on nsd peers:
+After all generation is done and over you can start the orderer and the depository peers on depository host nsd. 
+This command creates and joins channels, installs and instantiates chaincodes on nsd peers.
+
+Initialization values for accounts, balances and securities are passed by nsd as env variables before starting 
+the depository node:  
 
 ### NSD
 
 ```bash
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
+export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
+export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
+
 ./network.sh -m up-depository
 ``` 
 

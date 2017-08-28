@@ -1,15 +1,15 @@
 {
 
   "STATUS_active":"Активен",
-  "STATUS_matured":"Выведен",
+  "STATUS_matured":"Погашено",
 
   "STATUS_initiated":"создано",
   "STATUS_matched":"сквитовано",
-  "STATUS_executed":"проведено",
+  "STATUS_executed":"выполнено",
   "STATUS_transferer-signed":"подписано отправителем",
   "STATUS_receiver-signed":"подписано получателем",
   "STATUS_signed":"подписано участниками",
-  "STATUS_downloaded":"скачано",
+  "STATUS_downloaded":"скачано в депозитарий",
   "STATUS_declined":"отвергнуто",
   "STATUS_canceled":"отменено",
 
@@ -29,7 +29,7 @@
 
   "BOOK_HISTORY_LABEL":"История баланса",
   "POSITION_HISTORY_LABEL":"История баланса",
-  "INSTRUCTION_HISTORY_TITLE":"История ценной бумаги",
+  "INSTRUCTION_HISTORY_TITLE":"История поручения",
   "INSTRUCTION_TRANSFER_ID":"16",
   "INSTRUCTION_RECEIVER_ID":"16/1",
 
@@ -93,8 +93,8 @@
   "EVENT_TYPE_LABEL": "Тип события",
   "NO_ITEMS_LABEL": "Нет записей",
 
-  "CANCEL_INSTRUCTION_PROMPT":"Отменить перевод %s -> %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Отозвать бумагу %s ?",
+  "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
+  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
 
   "CONFIRM_TITLE":"Подтвердите действие",
   "CONFIRM_ACTION":"Подтвердить",
