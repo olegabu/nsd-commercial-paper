@@ -247,6 +247,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       });
   }
 
+  ctrl.showABPrefill = function(transferSide){
+    var orglc= (''+UserService.getOrg()).toLowerCase();
+      return ( orglc === 'megafon' && transferSide == 'transferer')
+          || ( orglc === 'raiffeisen' && transferSide == 'receiver');
+  }
 
   ctrl.getABStub = function(transferSide){
     return {

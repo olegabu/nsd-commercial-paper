@@ -49,6 +49,10 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
     return config ? config['account-config'][config.org].role || '*' : null;
   }
 
+  UserService.getOrg = function(){
+    return config ? config.org : null;
+  }
+
 
   UserService.saveAuthorization = function(user){
     if(user){
