@@ -40,7 +40,6 @@ func TestBook_Init(t *testing.T) {
 }
 
 //TODO: uncomment when package for security changed to  "security"
-
 //func TestRedeem(t *testing.T) {
 //	sccSecurity := new(security.SecurityChaincode)
 //	stubSecurity := shim.NewMockStub("security", sccSecurity)
@@ -54,7 +53,7 @@ func TestBook_Init(t *testing.T) {
 //	stub.MockPeerChaincode("security/common", stubSecurity)
 //	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{\"account\":\"BBB689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"}]")})
 //
-//	stub.MockInvoke("1", [][]byte{[]byte("redeem"), []byte("RU000ABC0001")})
+//	stub.MockInvoke("1", [][]byte{[]byte("redeem"), []byte("RU000ABC0001"), []byte("some message")})
 //
 //	//AAA should have at least 100
 //	checkState(t, stub, 200, [][]byte{[]byte("check"), []byte("AAA689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("90")})

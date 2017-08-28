@@ -416,7 +416,7 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 		return pb.Response{Status:400, Message: "Incorrect number of arguments. " +
 			"Expecting security, reason"}
 	}
-	key, err := stub.CreateCompositeKey(redeemIndex, args)
+	key, err := stub.CreateCompositeKey(redeemIndex, []string{args[0]})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
