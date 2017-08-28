@@ -73,6 +73,7 @@
 
   "TRANSFER_INSTRUCTION_TITLE": "Transfer Instruction",
   "RECEIVE_INSTRUCTION_TITLE": "Receive Instruction",
+  "REDEEM_INSTRUCTIONS_TITLE":"Redeem instructions",
 
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Create Redemption Instruction",
   "TRANSFERER_LABEL": "Transferer",
