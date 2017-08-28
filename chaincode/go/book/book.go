@@ -17,6 +17,16 @@ var logger = shim.NewLogger("BookChaincode")
 const bookIndex = `Book`
 const redeemIndex = `Redeem`
 
+type RedeemInstruction struct {
+	Transferer      nsd.Balance `json:"transferer"`
+	Receiver        nsd.Balance `json:"receiver"`
+	Security        string      `json:"security"`
+	Quantity        string      `json:"quantity"`
+	Reference       string      `json:"reference"`
+	InstructionDate string      `json:"instructionDate"`
+	Reason          string      `json:"reason"`
+}
+
 // BookChaincode
 type BookChaincode struct {
 }
@@ -286,15 +296,42 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 }
 
 func (t *BookChaincode) getRedeemHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	key, err := stub.CreateCompositeKey(redeemIndex, args)
+	it, err := stub.GetStateByPartialCompositeKey(redeemIndex, args)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	data, err := stub.GetState(key)
+	defer it.Close()
+
+	type Results struct {
+		Security        string                `json:"security"`
+		Instructions    []RedeemInstruction   `json:"instructions"`
+	}
+
+	results := []Results{}
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		instruction := Results{Security: compositeKeyParts[0]}
+		if err := json.Unmarshal(response.GetValue(), &instruction.Instructions); err != nil {
+			return shim.Error(err.Error())
+		}
+
+		results = append(results, instruction)
+	}
+
+	result, err := json.Marshal(results)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	return shim.Success(data)
+	return shim.Success(result)
 }
 
 func (t *BookChaincode) findAll(stub shim.ChaincodeStubInterface) ([]Book, error) {
@@ -441,7 +478,7 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 	}
 
 	// placeholder for composite history
-	history := [][]string{}
+	history := []RedeemInstruction{}
 
 	// prepare data for redeem account
 	keyTo, err := stub.CreateCompositeKey(bookIndex,
@@ -502,18 +539,16 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 		valueTo.Quantity = valueTo.Quantity + source.Quantity
 		//end update to
 
-		history = append(history, []string{
-			source.Balance.Account,
-			source.Balance.Division,
-			redeemBalance.Account,
-			redeemBalance.Division,
-			securityId,
-			strconv.Itoa(source.Quantity),
-			"redeem",
-			time.Now().Format("20060102150405"),
-			"",
-			args[1],
-		})
+		instruction := RedeemInstruction{
+			Transferer: source.Balance,
+			Receiver: redeemBalance,
+			Security: securityId,
+			Quantity: strconv.Itoa(source.Quantity),
+			Reference: "redeem",
+			InstructionDate: time.Now().Format("2006-01-02 15:04:05"),
+			Reason: args[1],
+		}
+		history = append(history, instruction)
 	}
 
 	newBytes, err := json.Marshal(valueTo)
