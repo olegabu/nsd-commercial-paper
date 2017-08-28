@@ -38,7 +38,6 @@
                 <th translate>INSTRUCTION_DATE_LABEL</th>
                 <th translate>TRADE_DATE_LABEL</th>
                 <th translate>STATUS_LABEL</th>
-                <th translate>INITIATOR_LABEL</th>
                 <th translate>REASON_LABEL</th>
             </tr>
         </thead>
@@ -60,7 +59,6 @@
                         value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
                         ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
                 </td>
-                <td>{{::'INITIATOR_'+o.initiator|translate}}</td>
                 <td ng-if="::o.initiator=='transferer'">
                   <span>{{::o.reasonFrom.description}}</span>
                   <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span>
@@ -85,7 +83,6 @@
                 <td class="center">
                   <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
                 </td>
-                <td>{{::'INITIATOR_'+o.initiator|translate}}</td>
                 <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
                 <td ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
             </tr>
