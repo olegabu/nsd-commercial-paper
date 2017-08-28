@@ -18,9 +18,9 @@ module.exports = function (require) {
   }
 
   /**
-   * @type {number} time in seconds for dirty-checking 
+   * @type {number} time in ms for dirty-checking
    */
-  const CHECK_INTERVAL = parseInt(process.env.CHECK_INTERVAL) || 1000;
+  const CHECK_INTERVAL = parseInt(process.env.CHECK_INTERVAL) || 5*60*1000;
 
   var tools = require('../lib/tools');
   let hfc = require('../lib-fabric/hfc.js');
@@ -112,7 +112,7 @@ module.exports = function (require) {
   // dirty-checking
   setInterval(function(){
     _processMatchedInstructions();
-    updatePositionsFromBook();    
+    // updatePositionsFromBook();
   }, CHECK_INTERVAL);
 
 
