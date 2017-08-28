@@ -9,6 +9,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/olegabu/nsd-commercial-paper-common"
+	commonCertificates "github.com/olegabu/nsd-commercial-paper-common/certificates"
 )
 
 var logger = shim.NewLogger("SecurityChaincode")
@@ -124,6 +125,11 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 }
 
 func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
+		return shim.Error("Insufficient privileges. Only NSD can add Calendar Entry")
+	}
+
 	if len(args) != 5 {
 		return shim.Error("Incorrect number of arguments. " +
 			"Expecting security, code, date, text, reference")
