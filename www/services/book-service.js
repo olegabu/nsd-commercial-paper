@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function BookService(ApiService, ConfigLoader, $q, $log) {
+function BookService(ApiService, ConfigLoader, UserService, $q, $log) {
 
   // jshint shadow: true
   var BookService = this;
@@ -122,6 +122,12 @@ function BookService(ApiService, ConfigLoader, $q, $log) {
    */
   BookService.redeemHistory = function(security){
     $log.debug('BookService.redeemHistory');
+
+    if( UserService.getOrgRole() !== 'nsd'){
+      withRedeem = false;
+      $log.warn('Role %s cannot fetch redeem history', UserService.getOrgRole());
+      return $q.resolve(null);
+    }
 
     var chaincodeID = BookService._getChaincodeID();
     var channelID = BookService.getChannelID();

@@ -3,10 +3,11 @@
  * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, $q, $filter, InstructionService, BookService, DialogService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader /*, SocketService*/) {
 
   var ctrl = this;
   ctrl.list = [];
+  ctrl.redeemList = [];
 
   // var DATE_INPUT_FORMAT = 'dd/mm/yyyy';
   var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
@@ -42,6 +43,13 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       InstructionService.listAll()
         .then(function(list){
           ctrl.list = list;
+        }),
+
+      UserService.getOrgRole() !== 'nsd'
+      ? $q.resolve()
+      : BookService.redeemHistory()
+        .then(function(redeemList){
+          ctrl.redeemList = redeemList;
         })
     ])
     .finally(function(){

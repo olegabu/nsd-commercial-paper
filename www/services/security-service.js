@@ -3,7 +3,7 @@
  * @classdesc
  * @ngInject
  */
-function SecurityService(ApiService, ConfigLoader, BookService, UserService, $q, $log) {
+function SecurityService(ApiService, ConfigLoader, BookService, $q, $log) {
 
   // jshint shadow: true
   var SecurityService = this;
@@ -38,13 +38,6 @@ function SecurityService(ApiService, ConfigLoader, BookService, UserService, $q,
    */
   SecurityService.list = function(status, withRedeem) {
     $log.debug('SecurityService.list');
-
-    if(withRedeem){
-      if( UserService.getOrgRole() !== 'nsd'){
-        withRedeem = false;
-        $log.warn('Role %s cannot fetch redeem history', UserService.getOrgRole());
-      }
-    }
 
     var chaincodeID = SecurityService._getChaincodeID();
     var channelID = SecurityService.getChannelID();
