@@ -61,7 +61,7 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 <contr_d_id>{{.InstructionID}}</contr_d_id>
 <createdate>{{.Instruction.Key.InstructionDate}}</createdate>
 <order_t_id>{{.OperationCode}}</order_t_id>
-<execute_dt>{{.Instruction.Key.InstructionDate}}</execute_dt>
+<execute_dt>{{.InstructionDate}}</execute_dt>
 <expirat_dt>{{.ExpirationDate}}</expirat_dt>
 </ORDER_HEADER>
 <MF010>
@@ -71,33 +71,40 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 <corr_acc_c>{{.Instruction.Key.Receiver.Account}}</corr_acc_c>
 <corr_sec_c>{{.Instruction.Key.Receiver.Division}}</corr_sec_c>
 <corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>
-<based_on>{{.Reason.Description}}</based_on>
-<based_numb>{{.Reason.Document}}</based_numb>
-<based_date>{{.Reason.DocumentDate}}</based_date>
+{{if .ReasonExists}}
+{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
+{{with .Reason.Document -}}<based_numb>{{.}}</based_numb>{{end}}
+{{with .Reason.DocumentDate -}}<based_ date>{{.}}</based_date>{{end}}
+{{end}}
 <securities><security>
 <security_c>{{.Instruction.Key.Security}}</security_c>
 <security_q>{{.Instruction.Key.Quantity}}</security_q>
 </security>
 </securities>
-<deal_reference>{{.Instruction.Key.Reference}}</deal_reference>
+<deal_reference>{{.Reference}}</deal_reference>
 <date_deal>{{.Instruction.Key.TradeDate}}</date_deal>
 </MF010>
 </Document>
 </Batch>
 `
+
 	type InstructionWrapper struct {
-		Instruction    nsd.Instruction
-		Depositary     string
-		Initiator      string
-		InstructionID  string
-		OperationCode  string
-		ExpirationDate string
-		Reason         nsd.Reason
+		Instruction     nsd.Instruction
+		Depositary      string
+		Initiator       string
+		InstructionID   string
+		OperationCode   string
+		InstructionDate string
+		ExpirationDate  string
+		ReasonExists    bool
+		Reason          nsd.Reason
+		Reference       string
 	}
 
 	dateLayout := "2006-01-02"
-	expirationDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
-	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*47 + time.Minute*59 + time.Second*59)
+	instructionDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
+	expirationDate := instructionDate
+	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*(29 * 24 + 23) + time.Minute*59 + time.Second*59)
 
 	instructionWrapper := InstructionWrapper{
 		Instruction:    *this,
@@ -105,9 +112,12 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 		Initiator:      this.Value.DeponentFrom,
 		InstructionID:  this.Value.MemberInstructionIdFrom,
 		OperationCode:  "16",
+		InstructionDate: instructionDate.Format("2006-01-02 15:04:05"),
 		ExpirationDate: expirationDate.Format("2006-01-02 15:04:05"),
 		Reason:         this.Value.ReasonFrom,
+		Reference:      strings.ToUpper(this.Key.Reference),
 	}
+	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") && (instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
 
 	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
 
@@ -120,6 +130,7 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 	instructionWrapper.Initiator = this.Value.DeponentTo
 	instructionWrapper.InstructionID = this.Value.MemberInstructionIdTo
 	instructionWrapper.Reason = this.Value.ReasonTo
+	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") && (instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
 
 	t.Execute(buf, instructionWrapper)
 	alamedaTo := buf.String()
