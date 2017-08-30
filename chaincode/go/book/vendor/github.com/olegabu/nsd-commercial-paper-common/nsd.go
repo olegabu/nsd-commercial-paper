@@ -12,13 +12,13 @@ const (
 	InitiatorIsTransferer = "transferer"
 	InitiatorIsReceiver   = "receiver"
 
-	InstructionInitiated    = "initiated"
-	InstructionMatched      = "matched"
-	InstructionSigned       = "signed"
-	InstructionExecuted     = "executed"
-	InstructionDownloaded   = "downloaded"
-	InstructionDeclined     = "declined"
-	InstructionCanceled     = "canceled"
+	InstructionInitiated  = "initiated"
+	InstructionMatched    = "matched"
+	InstructionSigned     = "signed"
+	InstructionExecuted   = "executed"
+	InstructionDownloaded = "downloaded"
+	InstructionDeclined   = "declined"
+	InstructionCanceled   = "canceled"
 )
 
 // TODO: make this private
@@ -33,9 +33,9 @@ type Instruction struct {
 
 // Position is the main data type stored in ledger
 type Position struct {
-	Balance      	Balance `json:"balance"`
-	Security        string 	`json:"security"`
-	Quantity        int 	`json:"quantity"`
+	Balance  Balance `json:"balance"`
+	Security string  `json:"security"`
+	Quantity int     `json:"quantity"`
 }
 
 type InstructionKey struct {
@@ -121,7 +121,11 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) e
 }
 
 func (this *Instruction) FillFromArgs(args []string) error {
-	return this.FillFromCompositeKeyParts(args)
+	if err := this.FillFromCompositeKeyParts(args); err != nil {
+		return err
+	}
+	this.Key.Reference = strings.ToUpper(this.Key.Reference)
+	return nil
 }
 
 func (this *Instruction) ExistsIn(stub shim.ChaincodeStubInterface) bool {
@@ -199,7 +203,7 @@ func (this *Instruction) FillFromLedgerValue(bytes []byte) error {
 }
 
 // **** Position Methods **** //
-func (this *Position) toStringArray() ([]string) {
+func (this *Position) toStringArray() []string {
 	return []string{
 		this.Balance.Account,
 		this.Balance.Division,
@@ -211,7 +215,7 @@ func (this *Position) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, 
 	return stub.CreateCompositeKey(PositionIndex, this.toStringArray())
 }
 
-func (this *Position) existsIn(stub shim.ChaincodeStubInterface) (bool) {
+func (this *Position) existsIn(stub shim.ChaincodeStubInterface) bool {
 	compositeKey, err := this.ToCompositeKey(stub)
 	if err != nil {
 		return false
@@ -225,7 +229,7 @@ func (this *Position) existsIn(stub shim.ChaincodeStubInterface) (bool) {
 	return true
 }
 
-func (this *Position) loadFrom(stub shim.ChaincodeStubInterface) (error) {
+func (this *Position) loadFrom(stub shim.ChaincodeStubInterface) error {
 	compositeKey, err := this.ToCompositeKey(stub)
 	if err != nil {
 		return err
@@ -239,7 +243,7 @@ func (this *Position) loadFrom(stub shim.ChaincodeStubInterface) (error) {
 	return this.FillFromLedgerValue(bytes)
 }
 
-func (this *Position) UpsertIn(stub shim.ChaincodeStubInterface) (error) {
+func (this *Position) UpsertIn(stub shim.ChaincodeStubInterface) error {
 	compositeKey, err := this.ToCompositeKey(stub)
 	if err != nil {
 		return err
@@ -258,26 +262,26 @@ func (this *Position) UpsertIn(stub shim.ChaincodeStubInterface) (error) {
 	return nil
 }
 
-func (this *Position) FillFromCompositeKeyParts(compositeKeyParts []string) (error) {
+func (this *Position) FillFromCompositeKeyParts(compositeKeyParts []string) error {
 	if len(compositeKeyParts) != 3 {
 		return errors.New("Composite key parts array length must be 3.")
 	}
 
-	this.Balance.Account 	= compositeKeyParts[0]
-	this.Balance.Division 	= compositeKeyParts[1]
-	this.Security 			= compositeKeyParts[2]
+	this.Balance.Account = compositeKeyParts[0]
+	this.Balance.Division = compositeKeyParts[1]
+	this.Security = compositeKeyParts[2]
 
 	return nil
 }
 
-func (this *Position) FillFromArgs(args []string) (error) {
+func (this *Position) FillFromArgs(args []string) error {
 	if len(args) < 3 {
 		return errors.New("Incorrect number of arguments. Expecting >=3.")
 	}
 
-	this.Balance.Account 	= args[0]
-	this.Balance.Division 	= args[1]
-	this.Security 			= args[2]
+	this.Balance.Account = args[0]
+	this.Balance.Division = args[1]
+	this.Security = args[2]
 
 	if len(args) > 3 {
 		quantity, err := strconv.Atoi(args[3])
@@ -298,7 +302,7 @@ func (this *Position) toJSON() ([]byte, error) {
 	return json.Marshal(this)
 }
 
-func (this *Position) FillFromLedgerValue(bytes []byte) (error) {
+func (this *Position) FillFromLedgerValue(bytes []byte) error {
 	var str []string
 	err := json.Unmarshal(bytes, &str)
 	if err != nil {

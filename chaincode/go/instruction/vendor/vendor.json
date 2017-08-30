@@ -3,16 +3,16 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "3dh2U+LDv+qHNkcke/M1KZOqrm0=",
+			"checksumSHA1": "Ad7CDF0K1oDRZS+rPrHtgHXQKmI=",
 			"path": "github.com/olegabu/nsd-commercial-paper-common",
-			"revision": "378ea8ce6181e9459e076febfb2cfa622e622f58",
-			"revisionTime": "2017-08-28T21:07:15Z"
+			"revision": "e551ff730fa65bdab8efeafe474e712382022632",
+			"revisionTime": "2017-08-30T13:47:41Z"
 		},
 		{
 			"checksumSHA1": "sJnw2pvZd/SuAmbGRTuUW04ztKI=",
 			"path": "github.com/olegabu/nsd-commercial-paper-common/certificates",
-			"revision": "378ea8ce6181e9459e076febfb2cfa622e622f58",
-			"revisionTime": "2017-08-28T21:07:15Z"
+			"revision": "e551ff730fa65bdab8efeafe474e712382022632",
+			"revisionTime": "2017-08-30T13:47:41Z"
 		}
 	],
 	"rootPath": "github.com/olegabu/nsd-commercial-paper/chaincode/go/instruction"
