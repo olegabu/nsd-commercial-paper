@@ -51,8 +51,7 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredIni
 }
 
 func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
-	const xmlTemplate = `
-<?xml version="1.0"?>
+	const xmlTemplate = `<?xml version="1.0"?>
 <Batch>
 <Documents_amount>1</Documents_amount>
 <Document DOC_ID="1" version="7">
@@ -71,8 +70,7 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 <deponent_c>{{.Instruction.Value.DeponentFrom}}</deponent_c>
 <corr_acc_c>{{.Instruction.Key.Receiver.Account}}</corr_acc_c>
 <corr_sec_c>{{.Instruction.Key.Receiver.Division}}</corr_sec_c>
-<corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>
-{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
+<corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
 {{with .Reason.Document -}}<based_numb>{{.}}</based_numb>{{end}}
 {{with .Reason.DocumentDate -}}<based_date>{{.}}</based_date>{{end}}{{end}}
 <securities>
