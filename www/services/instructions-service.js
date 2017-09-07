@@ -295,7 +295,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   // add 'org' and 'deponent' to the result, based on account+division
   InstructionService._processItem = function(instruction){
     instruction._orgFrom = ConfigLoader.getOrgByAccountDivision(instruction.transferer.account, instruction.transferer.division);
-    instruction._orgTo = ConfigLoader.getOrgByAccountDivision(instruction.transferer.account, instruction.transferer.division);
+    instruction._orgTo = ConfigLoader.getOrgByAccountDivision(instruction.receiver.account, instruction.receiver.division);
     instruction.deponentFrom = (ConfigLoader.getAccount(instruction._orgFrom) || {}).dep;
     instruction.deponentTo = (ConfigLoader.getAccount(instruction._orgTo) || {}).dep;
 
