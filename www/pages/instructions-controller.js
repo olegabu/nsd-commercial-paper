@@ -13,9 +13,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   var DATE_FABRIC_FORMAT = 'yyyy-mm-dd'; // ISO
   var TRANSFER_SIDE_TRANSFERER = 'transferer';
   var TRANSFER_SIDE_RECEIVER = 'receiver';
+  var NSD_ROLE = 'nsd';
 
 
   ctrl.org = ConfigLoader.get().org;
+  ctrl.account = ConfigLoader.getAccount(ctrl.org);
 
   // ConfigLoader.getAccount(orgID)
   ctrl.accountFrom = null;
@@ -45,7 +47,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
           ctrl.list = list;
         }),
 
-      UserService.getOrgRole() !== 'nsd'
+      UserService.getOrgRole() !== NSD_ROLE
       ? $q.resolve()
       : BookService.redeemHistory()
         .then(function(redeemList){
@@ -57,6 +59,18 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     });
   }
 
+  /**
+   *
+   * @param inst instruction
+   * @param type instruction type
+   * @returns {boolean} true if instruction should be displayed
+   */
+  ctrl.showInstruction = function(inst, type) {
+    var acc = Object.keys(ctrl.account.acc);
+    return ctrl.org === NSD_ROLE ||
+        (type === TRANSFER_SIDE_TRANSFERER && acc.indexOf(inst.transferer.account) > -1) ||
+        (type === TRANSFER_SIDE_RECEIVER && acc.indexOf(inst.receiver.account) > -1);
+  }
 
   /**
    * @return {Instruction}
@@ -75,6 +89,9 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   }
 
   ctrl._getDeponentCode = function(orgID){
+    if(orgID === ctrl.org) {
+      return ctrl.account.dep;
+    }
     var account = ConfigLoader.getAccount(orgID) || {};
     return account.dep;
   }
