@@ -139,6 +139,40 @@ Note these are test nodes on AWS and API and web ports 4000 are to be open withi
 1. [issuer megafon](http://54.161.190.237:4000)
 1. [investor raiffeisen](http://54.166.77.150:4000)
 
+## Restart with changed initialization arguments
+
+Bring down all three nodes: at NSD, Megafon, Raiffeisen do:
+
+```bash
+./network.sh -m down
+```
+
+Start NSD node with init args exported as env variables:
+- INSTRUCTION_INIT accounts/divisions of member organizations
+- BOOK_INIT initial balances
+- SECURITY_INIT security id and account/division where amounts move to at redemption
+
+### NSD
+```bash
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
+export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
+export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
+
+./network.sh -m up-depository
+``` 
+
+After NSD node is up start other nodes in sequence:
+
+### Megafon
+```bash
+./network.sh -m up-2
+``` 
+
+### Raiffeisen
+```bash
+./network.sh -m up-3
+``` 
+
 # Chaincode development
 
 Use docker instances to support chaincode development and debugging in an IDE.
