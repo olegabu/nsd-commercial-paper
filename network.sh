@@ -7,9 +7,9 @@ STARTTIME=$(date +%s)
 : ${ORG1:="nsd"}
 : ${ORG2:="megafon"}
 : ${ORG3:="raiffeisen"}
-: ${IP1:="54.173.221.247"}
-: ${IP2:="54.161.190.237"}
-: ${IP3:="54.166.77.150"}
+: ${IP1:="184.73.79.165"}
+: ${IP2:="54.167.225.4"}
+: ${IP3:="54.152.106.253"}
 
 : ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'}
 : ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'}

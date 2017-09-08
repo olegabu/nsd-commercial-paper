@@ -53,7 +53,7 @@ config files:
 ### NSD
 
 ```bash
-export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
+export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
 
 ./network.sh -m generate-peer -o nsd
 ```
@@ -61,7 +61,7 @@ export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
 ### Megafon
 
 ```bash
-export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
+export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
 
 ./network.sh -m generate-peer -o megafon
 ```
@@ -69,7 +69,7 @@ export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
 ### Raiffeisen
 
 ```bash
-export IP1=54.89.226.60 IP2=54.167.225.4 IP3=54.152.106.253
+export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
 
 ./network.sh -m generate-peer -o raiffeisen
 ```
