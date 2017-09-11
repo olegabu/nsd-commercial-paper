@@ -414,9 +414,9 @@
                     <div class="{{::$options.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
                   </td>
                   <td>
-                    {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span>
-                    <br/>
-                    {{::o.reasonTo.description}} <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span>
+                      <span ng-if="$options.showReason(o, 'deponentFrom')">{{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></span>
+                      <br/>
+                      <span ng-if="$options.showReason(o, 'deponentTo')">{{::o.reasonTo.description}} <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></span>
                   </td>
               </tr>
 

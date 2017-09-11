@@ -73,6 +73,17 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   }
 
   /**
+   * Displays reason based on role
+   *
+   * @param inst instruction
+   * @param key object key that should be compared
+   */
+  ctrl.showReason = function(inst, key) {
+    var curDep = inst[key];
+    return ctrl.org === NSD_ROLE || curDep === ctrl.account.dep;
+  }
+
+  /**
    * @return {Instruction}
    */
   ctrl._getDefaultInstruction = function(transferSide, opponentID){
@@ -259,7 +270,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.showHistory = function(instruction){
     return InstructionService.history(instruction)
       .then(function(result){
-        var scope = {history: result, getStatusClass: ctrl.getStatusClass};
+        var scope = {history: result, getStatusClass: ctrl.getStatusClass, showReason: ctrl.showReason};
         return DialogService.dialog('balance-history.html', scope);
       });
   }
