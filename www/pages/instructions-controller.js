@@ -286,13 +286,13 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       deponentFrom: 'CA9861913023',
       deponentTo:   'DE000DB7HWY7',
 
-      security:'RU0DLTMFONCB',
+      security:'RU000A0JWGG3',
       transferer:{
-        account: "MFONISSUEACC",
+        account: "MZ130605006C",
         division: "19000000000000000",
       },
       receiver:{
-        account: "RBIOWNER0ACC",
+        account: "MS980129006C",
         division: "00000000000000000",
       },
       initiator: transferSide,
