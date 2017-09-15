@@ -283,8 +283,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   ctrl.getABStub = function(transferSide){
     return {
-      deponentFrom: 'CA9861913023',
-      deponentTo:   'DE000DB7HWY7',
+      deponentFrom: 'MS0170800000',
+      deponentTo:   'MC0054300000',
 
       security:'RU000A0JWGG3',
       transferer:{
