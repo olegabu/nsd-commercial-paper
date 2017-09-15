@@ -61,6 +61,8 @@ function removeArtifacts() {
   rm ledger/docker-compose-*.yaml
   rm -rf artifacts/crypto-config
   rm -rf artifacts/channel
+  rm artifacts/network-config.json
+  rm artifacts/*block*
 }
 
 function removeDockersFromCompose() {
@@ -677,7 +679,7 @@ elif [ "${MODE}" == "devlogs" ]; then
 elif [ "${MODE}" == "devdown" ]; then
   devNetworkDown
 elif [ "${MODE}" == "print-args" ]; then
-  printArgs
+    printArgs
 else
   printHelp
   exit 1
