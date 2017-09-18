@@ -320,3 +320,39 @@ ConfigHelper.prototype.getDepcodeByAccount = function(account, division){
   var org = this.getOrgByAccount(account, division);
   return (this.accountConfig[org] || {}).dep;
 };
+
+
+
+
+
+ConfigHelper.convertAccountConfig = function(instructionInit, role){
+  role = role || 'investor';
+  var obj = JSON.parse(instructionInit);
+  var accData = JSON.parse(obj.Args[1]);
+  return accData.reduce(function(result, item){
+
+    var account = item.balances.reduce(function(res, it){
+      res[it.account] = res[it.account] || [];
+      res[it.account].push(it.division);
+      return res;
+    }, {});
+
+    // HOTFIX: remove domain
+    var org = (item.organization.match(/^[\w]+/)||[])[0];
+
+    result[org] = {
+      dep  : item.deponent,
+      role : role, // value is valid here only for the organisation!
+      acc  : account
+    };
+    return result;
+  }, {
+    // HARDCODED nsd
+    "nsd":{
+      acc:{},
+      role: "nsd"
+    }
+
+  });
+
+};
