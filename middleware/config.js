@@ -1,10 +1,6 @@
 /**
  *
  */
-
-var ConfigHelper = require('./helper.js').ConfigHelper;
-
-
 var INSTRUCTION_INIT = process.env.INSTRUCTION_INIT;
 var ROLE = process.env.ROLE;
 var ORG  = process.env.ORG;
@@ -27,7 +23,7 @@ module.exports = function(require, app){
 
   var clientConfig = hfc.getConfigSetting('config');
 
-  var accountConfig = ConfigHelper.convertAccountConfig(INSTRUCTION_INIT, ROLE);
+  var accountConfig = convertAccountConfig(INSTRUCTION_INIT, ROLE);
   clientConfig['account-config'] = accountConfig;
   clientConfig.org = ORG;
 
@@ -48,3 +44,30 @@ module.exports = function(require, app){
 
 
 
+
+
+
+function convertAccountConfig(instructionInit, role){
+  role = role || 'investor';
+  var obj = JSON.parse(instructionInit);
+  var accData = JSON.parse(obj.Args[1]);
+  return accData.reduce(function(result, item){
+
+    var account = item.balances.reduce(function(res, it){
+      res[it.account] = res[it.account] || [];
+      res[it.account].push(it.division);
+      return res;
+    }, {});
+
+    // HOTFIX: remove domain
+    var org = (item.organization.match(/^[\w]+/)||[])[0];
+
+    result[org] = {
+      dep  : item.deponent,
+      role : role, // value is valid here only for the organisation!
+      acc  : account
+    };
+    return result;
+  }, {/*role : role*/});
+
+}

@@ -1,6 +1,5 @@
 
 var assert = require('assert');
-var ConfigHelper = require('../../middleware/helper.js').ConfigHelper;
 /**
  *
  */
@@ -26,10 +25,7 @@ describe('config converter', function(){
         "MS980129006C":["00000000000000000"]
       }
     },
-    "nsd":{
-      "role": "nsd",
-      "acc":{}
-    }
+    // "role":'investor'
   };
   var result2 = clone(result1);
   result2["megafon"].role = 'nsd';
@@ -38,13 +34,39 @@ describe('config converter', function(){
 
   it('sample', function(){
 
-    assert.deepEqual(ConfigHelper.convertAccountConfig(INSTRUCTION_INIT_EXAMPLE),  result1);
-    assert.deepEqual(ConfigHelper.convertAccountConfig(INSTRUCTION_INIT_EXAMPLE, 'nsd'),  result2);
+    assert.deepEqual(convertAccountConfig(INSTRUCTION_INIT_EXAMPLE),  result1);
+    assert.deepEqual(convertAccountConfig(INSTRUCTION_INIT_EXAMPLE, 'nsd'),  result2);
 
   });
 
 });
 
+
+
+function convertAccountConfig(instructionInit, role){
+  role = role || 'investor';
+  var obj = JSON.parse(instructionInit);
+  var accData = JSON.parse(obj.Args[1]);
+  return accData.reduce(function(result, item){
+
+    var account = item.balances.reduce(function(res, it){
+      res[it.account] = res[it.account] || [];
+      res[it.account].push(it.division);
+      return res;
+    }, {});
+
+    // HOTFIX: remove domain
+    var org = (item.organization.match(/^[\w]+/)||[])[0];
+
+    result[org] = {
+      dep  : item.deponent,
+      role : role, // value is valid here only for the organisation!
+      acc  : account
+    };
+    return result;
+  }, {/*role : role*/});
+
+}
 
 
 function clone(obj){
