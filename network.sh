@@ -659,7 +659,6 @@ elif [ "${MODE}" == "generate" ]; then
 elif [ "${MODE}" == "generate-orderer" ]; then
   downloadArtifactsDepository
   generateOrdererArtifacts
-  generateWait
 elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
   serveOrdererArtifacts
 elif [ "${MODE}" == "generate-peer" ]; then
