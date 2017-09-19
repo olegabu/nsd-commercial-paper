@@ -82,7 +82,7 @@ Depository creates ledger and channel config files:
 ### NSD
 
 ```bash
-./network.sh -m generate-orderer && sleep 7m
+./network.sh -m generate-orderer
 ```
 ## Each member starts their nodes
 
