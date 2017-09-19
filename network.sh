@@ -16,6 +16,8 @@ STARTTIME=$(date +%s)
 : ${SECURITY_INIT:='{"Args":["init","RU000A0JWGG3","active","MZ130605006C","22000000000000000"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
 
+export INSTRUCTION_INIT
+
 CLI_TIMEOUT=10000
 COMPOSE_TEMPLATE=ledger/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=ledger/docker-composedev.yaml
