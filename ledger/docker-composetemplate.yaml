@@ -254,7 +254,6 @@ services:
       - ORG=ORG1
       - PORT=4000
       - ROLE=$ROLE
-      - INSTRUCTION_INIT=$INSTRUCTION_INIT
     depends_on:
       - peer0.ORG1.DOMAIN
       - peer1.ORG1.DOMAIN
@@ -270,7 +269,6 @@ services:
       - ORG=ORG2
       - PORT=4000
       - ROLE=$ROLE
-      - INSTRUCTION_INIT=$INSTRUCTION_INIT
     depends_on:
       - peer0.ORG2.DOMAIN
       - peer1.ORG2.DOMAIN
@@ -286,7 +284,6 @@ services:
       - ORG=ORG3
       - PORT=4000
       - ROLE=$ROLE
-      - INSTRUCTION_INIT=$INSTRUCTION_INIT
     depends_on:
       - peer0.ORG3.DOMAIN
       - peer1.ORG3.DOMAIN
@@ -302,7 +299,6 @@ services:
       - ORG=ORG4
       - PORT=4000
       - ROLE=$ROLE
-      - INSTRUCTION_INIT=$INSTRUCTION_INIT
     depends_on:
       - peer0.ORG4.DOMAIN
       - peer1.ORG4.DOMAIN
