@@ -110,6 +110,7 @@ Each member starts the ca server, peers and api servers:
 ### Megafon
 
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-2
 ``` 
 
@@ -117,12 +118,14 @@ Which is equivalent to starting with an explicit organization name and all possi
 members:
 
 ```bash
+export INSTRUCTION_INIT='...same as above...'
 ./network.sh -m up -o megafon -k "megafon-raiffeisen"
 ```
 
 ### Raiffeisen
 
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-3
 ``` 
 
@@ -165,11 +168,13 @@ After NSD node is up start other nodes in sequence:
 
 ### Megafon
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-2
 ``` 
 
 ### Raiffeisen
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-3
 ``` 
 
