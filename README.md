@@ -118,7 +118,7 @@ Which is equivalent to starting with an explicit organization name and all possi
 members:
 
 ```bash
-export INSTRUCTION_INIT='...same as above...'
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up -o megafon -k "megafon-raiffeisen"
 ```
 
