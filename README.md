@@ -11,7 +11,7 @@ one host. Members' host servers connect to each other over internet.
 ## Install prerequisites
 
 ```bash
-sudo apt update && sudo apt -y install docker docker-compose
+sudo apt update && sudo apt -y install docker docker-compose git
 ```
 
 On other Linux distros make sure these versions or higher are installed:
