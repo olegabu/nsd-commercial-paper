@@ -531,6 +531,7 @@ function devLogs () {
 function clean() {
   removeDockersFromCompose
 #  removeDockersWithDomain
+  removeUnwantedContainers
   removeUnwantedImages
 }
 
@@ -625,8 +626,8 @@ elif [ "${MODE}" == "down" ]; then
   dockerComposeDown ${ORG1}
   dockerComposeDown ${ORG2}
   dockerComposeDown ${ORG3}
-  removeUnwantedContainers
-  removeUnwantedImages
+#  removeUnwantedContainers
+#  removeUnwantedImages
 elif [ "${MODE}" == "clean" ]; then
   clean
 elif [ "${MODE}" == "generate" ]; then
