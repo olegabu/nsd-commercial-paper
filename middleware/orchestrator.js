@@ -110,9 +110,17 @@ module.exports = function (require) {
   });
 
   // dirty-checking
+  firstRunWasSucced = false;
+  // use dirty-checking for positions only on startup
+  // BUT keep trying to make it during install process
   setInterval(function(){
     _processMatchedInstructions();
-    // updatePositionsFromBook();
+
+    if(!firstRunWasSucced){
+      updatePositionsFromBook().then(succeed=>{
+        firstRunWasSucced = succeed;
+      });
+    }
   }, CHECK_INTERVAL);
 
 
@@ -266,13 +274,13 @@ module.exports = function (require) {
       .then(function (result) {
         logger.debug('Query book success', JSON.stringify(result));
 
-        result.forEach(position => {
+        return chainPromise(result, position => {
           logger.trace('Update position', JSON.stringify(position));
 
           let org = configHelper.getOrgByAccount(position.balance.account, position.balance.division);
           if(!org) {
             logger.error('Cannot find org for position', JSON.stringify(position));
-            return;
+            throw new Error('Cannot find org');
           }
 
           //  TODO: rename this bilateral channel
@@ -297,8 +305,10 @@ module.exports = function (require) {
 
         });
       })
+      .then(()=>true)
       .catch(function (e) {
         logger.error('Cannot query books', e);
+        return false;
       });
   }
 

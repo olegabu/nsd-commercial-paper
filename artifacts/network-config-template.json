@@ -73,28 +73,6 @@
 		}
 	},
 
-  "account-config":{
-    "ORG1":{
-      "dep":"JP3946600008",
-      "role":"nsd",
-      "acc":{}
-    },
-    "ORG2":{
-      "dep":"MS0170800000",
-      "role":"issuer",
-      "acc":{
-        "MZ130605006C" :["19000000000000000", "22000000000000000"]
-      }
-    },
-    "ORG3":{
-      "dep":"MC0054300000",
-      "role":"investor",
-      "acc":{
-        "MS980129006C" :["00000000000000000"]
-      }
-    }
-  },
-
   "contracts":{
     "instruction":"instruction",
     "book":"book",

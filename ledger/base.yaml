@@ -52,6 +52,8 @@ services:
 #    build: ../server
 #    image: altoros/fabric-rest
     image: maxxx1313/fabric-rest
+    environment:
+      - INSTRUCTION_INIT=${INSTRUCTION_INIT}
     volumes:
      - ../artifacts:/usr/src/artifacts
      - ../middleware:/usr/src/app/middleware

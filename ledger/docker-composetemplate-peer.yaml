@@ -70,7 +70,7 @@ services:
     environment:
       - ORG=ORG
       - PORT=4000
-      - INSTRUCTION_INIT=$INSTRUCTION_INIT
+      - ROLE=$ROLE
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN

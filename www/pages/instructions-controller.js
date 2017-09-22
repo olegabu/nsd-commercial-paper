@@ -282,18 +282,21 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   }
 
   ctrl.getABStub = function(transferSide){
+    var accountConfig = ConfigLoader.get()['account-config'];
+    var orgFrom = 'megafon';
+    var orgTo   = 'raiffeisen';
     return {
-      deponentFrom: 'MS0170800000',
-      deponentTo:   'MC0054300000',
+      deponentFrom: accountConfig[orgFrom].dep,
+      deponentTo:   accountConfig[orgTo].dep,
 
       security:'RU000A0JWGG3',
       transferer:{
-        account: "MZ130605006C",
-        division: "19000000000000000",
+        account : Object.keys(accountConfig[orgFrom].acc)[0],
+        division: accountConfig[orgFrom].acc[ Object.keys(accountConfig[orgFrom].acc)[0] ][0]
       },
       receiver:{
-        account: "MS980129006C",
-        division: "00000000000000000",
+        account : Object.keys(accountConfig[orgTo].acc)[0],
+        division: accountConfig[orgTo].acc[ Object.keys(accountConfig[orgTo].acc)[0] ][0]
       },
       initiator: transferSide,
       quantity: 1,

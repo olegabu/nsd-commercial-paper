@@ -35,6 +35,19 @@ Each member clones the repository to download source code:
  cd nsd-commercial-paper
  ```
  
+(optional) Each member can pull docker images in advance in order to follow the next steps in private network (without access to docker hub):
+
+```bash
+docker pull hyperledger/fabric-ca:x86_64-1.0.0
+docker pull hyperledger/fabric-orderer:x86_64-1.0.0
+docker pull hyperledger/fabric-peer:x86_64-1.0.0
+docker pull hyperledger/fabric-tools:x86_64-1.0.0
+docker pull maxxx1313/fabric-rest
+docker pull nginx
+docker pull node:6-alpine
+```
+
+
 Then each member generates artifacts. Pass organization name with `-o`.
 
 You can pass ports as args
@@ -95,7 +108,7 @@ the depository node:
 ### NSD
 
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
 export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
 export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
 
@@ -110,6 +123,7 @@ Each member starts the ca server, peers and api servers:
 ### Megafon
 
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-2
 ``` 
 
@@ -117,12 +131,14 @@ Which is equivalent to starting with an explicit organization name and all possi
 members:
 
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up -o megafon -k "megafon-raiffeisen"
 ```
 
 ### Raiffeisen
 
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-3
 ``` 
 
@@ -154,7 +170,7 @@ Start NSD node with init args exported as env variables:
 
 ### NSD
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
 export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
 export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
 
@@ -165,11 +181,13 @@ After NSD node is up start other nodes in sequence:
 
 ### Megafon
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-2
 ``` 
 
 ### Raiffeisen
 ```bash
+export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-3
 ``` 
 
