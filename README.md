@@ -35,6 +35,19 @@ Each member clones the repository to download source code:
  cd nsd-commercial-paper
  ```
  
+(optional) Each member can pull docker images in advance in order to follow the next steps in private network (without access to docker hub):
+
+```bash
+docker pull hyperledger/fabric-ca:x86_64-1.0.0
+docker pull hyperledger/fabric-orderer:x86_64-1.0.0
+docker pull hyperledger/fabric-peer:x86_64-1.0.0
+docker pull hyperledger/fabric-tools:x86_64-1.0.0
+docker pull maxxx1313/fabric-rest
+docker pull nginx
+docker pull node:6-alpine
+```
+
+
 Then each member generates artifacts. Pass organization name with `-o`.
 
 You can pass ports as args
