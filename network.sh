@@ -7,9 +7,9 @@ STARTTIME=$(date +%s)
 : ${ORG1:="nsd"}
 : ${ORG2:="megafon"}
 : ${ORG3:="raiffeisen"}
-: ${IP1:="184.73.79.165"}
-: ${IP2:="54.167.225.4"}
-: ${IP3:="54.152.106.253"}
+: ${IP1:="91.208.232.164"}
+: ${IP2:="83.149.14.164"}
+: ${IP3:="195.238.73.147"}
 
 : ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'}
 : ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\",\"security\":\"RU000A0JWGG3\",\"quantity\":\"1998899\"}]"]}'}
@@ -552,6 +552,7 @@ function clean() {
 #  removeDockersWithDomain
   removeUnwantedContainers
   removeUnwantedImages
+  removeArtifacts
 }
 
 function generateWait() {
@@ -651,20 +652,19 @@ elif [ "${MODE}" == "clean" ]; then
   clean
 elif [ "${MODE}" == "generate" ]; then
   clean
-  removeArtifacts
   generatePeerArtifacts1
   generatePeerArtifacts2
   generatePeerArtifacts3
   generateOrdererArtifacts
   generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
+  clean
   downloadArtifactsDepository
   generateOrdererArtifacts
 elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
   serveOrdererArtifacts
 elif [ "${MODE}" == "generate-peer" ]; then
   clean
-  removeArtifacts
   generatePeerArtifacts ${ORG} ${API_PORT} ${WWW_PORT} ${CA_PORT} ${PEER0_PORT} ${PEER0_EVENT_PORT} ${PEER1_PORT} ${PEER1_EVENT_PORT}
   servePeerArtifacts ${ORG}
 elif [ "${MODE}" == "generate-1" ]; then
