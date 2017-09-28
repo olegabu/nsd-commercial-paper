@@ -42,7 +42,9 @@
             </tr>
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
-            <tr class="odd-{{::$index % 2}}" ng-if="ctl.showInstruction(o, 'transferer')">
+
+            <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || ctl.isInitiator(o)">
+                <!-- initiator -->
                 <th ng-if="::o.initiator=='transferer'" translate>INSTRUCTION_TRANSFER_ID</th>
                 <th ng-if="::o.initiator=='receiver'" translate>INSTRUCTION_RECEIVER_ID</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
@@ -69,7 +71,8 @@
                 </td>
             </tr>
 
-            <tr ng-if="::o.status!='initiated' && o.status!='canceled' && ctl.showInstruction(o, 'receiver')" class="odd-{{::$index % 2}}">
+            <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || !ctl.isInitiator(o)">
+                <!-- second member -->
                 <th ng-if="::o.initiator=='receiver'" translate>INSTRUCTION_TRANSFER_ID</th>
                 <th ng-if="::o.initiator=='transferer'" translate>INSTRUCTION_RECEIVER_ID</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
@@ -297,7 +300,7 @@
         </div>
     </div>
     <div class="modal-footer">
-      <!-- <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getABStub(inst.initiator)" ng-show="ctl.showABPrefill(inst.initiator)" value="prefill M->R "/> -->
+      <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getABStub(inst.initiator)" ng-show="ctl.showABPrefill(inst.initiator)" value="prefill M->R "/>
       <!-- <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getACStub(inst.initiator)" value="prefill a->c "/> -->
 
       <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat"

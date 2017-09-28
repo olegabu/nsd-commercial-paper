@@ -59,6 +59,27 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     });
   }
 
+
+  ctrl.isTransferer = function(instruction){
+    var acc = Object.keys(ctrl.account.acc);
+    return acc.indexOf(instruction.transferer.account) > -1;
+  }
+
+  ctrl.isReceiver = function(instruction){
+    var acc = Object.keys(ctrl.account.acc);
+    return acc.indexOf(instruction.receiver.account) > -1;
+  }
+
+
+  ctrl.isInitiator = function(instruction){
+    return instruction.initiator=='transferer' ? ctrl.isTransferer(instruction) : ctrl.isReceiver(instruction);
+  }
+
+  ctrl.isAdmin = function(){
+    return ctrl.org === NSD_ROLE;
+  }
+
+
   /**
    *
    * @param inst instruction
@@ -70,6 +91,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return ctrl.org === NSD_ROLE ||
         (type === TRANSFER_SIDE_TRANSFERER && acc.indexOf(inst.transferer.account) > -1) ||
         (type === TRANSFER_SIDE_RECEIVER && acc.indexOf(inst.receiver.account) > -1);
+        // (acc.indexOf(inst.transferer.account) > -1) || (acc.indexOf(inst.receiver.account) > -1);
   }
 
   /**
