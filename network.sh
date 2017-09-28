@@ -658,7 +658,7 @@ elif [ "${MODE}" == "generate" ]; then
   generateOrdererArtifacts
   generateWait
 elif [ "${MODE}" == "generate-orderer" ]; then
-  clean
+#  clean
   downloadArtifactsDepository
   generateOrdererArtifacts
 elif [ "${MODE}" == "serve-orderer-artifacts" ]; then
