@@ -96,6 +96,10 @@ Depository creates ledger and channel config files:
 
 ```bash
 ./network.sh -m generate-orderer && sleep 7m
+
+#hotfix
+docker exec peer0.nsd.nsd.ru bash -c "cat /etc/hosts |grep -v orderer >/etc/hosts"
+docker exec peer1.nsd.nsd.ru bash -c "cat /etc/hosts |grep -v orderer >/etc/hosts"
 ```
 ## Each member starts their nodes
 
