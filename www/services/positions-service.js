@@ -77,7 +77,7 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
       .then(function(result){ return result.result; })
       .then(function(list){
         return list.map(function(singleValue){
-          return Object.assign(singleValue.value, bookKey, {_created:new Date(singleValue.timestamp) });
+          return Object.assign(singleValue.value, bookKey, {_created: parseDate(singleValue.timestamp) });
         });
       })
       // .then(function(list){
@@ -85,6 +85,10 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
       //   return list;
       // });
   };
+
+  function parseDate(datestr){
+    return new Date((datestr||'').replace(/\s*\+.+$/,''))
+  }
 
 
   /**

@@ -182,9 +182,14 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       .then(function(result){
         // get pure value
         return result.map(function(singleValue){
-          return Object.assign( _fixStatus(singleValue.value), instructionKey, {_created:new Date(singleValue.timestamp) });
+          return Object.assign( _fixStatus(singleValue.value), instructionKey, {_created: parseDate(singleValue.timestamp) });
         });
       });
+  }
+
+
+  function parseDate(datestr){
+    return new Date((datestr||'').replace(/\s*\+.+$/,''))
   }
 
 

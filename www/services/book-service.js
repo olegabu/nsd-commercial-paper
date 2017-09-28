@@ -107,7 +107,7 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
       .then(function(result){ return result.result; })
       .then(function(list){
         return list.map(function(singleValue){
-          return Object.assign(singleValue.value, bookKey, {_created:new Date(singleValue.timestamp) });
+          return Object.assign(singleValue.value, bookKey, {_created:parseDate(singleValue.timestamp) });
         });
       })
       .then(function(list){
@@ -116,6 +116,9 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
       });
   };
 
+  function parseDate(datestr){
+    return new Date((datestr||'').replace(/\s*\+.+$/,''))
+  }
 
   /**
    * @param {string} [security]
@@ -144,7 +147,7 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
       });
       // .then(function(list){
       //   return list.map(function(singleValue){
-      //     return Object.assign(singleValue.value, bookKey, {_created:new Date(singleValue.timestamp) });
+      //     return Object.assign(singleValue.value, bookKey, {_created:parseDate(singleValue.timestamp) });
       //   });
       // })
   };
