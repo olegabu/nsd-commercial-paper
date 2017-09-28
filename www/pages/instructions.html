@@ -71,7 +71,7 @@
                 </td>
             </tr>
 
-            <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && ctl.isAdmin() || !ctl.isInitiator(o)">
+            <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && (ctl.isAdmin() || !ctl.isInitiator(o))">
                 <!-- second member -->
                 <th ng-if="::o.initiator=='receiver'" translate>INSTRUCTION_TRANSFER_ID</th>
                 <th ng-if="::o.initiator=='transferer'" translate>INSTRUCTION_RECEIVER_ID</th>
