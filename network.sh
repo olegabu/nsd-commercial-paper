@@ -134,15 +134,16 @@ function generatePeerArtifacts() {
 
     if [ ${#} == 1 ]; then
       # if no port args are passed assume generating for multi host deployment
-      PEER_EXTRA_HOSTS=${DEFAULT_PEER_EXTRA_HOSTS}
       CLI_EXTRA_HOSTS=${DEFAULT_CLI_EXTRA_HOSTS}
       if [ ${ORG} == ${ORG1} ]; then
         API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS1}
         ROLE="$ROLE1"
       elif [ ${ORG} == ${ORG2} ]; then
+        PEER_EXTRA_HOSTS=${DEFAULT_PEER_EXTRA_HOSTS}
         API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS2}
         ROLE="$ROLE2"
       elif [ ${ORG} == ${ORG3} ]; then
+        PEER_EXTRA_HOSTS=${DEFAULT_PEER_EXTRA_HOSTS}
         API_EXTRA_HOSTS=${DEFAULT_API_EXTRA_HOSTS3}
         ROLE="$ROLE3"
       fi
