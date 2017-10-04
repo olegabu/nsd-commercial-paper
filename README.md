@@ -161,7 +161,7 @@ Note these are test nodes on AWS and API and web ports 4000 are to be open withi
 
 ## Restart and preserve ledger data
 
-Stop dockers on each node; or power down or reboot the server. The order is not important.
+Stop dockers on any or each node; or power down or reboot servers. The order is not important.
 
 ### NSD
 ```bash
