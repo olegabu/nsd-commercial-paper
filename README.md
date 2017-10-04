@@ -177,21 +177,29 @@ docker-compose -f ledger/docker-compose-megafon.yaml stop
 docker-compose -f ledger/docker-compose-raiffeisen.yaml stop
 ```
 
-The dockers are stopped and nodes are not running but their instances remain on the host and data are preserved in their volumes.
+The dockers are stopped and nodes are not running but their instances remain on the host and data are preserved 
+in their volumes.
 
-Now can start the dockers on each host. Make sure the depository starts first.
+Now can start the dockers on each host. Note that you need to have INSTRUCTION_INIT string set as env variable. 
+Make sure the depository starts first.
 
 ### NSD
 ```bash
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
+
 docker-compose -f ledger/docker-compose-nsd.ru.yaml up -d
 docker-compose -f ledger/docker-compose-nsd.yaml up -d
 ```
 ### Megafon
 ```bash
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
+
 docker-compose -f ledger/docker-compose-megafon.yaml up -d
 ```
 ### Raiffeisen
 ```bash
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
+
 docker-compose -f ledger/docker-compose-raiffeisen.yaml up -d
 ```
 
