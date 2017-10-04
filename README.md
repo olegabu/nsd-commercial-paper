@@ -159,6 +159,42 @@ Note these are test nodes on AWS and API and web ports 4000 are to be open withi
 1. [issuer megafon](http://54.161.190.237:4000)
 1. [investor raiffeisen](http://54.166.77.150:4000)
 
+## Restart and preserve ledger data
+
+Stop dockers on each node; or power down or reboot the server. The order is not important.
+
+### NSD
+```bash
+docker-compose -f ledger/docker-compose-nsd.ru.yaml stop
+docker-compose -f ledger/docker-compose-nsd.yaml stop
+```
+### Megafon
+```bash
+docker-compose -f ledger/docker-compose-megafon.yaml stop
+```
+### Raiffeisen
+```bash
+docker-compose -f ledger/docker-compose-raiffeisen.yaml stop
+```
+
+The dockers are stopped and nodes are not running but their instances remain on the host and data are preserved in their volumes.
+
+Now can start the dockers on each host. Make sure the depository starts first.
+
+### NSD
+```bash
+docker-compose -f ledger/docker-compose-nsd.ru.yaml up -d
+docker-compose -f ledger/docker-compose-nsd.yaml up -d
+```
+### Megafon
+```bash
+docker-compose -f ledger/docker-compose-megafon.yaml up -d
+```
+### Raiffeisen
+```bash
+docker-compose -f ledger/docker-compose-raiffeisen.yaml up -d
+```
+
 ## Restart with changed initialization arguments
 
 Bring down all three nodes: at NSD, Megafon, Raiffeisen do:
