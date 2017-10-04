@@ -64,4 +64,4 @@ services:
   www-base:
     image: nginx
     volumes:
-      - ../www/artifacts:/usr/share/nginx/html:ro
+      - ../www/artifacts:/usr/share/nginx/html
