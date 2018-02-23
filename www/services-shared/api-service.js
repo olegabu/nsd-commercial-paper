@@ -176,9 +176,9 @@ function ApiService($log, $http, env) {
    */
   ApiService.sc.invoke = function(channelID, contractId, peers, fcn, args){
     var payload = {
-      peers  :peers,
-      fcn  : fcn,
-      args : ApiService.stringify(args)
+      peers : peers,
+      fcn   : fcn,
+      args  : ApiService.stringify(args||[])
     };
     return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, payload)
       .then(function(response){ return response.data; });
