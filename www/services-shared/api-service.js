@@ -1,9 +1,12 @@
+/* globals angular, console */
+
 /**
  * @class ApiService
  * @classdesc
  * @ngInject
  */
 function ApiService($log, $http, env) {
+  "use strict";
 
   // jshint shadow: true
   var ApiService = this;
@@ -22,7 +25,7 @@ function ApiService($log, $http, env) {
           // fix: use first found peer
           QUERY_PEER = Object.keys(config['network-config'][config.org])
             .filter(function(key){ return key.startsWith('peer'); })
-            [0] //; || 'peer1';
+            [0]; //; || 'peer1';
 
           if (!QUERY_PEER) {
             console.error('No peer to query. Check configuration');
@@ -206,12 +209,14 @@ function ApiService($log, $http, env) {
 
 
  ApiService.stringify = function(args){
-  if(!args) return null;
+  if(!args) {
+    return null;
+  }
   var stringArgs = (args||[]).map(function(arg){
     return ''+arg;
   });
   return JSON.stringify(stringArgs);
- }
+ };
 
 
 
@@ -222,6 +227,7 @@ function ApiService($log, $http, env) {
   ApiService.transaction = {};
 
   /**
+   * @param {string} channelID
    * @param {string} txId
    */
   ApiService.transaction.getById = function(channelID, txId) {
