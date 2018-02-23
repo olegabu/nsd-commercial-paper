@@ -9,16 +9,29 @@ function ApiService($log, $http, env) {
   var ApiService = this;
   var cfg = env;
 
+  var QUERY_PEER = null /*'peer1'*/;
+
   /**
    *
    */
   ApiService.getConfig = function(){
-      return $http.get(cfg.api+'/config')
-          .then(function(response){ return response.data; });
+    return $http.get(cfg.api+'/config')
+        .then(function(response){ return response.data; })
+        .then(function(config){
+
+          // fix: use first found peer
+          QUERY_PEER = Object.keys(config['network-config'][config.org])
+            .filter(function(key){ return key.startsWith('peer'); })
+            [0] //; || 'peer1';
+
+          if (!QUERY_PEER) {
+            console.error('No peer to query. Check configuration');
+            throw new Error('No peer to query. Check configuration');
+          }
+
+          return config;
+        });
   };
-
-
-
 
 
 
@@ -65,6 +78,13 @@ function ApiService($log, $http, env) {
   };
 
 
+  ApiService.user.refreshToken = function() {
+    // $log.debug('ApiService.refreshToken', username, orgName);
+    return $http.post(cfg.api+'/token', {})
+      .then(function(response){ return response.data; });
+  };
+
+
 
 
 
@@ -80,7 +100,8 @@ function ApiService($log, $http, env) {
    * Queries the names of all the channels that a peer has joined.
    */
   ApiService.channels.list = function(){
-    return $http.get(cfg.api+'/channels', {params:{peer:'peer1'}})
+    var params = {peer: QUERY_PEER};
+    return $http.get(cfg.api+'/channels', {params:params})
       .then(function(response){ return response.data.channels; });
   };
 
@@ -90,7 +111,8 @@ function ApiService($log, $http, env) {
    * @return {Promise<{currentBlockHash:string, previousBlockHash:string}>}
    */
   ApiService.channels.get = function(channelName){
-    return $http.get(cfg.api+'/channels/'+channelName, {params:{peer:'peer1'}})
+    var params = {peer: QUERY_PEER};
+    return $http.get(cfg.api+'/channels/'+channelName, {params:params})
       .then(function(response){ return response.data.currentBlockHash; });
   };
 
@@ -101,7 +123,9 @@ function ApiService($log, $http, env) {
    * @return {Promise<{currentBlockHash:string, previousBlockHash:string}>}
    */
   ApiService.channels.getBlock = function(channelName, blockHash){
-    return $http.get(cfg.api+'/channels/'+channelName+'/blocks', {params:{peer:'peer1', hash:blockHash}})
+
+    var params = {peer: QUERY_PEER, hash: blockHash};
+    return $http.get(cfg.api+'/channels/'+channelName+'/blocks', {params:params})
       .then(function(response){ return response.data; });
   };
 
@@ -120,8 +144,10 @@ function ApiService($log, $http, env) {
   /**
    * Queries the names of all the channels that a peer has joined.
    */
-  ApiService.chaincodes.list = function(){
-    return $http.get(cfg.api+'/chaincodes', {params:{peer:'peer1'}})
+  ApiService.chaincodes.list = function(params){
+    params = params || {};
+    params.peer = params.peer || QUERY_PEER;
+    return $http.get(cfg.api+'/chaincodes', {params:params})
       .then(function(response){ return response.data.chaincodes; });
   };
 
@@ -140,20 +166,18 @@ function ApiService($log, $http, env) {
 
   /**
    * @param {string} channelID
-   * @param {string} contractID
+   * @param {string} contractId
    * @param {Array<string>} peers - peersId
    * @param {string} fcn
    * @param {Array} [args]
    */
-  ApiService.sc.invoke = function(channelID, contractID, peers, fcn, args){
-    args = args || [];
-    $log.debug('ApiService.sc.invoke channel - %s, contract - %s', peers, fcn, args);
+  ApiService.sc.invoke = function(channelID, contractId, peers, fcn, args){
     var payload = {
-      peers:peers,
-      fcn:fcn,
-      args:ApiService.stringify(args)
+      peers  :peers,
+      fcn  : fcn,
+      args : ApiService.stringify(args)
     };
-    return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractID, payload)
+    return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, payload)
       .then(function(response){ return response.data; });
   };
 
@@ -161,32 +185,33 @@ function ApiService($log, $http, env) {
 
   /**
    * @param {string} channelID
-   * @param {string} contractID
+   * @param {string} contractId
    * @param {string} peer - peerId
    * @param {string} fcn
    * @param {Array} [args]
    */
-  ApiService.sc.query = function(channelID, contractID, peer, fcn, args){
-    args = args || [];
-    $log.debug('ApiService.sc.query channel - %s, contract - %s', channelID, contractID, peer, fcn, args);
+  ApiService.sc.query = function(channelID, contractId, peer, fcn, args){
     var params = {
       peer : peer,
       fcn  : fcn,
-      args : JSON.stringify(args||null)
+      args : ApiService.stringify(args||[])
     };
-    return $http.get(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractID, {params:params})
+    return $http.get(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, {params:params})
       .then(function(response){ return response.data; });
   };
 
 
+
+
+
+
  ApiService.stringify = function(args){
   if(!args) return null;
-  return (args||[]).map(function(arg){
+  var stringArgs = (args||[]).map(function(arg){
     return ''+arg;
   });
+  return JSON.stringify(stringArgs);
  }
-
-
 
 
 
@@ -199,8 +224,9 @@ function ApiService($log, $http, env) {
   /**
    * @param {string} txId
    */
-  ApiService.transaction.getById = function(channelID, txId){
-    return $http.get(cfg.api+'/channels/'+channelID+'/transactions/'+txId, {params:{peer:'peer1'}})
+  ApiService.transaction.getById = function(channelID, txId) {
+    var params = {peer:QUERY_PEER};
+    return $http.get(cfg.api+'/channels/'+channelID+'/transactions/'+txId, {params:params})
       .then(function(response){ return response.data; });
   };
 
