@@ -1,9 +1,13 @@
+/* globals angular,$ */
+/* jshint -W014 */
+
 /**
  * @class DialogService
  * @classdesc
  * @ngInject
  */
 function DialogService($document, $compile, $templateCache, $rootScope, $q, $log) {
+  "use strict";
 
   // jshint shadow: true
   var DialogService = this;
@@ -29,6 +33,8 @@ function DialogService($document, $compile, $templateCache, $rootScope, $q, $log
 
   /**
    * Create confirmation dialog
+   * @param {string} text
+   * @param [options]
    * @return {Promise<boolean>} resolves with true value when user has confirmed an action
    */
   DialogService.confirm = function(text, options){
@@ -68,17 +74,17 @@ function DialogService($document, $compile, $templateCache, $rootScope, $q, $log
     var element = $(template).appendTo($document[0].body);
 
     // create a scope
-    var scope = $rootScope.$new();
+    var scope = $rootScope.$new(false);
     scope.$options = options;
 
     // TODO: optimize compilation
     var compiledElement = $compile(element.contents());
     compiledElement(scope);
 
-    return $q(function(resolve, reject){
+    return $q(function(resolve){
       scope.$close = resolve;
       // element.leanModal(options); // ?
-      element.openModal()
+      element.openModal();
     })
     .finally(function(){
       element.closeModal();
