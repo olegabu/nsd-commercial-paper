@@ -74,6 +74,9 @@
   "RECEIVE_INSTRUCTION_TITLE": "Новое поручение 16/1 Перевод с подтверждением (встречное)",
   "REDEEM_INSTRUCTIONS_TITLE":"Список поручений списания (10/50)",
 
+  "TRANSFERER_TYPE_LABEL":"Transfer type",
+  "TRANSFERER_TYPE_FOP":"FOP",
+  "TRANSFERER_TYPE_DOV":"DOV",
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Создать поручение списания (10/50)",
   "TRANSFERER_LABEL": "Отправитель",
   "RECEIVER_LABEL": "Получатель",

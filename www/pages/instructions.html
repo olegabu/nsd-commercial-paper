@@ -165,6 +165,24 @@
         <h4 ng-if="inst.initiator=='transferer'" translate>TRANSFER_INSTRUCTION_TITLE</h4>
         <h4 ng-if="inst.initiator=='receiver'" translate>RECEIVE_INSTRUCTION_TITLE</h4>
 
+
+        <div class="row">
+            <div class="input-field col s2">
+                <h5 translate>TRANSFERER_TYPE_LABEL</h5>
+            </div>
+            <div class="input-field col s10">
+                <div class="switch switch-block">
+                    <label>
+                        <span translate>TRANSFERER_TYPE_FOP</span>
+                        <input type="checkbox" name="i_type">
+                        <span class="lever"></span>
+                        <span translate>TRANSFERER_TYPE_DOV</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+
         <div class="row">
           <!-- transferer/From -->
           <div class="input-field col s2">
