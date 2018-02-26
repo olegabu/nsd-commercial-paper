@@ -111,9 +111,12 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl._getDefaultInstruction = function(transferSide, opponentID){
     var orgID = ctrl.org;
     return {
-      deponentFrom: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID),
-      deponentTo:   ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID),
-
+      transferer: {
+        deponent: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID)
+      },
+      receiver: {
+        deponent: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID)
+      },
       initiator: transferSide,
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
       tradeDate    : new Date(),
@@ -201,6 +204,9 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    */
   ctrl.sendInstruction = function(instruction){
     $scope.inst = null;
+
+    instruction.deponentFrom = instruction.transferer.deponent;
+    instruction.deponentTo = instruction.receiver.deponent;
 
     // FIXME here date can come in two different formats:
     //  Date object when we change form value

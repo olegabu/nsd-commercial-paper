@@ -1,3 +1,4 @@
+/* globals angular */
 /**
  *
  */
@@ -38,6 +39,7 @@ angular.module('nsd.app',[
 
    'nsd.directive.form',
    'nsd.directive.certificate',
+   'nsd.directive.requsite',
    'nsd.directive.blockchain',
    'nsd.directive.role',
    'nsd.directive.nsd',
@@ -372,7 +374,15 @@ angular.module('nsd.app',[
     }
 
     /**
+     *
+     */
+    function getAccounts() {
+      return _config['account-config'] || {};
+    }
+
+    /**
      * @return {Object<Array<string>>} key-value of account => [divisions]
+     * @deprecated
      */
     function getAllAccounts(){
       var accountConfig = _config['account-config'] || {};
@@ -441,6 +451,7 @@ angular.module('nsd.app',[
       ready :   _resolveConfig,
       getOrg     : getOrg,
       getAccount : getAccount,
+      getAccounts: getAccounts,
       getPeers   : getPeers,
       getOrgs    : getOrgs,
       getAllAccounts : getAllAccounts,

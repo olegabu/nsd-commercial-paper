@@ -182,82 +182,13 @@
             </div>
         </div>
 
-
         <div class="row">
-          <!-- transferer/From -->
-          <div class="input-field col s2">
-            <h5 translate>TRANSFERER_LABEL</h5>
-          </div>
-
-          <div class="input-field col s3">
-            <i class="material-icons postfix" ng-show="inst.initiator=='transferer'">lock</i>
-            <input name="i_t_dep" type="text" class="uppercase locked" ng-model="inst.deponentFrom"
-                   ng-disabled="inst.initiator=='transferer'" required ng-length="12">
-            <label for="i_t_dep" translate>DEPONENT_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_t_dep.$error.length" translate>12_CHARACTERS_LABEL</span>
-          </div>
-
-          <div class="input-field col s3" ng-show="inst.initiator=='transferer'">
-            <select ng-model="inst.transferer.account" name="i_t_acc" material-select watch class=""
-                    ng-options="n as n for (n, o) in ctl.accountFrom.acc" placeholder="Account" required></select>
-            <label for="i_t_acc" translate>ACCOUNT_LABEL</label>
-          </div>
-          <div class="input-field col s3" ng-hide="inst.initiator=='transferer'">
-            <input name="i_t_acc" type="text" class="uppercase" ng-model="inst.transferer.account" required ng-length="12">
-            <label for="i_t_acc" translate>ACCOUNT_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_t_acc.$error.length" translate>12_CHARACTERS_LABEL</span>
-          </div>
-
-
-          <div class="input-field col s4" ng-show="inst.initiator=='transferer'">
-            <select ng-model="inst.transferer.division" name="i_t_div" material-select watch class=""
-                    ng-options="o for o in ctl.accountFrom.acc[inst.transferer.account]" placeholder="Division" required></select>
-            <label for="i_t_div" translate>DIVISION_LABEL</label>
-          </div>
-          <div class="input-field col s4" ng-hide="inst.initiator=='transferer'">
-            <input name="i_t_div" type="text" class="uppercase" ng-model="inst.transferer.division" required ng-length="17">
-            <label for="i_t_div" translate>DIVISION_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_t_div.$error.length" translate>17_CHARACTERS_LABEL</span>
-          </div>
+            <!-- transferer/From -->
+            <instruction-requisite model="inst.transferer" deponent-lock="inst.initiator=='transferer'" label="TRANSFERER_LABEL"></instruction-requisite>
+            <!-- receiver/To -->
+            <instruction-requisite model="inst.receiver" deponent-lock="inst.initiator=='receiver'" label="RECEIVER_LABEL"></instruction-requisite>
         </div>
 
-        <div class="row">
-          <!-- receiver/To -->
-          <div class="input-field col s2">
-            <h5 translate>RECEIVER_LABEL</h5>
-          </div>
-
-          <div class="input-field col s3">
-            <i class="material-icons postfix" ng-show="inst.initiator=='receiver'" >lock</i>
-            <input name="i_r_dep" type="text" class="uppercase locked" ng-model="inst.deponentTo"
-                   ng-disabled="inst.initiator=='receiver'" required ng-length="12">
-            <label for="i_r_dep" translate>DEPONENT_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_r_dep.$error.length" translate>12_CHARACTERS_LABEL</span>
-          </div>
-
-          <div class="input-field col s3" ng-show="inst.initiator=='receiver'">
-            <select name="i_r_acc" material-select watch class="" ng-model="inst.receiver.account"
-                    ng-options="n as n for (n, o) in ctl.accountTo.acc" placeholder="Account" required></select>
-            <label for="i_r_acc" translate>ACCOUNT_LABEL</label>
-          </div>
-          <div class="input-field col s3" ng-hide="inst.initiator=='receiver'">
-            <input name="i_r_acc" type="text" class="uppercase" ng-model="inst.receiver.account" required ng-length="12">
-            <label for="i_r_acc" translate>ACCOUNT_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_r_acc.$error.length" translate>12_CHARACTERS_LABEL</span>
-          </div>
-
-
-          <div class="input-field col s4" ng-show="inst.initiator=='receiver'">
-            <select name="i_r_div" material-select watch class="" ng-model="inst.receiver.division"
-                    ng-options="o for o in ctl.accountTo.acc[inst.receiver.account]" placeholder="Division" required></select>
-            <label for="i_r_div" translate>DIVISION_LABEL</label>
-          </div>
-          <div class="input-field col s4" ng-hide="inst.initiator=='receiver'">
-            <input name="i_r_div" type="text" class="uppercase" ng-model="inst.receiver.division" required ng-length="17">
-            <label for="i_r_div" translate>DIVISION_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_r_div.$error.length" translate>17_CHARACTERS_LABEL</span>
-          </div>
-        </div>
 
         <div class="row">
           <div class="input-field col s6">
