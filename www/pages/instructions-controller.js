@@ -33,6 +33,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.org = ConfigLoader.get().org;
   ctrl.account = ConfigLoader.getAccount(ctrl.org);
 
+  /**
+   * @type {boolean}
+   */
+  ctrl.test = true;
+
 
 
   /**
@@ -306,8 +311,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       });
   };
 
-  ctrl.showABPrefill = function(transferSide){
-    var orglc= (''+UserService.getOrg()).toLowerCase();
+  ctrl.isShowABPrefill = function(transferSide){
+      var orglc = (''+UserService.getOrg()).toLowerCase();
       return ( orglc === 'megafon' && transferSide === 'transferer')
           || ( orglc === 'raiffeisen' && transferSide === 'receiver');
   };
@@ -317,15 +322,14 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     var orgFrom = 'megafon';
     var orgTo   = 'raiffeisen';
     return {
-      deponentFrom: accountConfig[orgFrom].dep,
-      deponentTo:   accountConfig[orgTo].dep,
-
       security:'RU000A0JWGG3',
       transferer:{
+        deponent: accountConfig[orgFrom].dep,
         account : Object.keys(accountConfig[orgFrom].acc)[0],
         division: accountConfig[orgFrom].acc[ Object.keys(accountConfig[orgFrom].acc)[0] ][0]
       },
       receiver:{
+        deponent: accountConfig[orgTo].dep,
         account : Object.keys(accountConfig[orgTo].acc)[0],
         division: accountConfig[orgTo].acc[ Object.keys(accountConfig[orgTo].acc)[0] ][0]
       },
@@ -341,15 +345,14 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   ctrl.getACStub = function(transferSide){
     return {
-      deponentFrom: 'CA9861913023',
-      deponentTo:   'NL0000729408',
-
       security:'RU0DLTMFONCB',
       transferer:{
+        deponent: 'CA9861913023',
         account: "AC0689654902",
         division: "87680000045800005"
       },
       receiver:{
+        deponent: 'NL0000729408',
         account: "YN0927654908",
         division: "37800007360900016"
       },
