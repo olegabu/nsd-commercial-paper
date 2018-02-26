@@ -16,7 +16,7 @@
  * @class InstructionsController
  * @ngInject
  */
-function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader) {
   "use strict";
 
   var ctrl = this;
@@ -33,9 +33,6 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.org = ConfigLoader.get().org;
   ctrl.account = ConfigLoader.getAccount(ctrl.org);
 
-  // ConfigLoader.getAccount(orgID)
-  ctrl.accountFrom = null;
-  ctrl.accountTo   = null;
 
 
   /**
@@ -187,21 +184,9 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
         var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
         $scope.inst = ctrl._getDefaultInstruction(transferSide, opponentOrgID);
         $scope.formInstruction.$setPristine();
-
-        // preset
-        ctrl._fillAccount(transferSide, opponentOrgID);
     }
   };
 
-  ctrl._fillAccount = function(transferSide, opponentID){
-    if(transferSide === TRANSFER_SIDE_TRANSFERER){
-      ctrl.accountFrom = ConfigLoader.getAccount(ctrl.org);
-      ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-    } else {
-      ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-      ctrl.accountTo = ConfigLoader.getAccount(ctrl.org);
-    }
-  };
 
 
 
