@@ -68,10 +68,13 @@
   "UNAUTHORIZED_LABEL": "Отказано в доступе",
   "AGREE_LABEL": "Согласен",
   "COPYRIGHT_LABEL": "2017 - Все права защищены",
-  "TRANSFER_INSTRUCTION_LABEL": "Создать поручение 16",
-  "RECEIVE_INSTRUCTION_LABEL": "Создать поручение 16/1",
-  "TRANSFER_INSTRUCTION_TITLE": "Новое поручение 16 Перевод с подтверждением",
-  "RECEIVE_INSTRUCTION_TITLE": "Новое поручение 16/1 Перевод с подтверждением (встречное)",
+  "TRANSFER_INSTRUCTION_LABEL": "Создать поручение передачи ЦБ",
+  "RECEIVE_INSTRUCTION_LABEL": "Создать поручение получения ЦБ",
+
+  "TRANSFER_INSTRUCTION_160_TITLE": "Новое поручение 16 Перевод с подтверждением",
+  "RECEIVE_INSTRUCTION_161_TITLE": "Новое поручение 16/1 Перевод с подтверждением (встречное)",
+  "TRANSFER_INSTRUCTION_162_TITLE": "Новое поручение 16/2 Перевод с подтверждением",
+  "RECEIVE_INSTRUCTION_163_TITLE": "Новое поручение 16/3 Перевод с подтверждением (встречное)",
   "REDEEM_INSTRUCTIONS_TITLE":"Список поручений списания (10/50)",
 
   "TRANSFERER_TYPE_LABEL":"Transfer type",
