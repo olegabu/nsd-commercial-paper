@@ -61,7 +61,7 @@ function DialogService($document, $compile, $templateCache, $rootScope, $q, $log
    *  Dialog has $options and $close
    *
    * @param {string} dialogID
-   * @param {Scope} [options]
+   * @param {object} [options]
    * @return {Promise}
    */
   DialogService.dialog = function(dialogID, options){
