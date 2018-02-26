@@ -174,7 +174,7 @@
                 <div class="switch switch-block">
                     <label>
                         <span translate>TRANSFERER_TYPE_FOP</span>
-                        <input type="checkbox" name="i_type">
+                        <input type="checkbox" name="i_type" ng-model="inst.type_dov">
                         <span class="lever"></span>
                         <span translate>TRANSFERER_TYPE_DOV</span>
                     </label>
@@ -182,14 +182,13 @@
             </div>
         </div>
 
+        <!-- INSTRUCTION REQUISITES -->
         <div class="row">
             <!-- transferer/From -->
             <instruction-requisite model="inst.transferer" deponent-lock="inst.initiator=='transferer'" label="TRANSFERER_LABEL"></instruction-requisite>
             <!-- receiver/To -->
             <instruction-requisite model="inst.receiver" deponent-lock="inst.initiator=='receiver'" label="RECEIVER_LABEL"></instruction-requisite>
         </div>
-
-
         <div class="row">
           <div class="input-field col s6">
             <input name="i_security" type="text" class="uppercase" ng-model="inst.security" required ng-length="12">
@@ -203,30 +202,60 @@
         </div>
         <div class="row">
           <div class="input-field col s6">
-            <input name="i_reference" type="text" class="" ng-model="inst.reference" required ng-maxlength="16" required>
+            <input name="i_reference" type="text" class="" ng-model="inst.reference" ng-maxlength="16" required>
             <label for="i_reference" translate>REFERENCE_LABEL</label>
+            <span class="input-error-message" ng-show="formInstruction.i_reference.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
           </div>
           <div class="input-field col s6">
-            <input name="i_miid" type="text" class="" ng-model="inst.memberInstructionId" required ng-maxlength="16" required>
+            <input name="i_miid" id="i_miid" type="text" class="" ng-model="inst.memberInstructionId" ng-maxlength="16" required>
             <label for="i_miid" translate>INSTRUCTION_ID_LABEL</label>
+            <span class="input-error-message" ng-show="formInstruction.i_miid.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
           </div>
         </div>
-
-
         <div class="row">
-          <div class="input-field col s6">
-            <i class="material-icons postfix">schedule</i>
-            <input name="i_trade_date" type="text" class="datepicker" ng-model="inst.tradeDate" input-date required>
-            <label for="i_trade_date" translate>TRADE_DATE_LABEL</label>
-          </div>
+            <div class="input-field col s6">
+                <i class="material-icons postfix">schedule</i>
+                <input name="i_trade_date" type="text" class="datepicker" ng-model="inst.tradeDate" input-date required>
+                <label for="i_trade_date" translate>TRADE_DATE_LABEL</label>
+            </div>
 
-          <div class="input-field col s6">
-            <i class="material-icons postfix">schedule</i>
-            <input name="i_instruction_date" type="text" class="datepicker" ng-model="inst.instructionDate" input-date required>
-            <label for="i_instruction_date" translate>INSTRUCTION_DATE_LABEL</label>
-          </div>
+            <div class="input-field col s6">
+                <i class="material-icons postfix">schedule</i>
+                <input name="i_instruction_date" type="text" class="datepicker" ng-model="inst.instructionDate" input-date required>
+                <label for="i_instruction_date" translate>INSTRUCTION_DATE_LABEL</label>
+            </div>
         </div>
 
+
+        <!-- DVP options -->
+        <div ng-if="inst.type_dov">
+            <div class="row">
+                <h5 class="col s12" translate>PAYMENT_LABEL</h5>
+            </div>
+            <div class="row">
+                <div class="input-field col s4">
+                    <input name="i_sen_acc" id="i_sen_acc"
+                           type="text" class="uppercase" ng-model="inst.sen_acc" required ng-length="20">
+                    <label for="i_sen_acc" translate>PAYMENT_ACCOUNT_SENDER_LABEL</label>
+                    <span class="input-error-message" ng-show="formInstruction.i_sen_acc.$error.length" translate>20_CHARACTERS_LABEL</span>
+                </div>
+                <div class="input-field col s4">
+                    <input name="i_rec_acc" id="i_rec_acc"
+                           type="text" class="uppercase" ng-model="inst.rec_acc" required ng-length="20">
+                    <label for="i_rec_acc" translate>PAYMENT_ACCOUNT_RECEIVER_LABEL</label>
+                    <span class="input-error-message" ng-show="formInstruction.i_rec_acc.$error.length" translate>20_CHARACTERS_LABEL</span>
+                </div>
+                <div class="input-field col s4">
+                    <input name="i_pay_sum" id="i_pay_sum"
+                           type="number" class="uppercase" ng-model="inst.pay_sum" required>
+                    <label for="i_pay_sum" translate>PAYMENT_AMOUNT_LABEL</label>
+                    <span class="input-error-message" ng-show="formInstruction.i_pay_sum.$error.length" translate>20_CHARACTERS_LABEL</span>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- REASON -->
         <div class="row">
             <h5 class="col s12" translate>REASON_LABEL</h5>
         </div>
@@ -330,7 +359,7 @@
 </div>
 
 
-<!-- -->
+<!-- INSTRUCTION HISTORY  -->
 <script type="text/ng-template" id="balance-history.html">
   <div class="modal modal-large modal-fixed-footer">
     <form name="form" class="form-horizontal" novalidate>
