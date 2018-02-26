@@ -255,6 +255,14 @@
                 </div>
             </div>
 
+            <div class="row" ng-if="inst.initiator=='receiver'">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <textarea name="i_add_info" class="materialize-textarea" ng-model="inst.reason.extra" required></textarea>
+                        <label for="i_add_info" translate>DESCRIPTION_EXTRA_LABEL</label>
+                    </div>
+                </div>
+            </div>
         </div>
 
 

@@ -50,6 +50,7 @@
   "SIGN_UP_LABEL" : "Sign Up",
   "CODE_LABEL" : "Code",
   "DESCRIPTION_LABEL" : "Description",
+  "DESCRIPTION_EXTRA_LABEL" : "Extra information",
   "NEW_SECURITY_LABEL" : "New Security",
   "NEW_SECURITY_TITLE" : "New Security",
   "NEW_CALENDAR_ENTRY_LABEL" : "New Calendar Entry",

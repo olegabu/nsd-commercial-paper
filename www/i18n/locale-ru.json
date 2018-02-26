@@ -49,6 +49,7 @@
   "SIGN_UP_LABEL" : "Войти",
   "CODE_LABEL" : "Код",
   "DESCRIPTION_LABEL" : "Описание",
+  "DESCRIPTION_EXTRA_LABEL" : "Дополнительная информация",
   "NEW_SECURITY_LABEL" : "Добавить ценную бумагу",
   "NEW_SECURITY_TITLE" : "Новая запись в каталоге ценных бумаг",
   "NEW_CALENDAR_ENTRY_LABEL" : "Добавить в календарь КД",
