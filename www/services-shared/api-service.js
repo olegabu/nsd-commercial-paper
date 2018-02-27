@@ -178,7 +178,7 @@ function ApiService($log, $http, env) {
     var payload = {
       peers : peers,
       fcn   : fcn,
-      args  : ApiService.stringify(args||[])
+      args  : ApiService.stringify(args || [])
     };
     return $http.post(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, payload)
       .then(function(response){ return response.data; });
@@ -197,7 +197,8 @@ function ApiService($log, $http, env) {
     var params = {
       peer : peer,
       fcn  : fcn,
-      args : ApiService.stringify(args||[])
+      // arg need to be a string here, because it's passed in url
+      args : JSON.stringify(ApiService.stringify(args) || [])
     };
     return $http.get(cfg.api+'/channels/'+channelID+'/chaincodes/'+contractId, {params:params})
       .then(function(response){ return response.data; });
@@ -215,7 +216,7 @@ function ApiService($log, $http, env) {
   var stringArgs = (args||[]).map(function(arg){
     return ''+arg;
   });
-  return JSON.stringify(stringArgs);
+  return stringArgs;
  };
 
 
