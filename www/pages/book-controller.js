@@ -1,9 +1,11 @@
+/* globals angular */
 /**
  * @class BookController
  * @classdesc
  * @ngInject
  */
 function BookController($scope, $q, BookService, ConfigLoader, DialogService, SecurityService) {
+  "use strict";
 
   var ctrl = this;
 
@@ -17,7 +19,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
   ctrl.init = function(){
       $scope.$on('chainblock-ch-'+ BookService.getChannelID(), ctrl.reload);
       ctrl.reload();
-  }
+  };
 
   /**
    *
@@ -42,12 +44,12 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
         ctrl.invokeInProgress = false;
       });
 
-  }
+  };
 
 
 
   /**
-   * @param {Instruction} instruction
+   * @param {Book} book
    */
   ctrl.showHistory = function(book){
     return BookService.history(book)
@@ -55,7 +57,33 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
         var scope = {history: result};
         return DialogService.dialog('book-history.html', scope);
       });
-  }
+  };
+
+  /**
+   * prepare book for create/update book
+   * @param {Book} [book]
+   */
+  ctrl.newBook = function(book){
+
+  };
+
+  /**
+   * prepare book for create/update book
+   * @param {Book} [book]
+   * @return {number}
+   */
+  ctrl.getBookBalance = function(book){
+    if(book && book.balance) {
+      for (var i = ctrl.books.length - 1; i >= 0; i--) {
+        var b = ctrl.books[i];
+
+        if (b.balance.account === book.balance.account && b.balance.division === book.balance.division) {
+          return b.quantity;
+        }
+      }
+    }
+    return 0;
+  };
 
   ctrl.addBook = function(book){
     ctrl.invokeInProgress = true;
@@ -67,7 +95,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
       .finally(function(){
         ctrl.invokeInProgress = false;
       });
-  }
+  };
 
 
 
