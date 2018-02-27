@@ -1,18 +1,83 @@
+/* globals angular */
+/* jshint -W069 */
+
 /**
+ * @typedef {object} Instruction
+ *
+ * key properties:
+ *
+ * @property {object} transferer
+ * @property {string} transferer.account
+ * @property {string} transferer.division
+ *
+ * @property {object} receiver
+ * @property {string} receiver.account
+ * @property {string} receiver.division
+ *
+ * @property {string} security
+ * @property {number} quantity
+ * @property {number} reference
+ * @property {number} instructionDate
+ * @property {number} tradeDate
+ *
+ *
+ * extra properties:
+ *
+ * @property {InstructionService.status} status
+ * @property {'transferer'|'receiver'} initiator
+ *
+ *
+ * @property {string} memberInstructionId - ???
+ * @property {string} memberInstructionIdFrom - ???
+ * @property {string} memberInstructionIdTo - ???
+ *
+ * @property {string} deponentFrom
+ * @property {string} deponentTo
+ *
+ * @property {string} alamedaFrom - xml
+ * @property {string} alamedaSignatureFrom
+ *
+ * @property {string} alamedaTo - xml
+ * @property {string} alamedaSignatureTo
+ *
+ *
+ * @property {object} reasonFrom
+ * @property {object} reasonFrom.created
+ * @property {object} reasonFrom.description
+ * @property {object} reasonFrom.document
+ *
+ * @property {string} reasonTo
+ * @property {object} reasonTo.created
+ * @property {object} reasonTo.description
+ * @property {object} reasonTo.document
+ */
+
+/**
+ * @param {ApiService} ApiService
+ * @param {ConfigLoader} ConfigLoader
+ * @param $q
+ * @param $log
+ * @constructor
+ *
  * @class InstructionService
- * @classdesc
  * @ngInject
  */
 function InstructionService(ApiService, ConfigLoader, $q, $log) {
+  "use strict";
 
-  // jshint shadow: true
   var InstructionService = this;
 
+  /**
+   * Enum instruction statuses
+   * @enum {string}
+   */
   InstructionService.status = {
       MATCHED : 'matched',
       DECLINED: 'declined',
       EXECUTED: 'executed',
       CANCELED: 'canceled'
+      // 'transferer-signed'
+      // 'receiver-signed'
   };
 
   /**
@@ -86,6 +151,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var signedFrom = (instruction.alamedaSignatureFrom && instruction.alamedaSignatureFrom.length > 0 );
     var signedTo = (instruction.alamedaSignatureTo && instruction.alamedaSignatureTo.length > 0 );
 
+    // jshint -W016
     if( signedFrom ^ signedTo ){ // xor
       instruction.status = signedFrom ? 'transferer-signed' : 'receiver-signed';
     }
@@ -100,7 +166,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    */
   InstructionService.isBilateralChannel = function(channelID){
     return channelID.indexOf('-') > 0 && !channelID.startsWith('nsd-');
-  }
+  };
 
 
 
@@ -185,11 +251,11 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
           return Object.assign( _fixStatus(singleValue.value), instructionKey, {_created: parseDate(singleValue.timestamp) });
         });
       });
-  }
+  };
 
 
   function parseDate(datestr){
-    return new Date((datestr||'').replace(/\s*\+.+$/,''))
+    return new Date((datestr||'').replace(/\s*\+.+$/,''));
   }
 
 
@@ -209,9 +275,9 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.quantity,            // 5: quantity // TODO: fix: string parameters
       instruction.reference,           // 6: reference
       instruction.instructionDate,     // 7: instructionDate  (ISO)
-      instruction.tradeDate,           // 8: tradeDate  (ISO)
+      instruction.tradeDate            // 8: tradeDate  (ISO)
     ];
-  }
+  };
 
 
   /**
@@ -252,7 +318,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       throw new Error("Deponent owner not found: " + instruction.deponentTo);
     }
     return [org1, org2];
-  }
+  };
 
   /**
    * get name of bi-lateral channel for opponent and the organisation
@@ -307,7 +373,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     if(instruction.reason){
       instruction.reason     = parseJsonSafe(instruction.reason); // for redeem instruction
     }
-  }
+  };
 
   function parseJsonSafe(str){
     try{
