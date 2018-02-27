@@ -7,18 +7,32 @@
  * key properties:
  *
  * @property {object} transferer
+ * @property {string} transferer.deponent
  * @property {string} transferer.account
  * @property {string} transferer.division
  *
  * @property {object} receiver
+ * @property {string} receiver.deponent
  * @property {string} receiver.account
  * @property {string} receiver.division
  *
  * @property {string} security
  * @property {number} quantity
  * @property {number} reference
- * @property {number} instructionDate
- * @property {number} tradeDate
+ * @property {Date} instructionDate
+ * @property {Date} tradeDate
+ *
+ * @property {InstructionService.type} type ('fop'|'dvp')
+ *
+ *
+ * @property {object} [dvp]
+ * @property {string} dvp.transferer.account
+ * @property {string} dvp.transferer.bic
+ * @property {string} dvp.receiver.account
+ * @property {string} dvp.receiver.bic
+ * @property {number} dvp.amount
+ * @property {'RUB'}  dvp.currency
+ * @property {string} [dvp.extra] for 16/3 only
  *
  *
  * extra properties:
@@ -78,6 +92,21 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       CANCELED: 'canceled'
       // 'transferer-signed'
       // 'receiver-signed'
+  };
+
+  /**
+   * Enum instruction types
+   * @enum {string}
+   */
+  InstructionService.type = {
+    /**
+     * free of payment
+     */
+    FOP: 'fop',
+    /**
+     * Delivery versus payment
+     */
+    DVP: 'dvp'
   };
 
   /**

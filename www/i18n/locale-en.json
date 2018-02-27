@@ -83,7 +83,7 @@
 
   "TRANSFERER_TYPE_LABEL":"Transfer type",
   "TRANSFERER_TYPE_FOP":"FOP",
-  "TRANSFERER_TYPE_DOV":"DOV",
+  "TRANSFERER_TYPE_DVP":"DVP",
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Create Redemption Instruction",
   "TRANSFERER_LABEL": "Transferer",
   "RECEIVER_LABEL": "Receiver",

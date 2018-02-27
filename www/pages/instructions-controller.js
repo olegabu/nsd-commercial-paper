@@ -317,11 +317,31 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
           || ( orglc === 'raiffeisen' && transferSide === 'receiver');
   };
 
+  /**
+   * @param transferSide
+   * @return {Instruction}
+   */
   ctrl.getABStub = function(transferSide){
     var accountConfig = ConfigLoader.get()['account-config'];
     var orgFrom = 'megafon';
     var orgTo   = 'raiffeisen';
     return {
+      type:'dvp',
+
+      dvp: {
+        transferer:{
+          account: "40701810000000001000",
+          bic: "044525505"
+        },
+        receiver:{
+          account: "30109810000000000000",
+          bic: "044525505"
+        },
+        amount: 30000000,
+        currency: 'RUB',
+        extra: transferSide === 'receiver' ? 'payment no. DLT/001' : null
+      },
+
       security:'RU000A0JWGG3',
       transferer:{
         deponent: accountConfig[orgFrom].dep,
@@ -342,7 +362,10 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     };
   };
 
-
+  /**
+   * @param transferSide
+   * @return {Instruction}
+   */
   ctrl.getACStub = function(transferSide){
     return {
       security:'RU0DLTMFONCB',
