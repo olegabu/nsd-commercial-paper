@@ -145,18 +145,15 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 	logger.Info("########### " + strings.Join(args, " ") + " ###########")
 	logger.Info("########### " + getCreatorOrganization(stub) + " ###########")
 
-	type Organization struct {
-		Name     string        `json:"organization"`
-		Balances []nsd.Balance `json:"balances"`
-	}
 
-	var organizations []Organization
+
+	var organizations []nsd.Organization
 	if err := json.Unmarshal([]byte(args[1]), &organizations); err == nil && len(organizations) != 0 {
 		for _, organization := range organizations {
 			for _, balance := range organization.Balances {
 				keyParts := []string{balance.Account, balance.Division}
 				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-					stub.PutState(key, []byte(organization.Name))
+					stub.PutState(key, organization.ToJSON())
 				}
 			}
 		}
@@ -581,6 +578,10 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 
 // **** Security Methods **** //
 func getOrganization(certificate []byte) string {
+	if certificate == nil {
+		return ""
+	}
+
 	logger.Info("########### InstructionChaincode getOrganization ###########")
 	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
@@ -612,8 +613,12 @@ func getMyOrganization() string {
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) bool {
 	keyParts := []string{callerBalance.Account, callerBalance.Division}
 	if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-		if data, err := stub.GetState(key); err == nil && getCreatorOrganization(stub) == string(data) {
-			return true
+		if data, err := stub.GetState(key); err == nil {
+			organisation := nsd.Organization{}
+			organisation.FillFromLedgerValue(data)
+			if  getCreatorOrganization(stub) == organisation.Name {
+				return true
+			}
 		}
 	}
 	return false
