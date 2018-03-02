@@ -1,14 +1,15 @@
 package certificates
 
 import (
-	"strings"
-	"encoding/pem"
 	"crypto/x509"
-	"io/ioutil"
+	"encoding/pem"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"io/ioutil"
+	"strings"
 )
 
 var logger = shim.NewLogger("Certificates Common")
+
 const NSD_NAME string = "nsd.nsd.ru"
 
 // **** Security Methods **** //
