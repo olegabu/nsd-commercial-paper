@@ -14,6 +14,9 @@ const NSD_NAME string = "nsd.nsd.ru"
 
 // **** Security Methods **** //
 func getOrganization(certificate []byte) string {
+	if certificate == nil {
+		return ""
+	}
 	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
 	cert, _ := x509.ParseCertificate(block.Bytes)

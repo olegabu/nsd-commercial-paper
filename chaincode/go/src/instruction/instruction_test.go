@@ -23,7 +23,7 @@ func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [
 }
 
 
-func Test_Init(t *testing.T) {
+func Test_InstructionInit(t *testing.T) {
 	stub := shim.NewMockStub("instruction", new(InstructionChaincode))
 
 	// GetCreator is not implemented in NewMockStub

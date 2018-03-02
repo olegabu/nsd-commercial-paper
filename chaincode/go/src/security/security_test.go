@@ -35,7 +35,7 @@ func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [
 	var value []Security
 	err := json.Unmarshal(bytes.Payload, &value)
 	if err != nil {
-		fmt.Println("Cannot Unmarshal security: %v", err)
+		fmt.Println("Cannot Unmarshal security: ", err)
 		t.FailNow()
 	}
 	return value
