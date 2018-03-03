@@ -45,7 +45,7 @@ services:
       - /var/run/:/host/var/run/
       - ../artifacts:/etc/hyperledger/artifacts
       #- ../chaincode/java:/opt/chaincode
-      - ../chaincode/go:/opt/gopath/src
+      - ../chaincode/go/src:/opt/gopath/src
     working_dir: /etc/hyperledger/artifacts
 
   api-base:
