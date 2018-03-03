@@ -43,7 +43,7 @@ type InstructionKey struct {
 	Transferer Balance `json:"transferer"`
 	Receiver   Balance `json:"receiver"`
 	Security   string  `json:"security"`
-	//TODO should be int like everywhere
+	//TODO Quantity should be int like everywhere
 	Quantity        string `json:"quantity"`
 	Reference       string `json:"reference"`
 	InstructionDate string `json:"instructionDate"`

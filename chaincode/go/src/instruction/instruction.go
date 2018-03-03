@@ -301,7 +301,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		instruction.Value.Initiator = nsd.InitiatorIsTransferer
 		instruction.Value.Status = nsd.InstructionInitiated
 		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong arguments."}
+			return pb.Response{Status: 400, Message: "Wrong reason argument"}
 		}
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -602,18 +602,32 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 //
 // Check that {@link callerBalance} belongs to the created by the identity who are submitting transaction
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) bool {
-	keyParts := []string{callerBalance.Account, callerBalance.Division}
-	if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-		if data, err := stub.GetState(key); err == nil {
-			organisation := nsd.Organization{}
-			organisation.FillFromLedgerValue(data)
-			if  cert.GetCreatorOrganization(stub) == organisation.Name {
-				return true
-			}
+	if organisation, err := getOrganisationByBalance(stub, callerBalance); err == nil {
+		if cert.GetCreatorOrganization(stub) == organisation.Name {
+			return true
 		}
 	}
 	return false
 }
+
+
+func getOrganisationByBalance(stub shim.ChaincodeStubInterface, balance nsd.Balance) (nsd.Organization, error) {
+	organisation := nsd.Organization{}
+
+	keyParts := []string{balance.Account, balance.Division}
+	if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
+		if data, err := stub.GetState(key); err == nil {
+			if data == nil {
+				return organisation, fmt.Errorf("Organisation not found [%s/%s]", balance.Account, balance.Division)
+			}
+
+			organisation.FillFromLedgerValue(data)
+			return organisation, nil
+		}
+	}
+	return organisation, fmt.Errorf("Organisation not found [%s/%s]", balance.Account, balance.Division)
+}
+
 
 // **** main method **** //
 func main() {
