@@ -103,18 +103,18 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 	dateLayout := "2006-01-02"
 	instructionDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
 	expirationDate := instructionDate
-	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*(29 * 24 + 23) + time.Minute*59 + time.Second*59)
+	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*(29*24+23) + time.Minute*59 + time.Second*59)
 
 	instructionWrapper := InstructionWrapper{
-		Instruction:    *this,
-		Depositary:     "NDC000000000",
-		Initiator:      this.Value.DeponentFrom,
-		InstructionID:  this.Value.MemberInstructionIdFrom,
-		OperationCode:  "16",
+		Instruction:     *this,
+		Depositary:      "NDC000000000",
+		Initiator:       this.Value.DeponentFrom,
+		InstructionID:   this.Value.MemberInstructionIdFrom,
+		OperationCode:   "16",
 		InstructionDate: instructionDate.Format("2006-01-02 15:04:05"),
-		ExpirationDate: expirationDate.Format("2006-01-02 15:04:05"),
-		Reason:         this.Value.ReasonFrom,
-		Reference:      strings.ToUpper(this.Key.Reference),
+		ExpirationDate:  expirationDate.Format("2006-01-02 15:04:05"),
+		Reason:          this.Value.ReasonFrom,
+		Reference:       strings.ToUpper(this.Key.Reference),
 	}
 	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") && (instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
 
@@ -167,7 +167,7 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 
 func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### InstructionChaincode Invoke ###########")
-	const numberOfBaseArgs = 9
+	const numberOfBaseArgs = 16
 
 	function, args := stub.GetFunctionAndParameters()
 

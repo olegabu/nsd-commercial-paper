@@ -42,12 +42,22 @@ type Position struct {
 type InstructionKey struct {
 	Transferer Balance `json:"transferer"`
 	Receiver   Balance `json:"receiver"`
-	Security   string  `json:"security"`
-	//TODO should be int like everywhere
+
+	Security        string `json:"security"`
+	// TODO: quantity should be int like everywhere
 	Quantity        string `json:"quantity"`
 	Reference       string `json:"reference"`
 	InstructionDate string `json:"instructionDate"`
 	TradeDate       string `json:"tradeDate"`
+
+	Type string `json:"type"`// only valid values are "fop" and "dvp"
+
+	// block below is used only if Type == "dvp"
+	TransfererRequisites Requisites `json:"transfererRequisites"`
+	ReceiverRequisites   Requisites `json:"receiverRequisites"`
+	// TODO: amount should be float
+	PaymentAmount        string     `json:"paymentAmount"`
+	PaymentCurrency      string     `json:"paymentCurrency"`
 }
 
 type InstructionValue struct {
@@ -63,11 +73,17 @@ type InstructionValue struct {
 	AlamedaTo               string `json:"alamedaTo"`
 	AlamedaSignatureFrom    string `json:"alamedaSignatureFrom"`
 	AlamedaSignatureTo      string `json:"alamedaSignatureTo"`
+	AdditionalInformation   string `json:"additionalInformation"`
 }
 
 type Balance struct {
 	Account  string `json:"account"`
 	Division string `json:"division"`
+}
+
+type Requisites struct {
+	Account string `json:"account"`
+	Bic     string `json:"bic"`
 }
 
 type Reason struct {
@@ -95,17 +111,34 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 		this.Key.Reference,
 		this.Key.InstructionDate,
 		this.Key.TradeDate,
+		this.Key.Type,
+		this.Key.TransfererRequisites.Account,
+		this.Key.TransfererRequisites.Bic,
+		this.Key.ReceiverRequisites.Account,
+		this.Key.ReceiverRequisites.Bic,
+		this.Key.PaymentAmount,
+		this.Key.PaymentCurrency,
 	}
 	return stub.CreateCompositeKey(InstructionIndex, keyParts)
 }
 
 func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) error {
-	if len(compositeKeyParts) < 9 {
-		return errors.New("Composite key parts array length must be at least 9.")
+	if len(compositeKeyParts) < 16 {
+		return errors.New("Composite key parts array length must be at least 16.")
 	}
 
 	if _, err := strconv.Atoi(compositeKeyParts[5]); err != nil {
 		return errors.New("Quantity must be int.")
+	}
+
+	if compositeKeyParts[9] != "fop" && compositeKeyParts[9] != "dvp" {
+		return errors.New("Type of instruction must be either \"fop\" or \"dvp\".")
+	}
+
+	if compositeKeyParts[9] == "dvp" {
+		if _, err := strconv.ParseFloat(compositeKeyParts[14], 64); err != nil {
+			return errors.New("Payment amount must be float.")
+		}
 	}
 
 	this.Key.Transferer.Account = compositeKeyParts[0]
@@ -117,6 +150,13 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) e
 	this.Key.Reference = compositeKeyParts[6]
 	this.Key.InstructionDate = compositeKeyParts[7]
 	this.Key.TradeDate = compositeKeyParts[8]
+	this.Key.Type = compositeKeyParts[9]
+	this.Key.TransfererRequisites.Account = compositeKeyParts[10]
+	this.Key.TransfererRequisites.Bic = compositeKeyParts[11]
+	this.Key.ReceiverRequisites.Account = compositeKeyParts[12]
+	this.Key.ReceiverRequisites.Bic = compositeKeyParts[13]
+	this.Key.PaymentAmount = compositeKeyParts[14]
+	this.Key.PaymentCurrency = compositeKeyParts[15]
 
 	return nil
 }
