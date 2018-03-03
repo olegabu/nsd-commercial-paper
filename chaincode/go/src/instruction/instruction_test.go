@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/olegabu/nsd-commercial-paper-common/assert"
 )
 
 func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
@@ -29,8 +30,28 @@ func Test_InstructionInit(t *testing.T) {
 	// GetCreator is not implemented in NewMockStub
 	//stub.GetCreator()
 
+	org2 := "{\"organization\":\"raiffeisen.nsd.ru\"," +
+		"\"deponent\":\"DE000DB7HWY7\"," +
+		"\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}"
 
-	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]")})
+	//
+	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{" +
+		"\"organization\":\"megafon.nsd.ru\"," +
+		"\"deponent\":\"CA9861913023\"," +
+		"\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"}," +
+					"{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]}," +
+		org2 + "]")})
+
+	key,  _ := stub.CreateCompositeKey(authenticationIndex, []string{"RBIOWNER0ACC", "00000000000000000"})
+	data, _ := stub.GetState(key)
+
+
+	assert.Equal(t, string(data), org2, "Initialize instruction data");
+
+
+
+
+
 
 	////Correct transaction
 	//checkState(t, stub, 200, [][]byte{[]byte("check"), []byte("AC0689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("90")})
