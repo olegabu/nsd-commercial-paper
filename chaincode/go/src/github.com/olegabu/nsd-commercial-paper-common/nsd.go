@@ -9,17 +9,27 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
+
+// instruction statuses
+type InstructionStatus string
 const (
 	InitiatorIsTransferer = "transferer"
 	InitiatorIsReceiver   = "receiver"
 
-	InstructionInitiated  = "initiated"
-	InstructionMatched    = "matched"
-	InstructionSigned     = "signed"
-	InstructionExecuted   = "executed"
-	InstructionDownloaded = "downloaded"
-	InstructionDeclined   = "declined"
-	InstructionCanceled   = "canceled"
+	InstructionInitiated  InstructionStatus = "initiated"
+	InstructionMatched    InstructionStatus = "matched"
+	InstructionSigned     InstructionStatus = "signed"
+	InstructionExecuted   InstructionStatus = "executed"
+	InstructionDownloaded InstructionStatus = "downloaded"
+	InstructionDeclined   InstructionStatus = "declined"
+	InstructionCanceled   InstructionStatus = "canceled"
+)
+
+// instruction types
+type InstructionType string
+const (
+	InstructionFOP InstructionType = "fop"
+	InstructionDVP InstructionType = "dvp"
 )
 
 // TODO: make this private
@@ -32,28 +42,23 @@ type Instruction struct {
 	Value InstructionValue `json:"value"`
 }
 
-// Position is the main data type stored in ledger
-type Position struct {
-	Balance  Balance `json:"balance"`
-	Security string  `json:"security"`
-	Quantity int     `json:"quantity"`
-}
 
 type InstructionKey struct {
 	Transferer Balance `json:"transferer"`
 	Receiver   Balance `json:"receiver"`
 	Security   string  `json:"security"`
 	//TODO Quantity should be int like everywhere
-	Quantity        string `json:"quantity"`
-	Reference       string `json:"reference"`
-	InstructionDate string `json:"instructionDate"`
-	TradeDate       string `json:"tradeDate"`
+	Quantity        string          `json:"quantity"`
+	Reference       string          `json:"reference"`
+	InstructionDate string          `json:"instructionDate"`
+	TradeDate       string          `json:"tradeDate"`
+	//Type            InstructionType `json:"type"`
 }
 
 type InstructionValue struct {
 	DeponentFrom            string `json:"deponentFrom"`
 	DeponentTo              string `json:"deponentTo"`
-	Status                  string `json:"status"`
+	Status                  InstructionStatus `json:"status"`
 	Initiator               string `json:"initiator"`
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
@@ -64,6 +69,16 @@ type InstructionValue struct {
 	AlamedaSignatureFrom    string `json:"alamedaSignatureFrom"`
 	AlamedaSignatureTo      string `json:"alamedaSignatureTo"`
 }
+
+
+// Position is the main data type stored in ledger
+type Position struct {
+	Balance  Balance `json:"balance"`
+	Security string  `json:"security"`
+	Quantity int     `json:"quantity"`
+}
+
+
 
 type Balance struct {
 	Account  string `json:"account"`
@@ -89,6 +104,7 @@ type Organization struct {
 	Deponent string    `json:"deponent"`
 	Balances []Balance `json:"balances"`
 }
+
 
 func (this *Organization) ToJSON() []byte {
 	r, err := json.Marshal(this)
@@ -202,7 +218,7 @@ func (this *Instruction) EmitState(stub shim.ChaincodeStubInterface) error {
 		return err
 	}
 
-	if err = stub.SetEvent(InstructionIndex+"."+this.Value.Status, data); err != nil {
+	if err = stub.SetEvent(InstructionIndex+"."+string(this.Value.Status), data); err != nil {
 		return err
 	}
 

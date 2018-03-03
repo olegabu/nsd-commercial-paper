@@ -32,7 +32,7 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredIni
 	}
 
 	if this.Value.Status != nsd.InstructionInitiated {
-		return pb.Response{Status: 400, Message: "Instruction status is not " + nsd.InstructionInitiated}
+		return pb.Response{Status: 400, Message: "Instruction status is not " + string(nsd.InstructionInitiated) }
 	}
 
 	this.Value.Status = nsd.InstructionMatched
@@ -323,7 +323,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
-	status := args[len(args)-1]
+	status := nsd.InstructionStatus(args[len(args)-1])
 
 	callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
@@ -473,7 +473,7 @@ func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, arg
 			"But got %d args: %s", len(args), args)}
 	}
 
-	expectedStatus := args[0]
+	expectedStatus := nsd.InstructionStatus(args[0])
 
 	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
 	if err != nil {
