@@ -603,7 +603,9 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 // Check that {@link callerBalance} belongs to the created by the identity who are submitting transaction
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) bool {
 	if organisation, err := getOrganisationByBalance(stub, callerBalance); err == nil {
-		if cert.GetCreatorOrganization(stub) == organisation.Name {
+		creator := cert.GetCreatorOrganization(stub)
+		fmt.Println("authenticateCaller [", creator, "]")
+		if creator == organisation.Name {
 			return true
 		}
 	}

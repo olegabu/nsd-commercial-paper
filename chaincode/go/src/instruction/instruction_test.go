@@ -7,13 +7,6 @@ import (
 	"github.com/olegabu/nsd-commercial-paper-common/assert"
 )
 
-func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
-	res := stub.MockInit("1", args)
-	if res.Status != shim.OK {
-		fmt.Println("Init failed", string(res.Message))
-		t.FailNow()
-	}
-}
 
 func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args []string) {
 
@@ -30,35 +23,55 @@ func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [
 }
 
 
-func Test_InstructionInit(t *testing.T) {
+func initInstructionCC(t *testing.T) *shim.MockStub {
+
 	stub := shim.NewMockStub("instruction", new(InstructionChaincode))
 
-	// GetCreator is not implemented in NewMockStub
-	//stub.GetCreator()
+	org1 := "{" +
+		"\"organization\":\"megafon.nsd.ru\"," +
+		"\"deponent\":\"CA9861913023\"," +
+		"\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"}," +
+		"{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]}"
 
 	org2 := "{\"organization\":\"raiffeisen.nsd.ru\"," +
 		"\"deponent\":\"DE000DB7HWY7\"," +
 		"\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}"
 
 	//
-	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{" +
-		"\"organization\":\"megafon.nsd.ru\"," +
-		"\"deponent\":\"CA9861913023\"," +
-		"\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"}," +
-					"{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]}," +
-		org2 + "]")})
+	initArgs := [][]byte{
+		[]byte("init"),
+
+		[]byte("[" + org1 + "," + org2 + "]"),
+	}
+	res := stub.MockInit("1", initArgs)
+
+	assert.Ok(t, res, "Init failed");
+	return stub
+}
+
+func Test_InstructionInit(t *testing.T) {
+	stub := initInstructionCC(t)
+
+	// GetCreator is not implemented in NewMockStub
+	//stub.GetCreator()
+
 
 	key,  _ := stub.CreateCompositeKey(authenticationIndex, []string{"RBIOWNER0ACC", "00000000000000000"})
 	data, _ := stub.GetState(key)
 
 
+	org2 := "{\"organization\":\"raiffeisen.nsd.ru\"," +
+		"\"deponent\":\"DE000DB7HWY7\"," +
+		"\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}"
 	assert.Equal(t, string(data), org2, "Initialize instruction data");
 }
 
 
 
 func Test_Transfer(t *testing.T) {
-	stub := shim.NewMockStub("instruction", new(InstructionChaincode))
+	//stub := shim.NewMockStub("instruction", new(InstructionChaincode))
+	stub := initInstructionCC(t)
+
 
 	transferArguments := [][]byte{
 		[]byte("transfer"),
