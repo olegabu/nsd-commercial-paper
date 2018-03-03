@@ -12,7 +12,9 @@ var logger = shim.NewLogger("Certificates Common")
 
 const NSD_NAME string = "nsd.nsd.ru"
 
-// **** Security Methods **** //
+
+// get certificate issuer name
+// return field 'Domain'(?) from cryptogen.yaml or empty string
 func getOrganization(certificate []byte) string {
 	if certificate == nil {
 		return ""
@@ -29,7 +31,7 @@ func GetCreatorOrganization(stub shim.ChaincodeStubInterface) string {
 	return getOrganization(certificate)
 }
 
-func getMyOrganization() string {
+func GetMyOrganization() string {
 	// TODO get the filename from $CORE_PEER_TLS_ROOTCERT_FILE
 	// better way perhaps is to pass a flag in transient map to nsd peer to ask to check against book chaincode
 	certFilename := "/etc/hyperledger/fabric/peer.crt"

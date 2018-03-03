@@ -1,11 +1,8 @@
 package main
 
 import (
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 	"strings"
 	"text/template"
@@ -15,6 +12,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/olegabu/nsd-commercial-paper-common"
+	cert "github.com/olegabu/nsd-commercial-paper-common/certificates"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
@@ -26,6 +24,8 @@ type InstructionChaincode struct {
 
 // **** Instruction Methods **** //
 
+//
+//
 func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
 	if this.Value.Initiator != desiredInitiator {
 		return pb.Response{Status: 400, Message: "Instruction is already created by " + this.Value.Initiator}
@@ -50,6 +50,8 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredIni
 	return shim.Success(nil)
 }
 
+//
+//
 func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 	const xmlTemplate = `<?xml version="1.0"?>
 <Batch>
@@ -143,7 +145,7 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 
 	args := stub.GetStringArgs()
 	logger.Info("########### " + strings.Join(args, " ") + " ###########")
-	logger.Info("########### " + getCreatorOrganization(stub) + " ###########")
+	logger.Info("########### " + cert.GetCreatorOrganization(stub) + " ###########")
 
 
 
@@ -217,6 +219,11 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	return shim.Error(err)
 }
 
+
+
+
+//
+//
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
@@ -259,6 +266,9 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 	}
 }
 
+
+//
+//
 func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
@@ -301,6 +311,9 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	}
 }
 
+
+//
+//
 func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	logger.Info("########### InstructionChaincode status ###########")
 	logger.Info(args)
@@ -314,7 +327,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 
 	callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
-	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+	callerIsNSD := cert.GetCreatorOrganization(stub) == "nsd.nsd.ru"
 
 	if callerIsTransferer {
 		logger.Info("callerIsTransferer")
@@ -360,10 +373,13 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	return shim.Success(nil)
 }
 
+
+//
+//
 func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
 	quantity int) bool {
 
-	myOrganization := getMyOrganization()
+	myOrganization := cert.GetMyOrganization()
 	logger.Debugf("ORGANIZATION IS: " + myOrganization)
 
 	if myOrganization == "nsd.nsd.ru" {
@@ -387,6 +403,8 @@ func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account s
 	return true
 }
 
+//
+//
 //TODO: move this code to common package
 func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
@@ -418,7 +436,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 
 		callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
-		callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+		callerIsNSD := cert.GetCreatorOrganization(stub) == "nsd.nsd.ru"
 
 		logger.Debug(callerIsTransferer, callerIsReceiver, callerIsNSD)
 
@@ -445,6 +463,8 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 	return shim.Success(result)
 }
 
+//
+//
 func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// status
 	if len(args) != 1 {
@@ -486,6 +506,7 @@ func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(result)
 }
 
+//
 //TODO: move this code to common package
 func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
@@ -537,6 +558,8 @@ func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []
 	return shim.Success(result)
 }
 
+//
+//
 func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
@@ -576,47 +599,15 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 	return shim.Success(nil)
 }
 
-// **** Security Methods **** //
-func getOrganization(certificate []byte) string {
-	if certificate == nil {
-		return ""
-	}
-
-	logger.Info("########### InstructionChaincode getOrganization ###########")
-	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
-	block, _ := pem.Decode([]byte(data))
-	cert, _ := x509.ParseCertificate(block.Bytes)
-	organization := cert.Issuer.Organization[0]
-	logger.Info("getOrganization: " + organization)
-
-	return organization
-}
-
-func getCreatorOrganization(stub shim.ChaincodeStubInterface) string {
-	certificate, _ := stub.GetCreator()
-	return getOrganization(certificate)
-}
-
-func getMyOrganization() string {
-	// TODO get the filename from $CORE_PEER_TLS_ROOTCERT_FILE
-	// better way perhaps is to pass a flag in transient map to nsd peer to ask to check against book chaincode
-	certFilename := "/etc/hyperledger/fabric/peer.crt"
-	certificate, err := ioutil.ReadFile(certFilename)
-	if err != nil {
-		logger.Debugf("cannot read my peer's certificate file %s", certFilename)
-		return ""
-	}
-
-	return getOrganization(certificate)
-}
-
+//
+// Check that {@link callerBalance} belongs to the created by the identity who are submitting transaction
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) bool {
 	keyParts := []string{callerBalance.Account, callerBalance.Division}
 	if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
 		if data, err := stub.GetState(key); err == nil {
 			organisation := nsd.Organization{}
 			organisation.FillFromLedgerValue(data)
-			if  getCreatorOrganization(stub) == organisation.Name {
+			if  cert.GetCreatorOrganization(stub) == organisation.Name {
 				return true
 			}
 		}
