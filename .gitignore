@@ -2,6 +2,8 @@ node_modules
 bower_components
 npm-debug.log
 .idea
+.fuse_*
+*.swp
 artifacts/channel/mychannel.block
 fabric-rest-api.iml
 fabric-rest-api.ipr
@@ -24,3 +26,4 @@ build
 /www/artifacts/network-config.json
 /www/artifacts/crypto-config
 
+chaincode/go/pkg
