@@ -290,21 +290,23 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
   /**
    * return basic fields for any instruction request
+   * @param {Instruction} instruction
    * @return {Array<string>}
    */
   InstructionService._instructionArguments = function(instruction) {
     return [
-      instruction.transferer.account,  // 0: accountFrom
-      instruction.transferer.division, // 1: divisionFrom
+      instruction.type,                // instruction type
+      instruction.transferer.account,  // accountFrom
+      instruction.transferer.division, // divisionFrom
 
-      instruction.receiver.account,    // 2: accountTo
-      instruction.receiver.division,   // 3: divisionTo
+      instruction.receiver.account,    // accountTo
+      instruction.receiver.division,   // divisionTo
 
-      instruction.security,            // 4: security
-      instruction.quantity,            // 5: quantity // TODO: fix: string parameters
-      instruction.reference,           // 6: reference
-      instruction.instructionDate,     // 7: instructionDate  (ISO)
-      instruction.tradeDate            // 8: tradeDate  (ISO)
+      instruction.security,            // security
+      instruction.quantity,            // quantity // TODO: fix: string parameters
+      instruction.reference,           // reference
+      instruction.instructionDate,     // instructionDate  (ISO)
+      instruction.tradeDate            // tradeDate  (ISO)
     ];
   };
 
