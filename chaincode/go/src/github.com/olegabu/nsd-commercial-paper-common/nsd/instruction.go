@@ -67,15 +67,16 @@ type InstructionKey struct {
 }
 
 type InstructionValue struct {
-	CounteragentFrom InstructionContragent `json:"from"`
-	CounteragentTo   InstructionContragent `json:"to"`
+	//CounteragentFrom InstructionContragent `json:"from"`
+	//CounteragentTo   InstructionContragent `json:"to"`
 
 	Status    InstructionStatus `json:"status"`
 	Initiator string            `json:"initiator"`
 
-	// DEPRECATED. Use CounteragentFrom/CounteragentTo
 	DeponentFrom            string `json:"deponentFrom"`
 	DeponentTo              string `json:"deponentTo"`
+
+	// DEPRECATED. Use CounteragentFrom/CounteragentTo
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
 	ReasonFrom              Reason `json:"reasonFrom"`
