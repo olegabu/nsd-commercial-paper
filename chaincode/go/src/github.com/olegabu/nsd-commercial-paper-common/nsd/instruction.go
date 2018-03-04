@@ -36,7 +36,6 @@ const (
 
 // TODO: make this private
 const InstructionIndex = `Instruction`
-const PositionIndex = `Position`
 
 // Instruction is the main data type stored in ledger
 type Instruction struct {
@@ -71,15 +70,14 @@ type InstructionValue struct {
 	//CounteragentFrom InstructionContragent `json:"from"`
 	//CounteragentTo   InstructionContragent `json:"to"`
 
-	Status    InstructionStatus   `json:"status"`
+	Status    InstructionStatus    `json:"status"`
 	Initiator InstructionInitiator `json:"initiator"`
 
 	DeponentFrom            string `json:"deponentFrom"`
 	DeponentTo              string `json:"deponentTo"`
 
-	// DEPRECATED. Use CounteragentFrom/CounteragentTo
+	// TODO: Use CounteragentFrom/CounteragentTo
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
-	// DEPRECATED. Use CounteragentFrom/CounteragentTo
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
 
 	ReasonFrom              Reason `json:"reasonFrom"`
@@ -143,6 +141,7 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 	return stub.CreateCompositeKey(InstructionIndex, keyParts)
 }
 
+
 // fill instruction key info
 // return index of the first data field ( == key length)
 func (this *Instruction) FillKeyFromArgs(compositeKeyParts []string) (error) {
@@ -157,15 +156,15 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 		return errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
 	}
 
-	fieldIndex := 0
+	fieldOffset := 0
 
 	// get and check instruction type
-	this.Key.Type = InstructionType(compositeKeyParts[fieldIndex+0])
+	this.Key.Type = InstructionType(compositeKeyParts[fieldOffset+0])
 
 	if this.Key.Type != InstructionTypeFOP && this.Key.Type != InstructionTypeDVP {
 		// FOP by default
 		this.Key.Type = InstructionTypeFOP
-		fieldIndex--
+		fieldOffset = -1
 		//return -1, errors.New("Unknown instruction type " + string(this.Key.Type))
 	}
 
@@ -181,54 +180,55 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 	}
 
 	// this.Key.Quantity
-	if !assert.IsNumber(compositeKeyParts[fieldIndex+6]) {
+	if !assert.IsNumber(compositeKeyParts[fieldOffset+6]) {
 		return errors.New("Quantity must be int.")
 	}
 
-	this.Key.Transferer.Account 	= compositeKeyParts[fieldIndex+1]
-	this.Key.Transferer.Division 	= compositeKeyParts[fieldIndex+2]
-	this.Key.Receiver.Account 		= compositeKeyParts[fieldIndex+3]
-	this.Key.Receiver.Division 		= compositeKeyParts[fieldIndex+4]
-	this.Key.Security 				= compositeKeyParts[fieldIndex+5]
-	this.Key.Quantity 				= compositeKeyParts[fieldIndex+6]
-	this.Key.Reference 				= compositeKeyParts[fieldIndex+7]
-	this.Key.InstructionDate 		= compositeKeyParts[fieldIndex+8]
-	this.Key.TradeDate 				= compositeKeyParts[fieldIndex+9]
+	this.Key.Transferer.Account 	= compositeKeyParts[fieldOffset+1]
+	this.Key.Transferer.Division 	= compositeKeyParts[fieldOffset+2]
+	this.Key.Receiver.Account 		= compositeKeyParts[fieldOffset+3]
+	this.Key.Receiver.Division 		= compositeKeyParts[fieldOffset+4]
+	this.Key.Security 				= compositeKeyParts[fieldOffset+5]
+	this.Key.Quantity 				= compositeKeyParts[fieldOffset+6]
+	this.Key.Reference 				= compositeKeyParts[fieldOffset+7]
+	this.Key.InstructionDate 		= compositeKeyParts[fieldOffset+8]
+	this.Key.TradeDate 				= compositeKeyParts[fieldOffset+9]
 
 	if this.Key.Type == InstructionTypeDVP {
-		this.Key.PaymentFrom.Account 	= compositeKeyParts[fieldIndex+10]
-		this.Key.PaymentFrom.Bic 		= compositeKeyParts[fieldIndex+11]
-		this.Key.PaymentTo.Account 		= compositeKeyParts[fieldIndex+12]
-		this.Key.PaymentTo.Bic 			= compositeKeyParts[fieldIndex+13]
-		this.Key.PaymentAmount 			= compositeKeyParts[fieldIndex+14]
-		this.Key.PaymentCurrency		= compositeKeyParts[fieldIndex+15]
-
+		this.Key.PaymentFrom.Account 	= compositeKeyParts[fieldOffset+10]
+		this.Key.PaymentFrom.Bic 		= compositeKeyParts[fieldOffset+11]
+		this.Key.PaymentTo.Account 		= compositeKeyParts[fieldOffset+12]
+		this.Key.PaymentTo.Bic 			= compositeKeyParts[fieldOffset+13]
+		this.Key.PaymentAmount 			= compositeKeyParts[fieldOffset+14]
+		this.Key.PaymentCurrency		= compositeKeyParts[fieldOffset+15]
 	}
 
 	this.Key.Reference = strings.ToUpper(this.Key.Reference)
 	return nil
 }
 
+//
+//
 func (this *Instruction) FillValueFromArgs(args []string, initiator InstructionInitiator) error {
-	keyLength := len(args) - 4 // get last 4 arguments
+	fieldOffset := len(args) - 4 // get last 4 arguments
 
 	this.Value.Initiator = initiator
 
 	//
-	this.Value.DeponentFrom = args[keyLength+0]
-	this.Value.DeponentTo = args[keyLength+1]
+	this.Value.DeponentFrom = args[fieldOffset+0]
+	this.Value.DeponentTo = args[fieldOffset+1]
 
 	// parse reason
 	reason := Reason{};
-	if err := json.Unmarshal([]byte(args[keyLength+3]), &reason); err != nil {
+	if err := json.Unmarshal([]byte(args[fieldOffset+3]), &reason); err != nil {
 		return err
 	}
 
 	if initiator == InitiatorIsTransferer {
-		this.Value.MemberInstructionIdFrom = args[keyLength+2]
+		this.Value.MemberInstructionIdFrom = args[fieldOffset+2]
 		this.Value.ReasonFrom = reason;
 	} else if initiator == InitiatorIsReceiver {
-		this.Value.MemberInstructionIdTo = args[keyLength+2]
+		this.Value.MemberInstructionIdTo = args[fieldOffset+2]
 		this.Value.ReasonTo = reason;
 	} else {
 		return errors.New("Invalid initiator: " + string(initiator))
@@ -239,7 +239,7 @@ func (this *Instruction) FillValueFromArgs(args []string, initiator InstructionI
 
 
 func (this *Instruction) FillFromArgs(args []string, initiator InstructionInitiator) error {
-	if err := this.FillFromCompositeKeyParts(args); err != nil {
+	if err := this.FillKeyFromArgs(args); err != nil {
 		return err
 	}
 	if err := this.FillValueFromArgs(args, initiator); err != nil {

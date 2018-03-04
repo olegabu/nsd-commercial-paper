@@ -14,6 +14,7 @@ type Position struct {
 	Quantity int     `json:"quantity"`
 }
 
+const PositionIndex = `Position`
 
 
 // **** Position Methods **** //
