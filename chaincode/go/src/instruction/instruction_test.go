@@ -64,8 +64,7 @@ func Test_InstructionInit(t *testing.T) {
 	// GetCreator is not implemented in NewMockStub
 	//stub.GetCreator()
 
-
-	key,  _ := stub.CreateCompositeKey(authenticationIndex, []string{"RBIOWNER0ACC", "00000000000000000"})
+	key,  _ := stub.CreateCompositeKey("Authentication", []string{"RBIOWNER0ACC", "00000000000000000"})
 	data, _ := stub.GetState(key)
 
 
@@ -170,6 +169,8 @@ func Test_TransferDVP(t *testing.T) {
 
 
 	transferArguments := [][]byte{
+		[]byte("dvp"), // type
+
 		[]byte("transfer"),
 
 		[]byte("MFONISSUEACC"),      // accountFrom
@@ -189,8 +190,6 @@ func Test_TransferDVP(t *testing.T) {
 		[]byte("memberInstructionId"), // memberInstructionId
 		[]byte("{\"json_reason\":\"any json\"}"), // reason
 
-
-		[]byte("dvp"), // type
 
 		[]byte("40701810000000001000"), // transfererAccount
 		[]byte("f044525505op"), 		// transfererBic
