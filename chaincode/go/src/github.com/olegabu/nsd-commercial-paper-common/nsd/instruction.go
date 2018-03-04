@@ -79,7 +79,9 @@ type InstructionValue struct {
 
 	// DEPRECATED. Use CounteragentFrom/CounteragentTo
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
+	// DEPRECATED. Use CounteragentFrom/CounteragentTo
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
+
 	ReasonFrom              Reason `json:"reasonFrom"`
 	ReasonTo                Reason `json:"reasonTo"`
 	AlamedaFrom             string `json:"alamedaFrom"`
@@ -143,6 +145,10 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 
 // fill instruction key info
 // return index of the first data field ( == key length)
+func (this *Instruction) FillKeyFromArgs(compositeKeyParts []string) (error) {
+	return this.FillFromCompositeKeyParts(compositeKeyParts)
+}
+// DEPRECATED: use FillKeyFromArgs()
 func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (error) {
 	keyLengthFop := 10
 	keyLengthDvp := keyLengthFop + 6
@@ -203,22 +209,40 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 	return nil
 }
 
-func (this *Instruction) FillValueFromArgs(args []string) error {
-	keyLength := len(args) - 3
+func (this *Instruction) FillValueFromArgs(args []string, initiator InstructionInitiator) error {
+	keyLength := len(args) - 4 // get last 4 arguments
+
+	this.Value.Initiator = initiator
+
 	//
 	this.Value.DeponentFrom = args[keyLength+0]
 	this.Value.DeponentTo = args[keyLength+1]
-	this.Value.MemberInstructionIdFrom = args[keyLength+2]
+
+	// parse reason
+	reason := Reason{};
+	if err := json.Unmarshal([]byte(args[keyLength+3]), &reason); err != nil {
+		return err
+	}
+
+	if initiator == InitiatorIsTransferer {
+		this.Value.MemberInstructionIdFrom = args[keyLength+2]
+		this.Value.ReasonFrom = reason;
+	} else if initiator == InitiatorIsReceiver {
+		this.Value.MemberInstructionIdTo = args[keyLength+2]
+		this.Value.ReasonTo = reason;
+	} else {
+		return errors.New("Invalid initiator: " + string(initiator))
+	}
 
 	return nil
 }
 
 
-func (this *Instruction) FillFromArgs(args []string) error {
+func (this *Instruction) FillFromArgs(args []string, initiator InstructionInitiator) error {
 	if err := this.FillFromCompositeKeyParts(args); err != nil {
 		return err
 	}
-	if err := this.FillValueFromArgs(args); err != nil {
+	if err := this.FillValueFromArgs(args, initiator); err != nil {
 		return err
 	}
 	return nil

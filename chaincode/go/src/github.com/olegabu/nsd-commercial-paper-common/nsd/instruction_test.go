@@ -32,7 +32,7 @@ func Test_FillFromCompositeKeyParts_FOP(t *testing.T) {
 		"{\"json_reason\":\"any json\"}", // reason
 	}
 
-	err := instruction.FillFromArgs(transferArguments)
+	err := instruction.FillFromArgs(transferArguments, "transferer")
 	assert.NotError(t, err)
 
 	assert.Equal(t, string(instruction.Key.Type), "fop")
@@ -68,7 +68,7 @@ func Test_FillFromCompositeKeyParts_FOP_legacy(t *testing.T) {
 		"{\"json_reason\":\"any json\"}", // reason
 	}
 
-	err := instruction.FillFromArgs(transferArguments)
+	err := instruction.FillFromArgs(transferArguments, "transferer")
 	assert.NotError(t, err)
 
 	assert.Equal(t, string(instruction.Key.Type), "fop")
@@ -116,7 +116,7 @@ func Test_FillFromCompositeKeyParts_DVP(t *testing.T) {
 		"{\"json_reason\":\"any json\"}", // reason
 	}
 
-	err := instruction.FillFromArgs(transferArguments)
+	err := instruction.FillFromArgs(transferArguments, "transferer")
 	assert.NotError(t, err)
 
 	assert.Equal(t, string(instruction.Key.Type), "dvp")

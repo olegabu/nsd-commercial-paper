@@ -214,7 +214,7 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
-		"receive, transfer, query, history, status, sign. But got: %v", args[0])
+		"receive, transfer, query, history, status, sign. But got: %v", function)
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -226,7 +226,7 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 //
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
+	if err := instruction.FillKeyFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "Wrong arguments."}
 	}
 
@@ -239,10 +239,12 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		instruction.Value.MemberInstructionIdTo = args[11]
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong arguments."}
-		}
+		// merge instructions data
+		instructionCounteragent := nsd.Instruction{}
+		instructionCounteragent.FillFromArgs(args, nsd.InitiatorIsReceiver);
+
+		instruction.Value.MemberInstructionIdTo = instructionCounteragent.Value.MemberInstructionIdTo;
+		instruction.Value.ReasonTo = instructionCounteragent.Value.ReasonTo;
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -272,7 +274,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 //
 func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
+	if err := instruction.FillKeyFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "Wrong arguments: " + err.Error()}
 	}
 
@@ -286,28 +288,29 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 404, Message: "Instruction not found:" + err.Error()}
 		}
 
-		instruction.Value.MemberInstructionIdFrom = args[11]
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong arguments:" + err.Error()}
-		}
+		// merge instructions data
+		instructionCounteragent := nsd.Instruction{}
+		instructionCounteragent.FillFromArgs(args, nsd.InitiatorIsTransferer);
+
+		instruction.Value.MemberInstructionIdFrom = instructionCounteragent.Value.MemberInstructionIdFrom;
+		instruction.Value.ReasonFrom = instructionCounteragent.Value.ReasonFrom;
+
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
-
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver)
 	} else {
 		// create new instruction
 		logger.Info("Create instruction (initiator=transferer): " + string(instruction.Key.Type))
+		instruction.FillValueFromArgs(args, nsd.InitiatorIsTransferer);
 
 		instruction.Value.Initiator = nsd.InitiatorIsTransferer
 		instruction.Value.Status = nsd.InstructionInitiated
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong reason argument:" + err.Error()}
-		}
+
+		//
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
-
 		}
 		return shim.Success(nil)
 	}
@@ -321,7 +324,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	logger.Info(args)
 
 	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
+	if err := instruction.FillKeyFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
@@ -512,7 +515,7 @@ func (t *InstructionChaincode) queryByType(stub shim.ChaincodeStubInterface, arg
 //TODO: move this code to common package
 func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
+	if err := instruction.FillKeyFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
@@ -564,7 +567,7 @@ func (t *InstructionChaincode) history(stub shim.ChaincodeStubInterface, args []
 //
 func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
+	if err := instruction.FillKeyFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
 	}
 
@@ -610,7 +613,7 @@ func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Bala
 
 		// TODO: comment when MockStub.GetCreator() is implemented
 		if creator == "" {
-			// test environment
+			// empty string allows us to pass tests
 			return true
 		}
 		if creator == organisation.Name {

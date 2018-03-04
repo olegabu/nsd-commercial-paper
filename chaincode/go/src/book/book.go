@@ -186,7 +186,7 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 
 func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
+	if err := instruction.FillKeyFromArgs(args); err != nil {
 		return pb.Response{Status: 400, Message: "Wrong arguments."}
 	}
 
