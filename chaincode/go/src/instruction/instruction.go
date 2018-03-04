@@ -250,6 +250,8 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer)
 	} else {
+		// create new instruction
+		logger.Info("Create instruction (initiator=receiver): " + string(instruction.Key.Type))
 
 		instruction.Value.Initiator = nsd.InitiatorIsReceiver
 		instruction.Value.Status = nsd.InstructionInitiated
@@ -296,6 +298,8 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver)
 	} else {
 		// create new instruction
+		logger.Info("Create instruction (initiator=transferer): " + string(instruction.Key.Type))
+
 		instruction.Value.Initiator = nsd.InitiatorIsTransferer
 		instruction.Value.Status = nsd.InstructionInitiated
 		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
