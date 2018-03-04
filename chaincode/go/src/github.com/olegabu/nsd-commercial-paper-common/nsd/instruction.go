@@ -7,6 +7,7 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/olegabu/nsd-commercial-paper-common/assert"
+	"strconv"
 )
 
 type InstructionInitiator string
@@ -153,7 +154,7 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 	keyLengthDvp := keyLengthFop + 6
 
 	if len(compositeKeyParts) < keyLengthFop {
-		return errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
+		return errors.New("Composite key parts array length must be at least " + strconv.Itoa(keyLengthFop))
 	}
 
 	fieldOffset := 0
@@ -171,11 +172,11 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 	// check arguments length
 	if this.Key.Type == InstructionTypeDVP {
 		if len(compositeKeyParts) < keyLengthDvp {
-			return errors.New("Composite key parts array length must be at least " + string(keyLengthDvp))
+			return errors.New("Composite key parts array length must be at least " + strconv.Itoa(keyLengthDvp))
 		}
 	} else {
 		if len(compositeKeyParts) < keyLengthFop {
-			return errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
+			return errors.New("Composite key parts array length must be at least " + strconv.Itoa(keyLengthFop))
 		}
 	}
 
