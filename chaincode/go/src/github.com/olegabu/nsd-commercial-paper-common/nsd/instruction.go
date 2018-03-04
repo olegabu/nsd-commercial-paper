@@ -1,5 +1,6 @@
 package nsd
 
+
 import (
 	"encoding/json"
 	"errors"
@@ -28,13 +29,18 @@ const (
 // instruction types
 type InstructionType string
 const (
-	InstructionFOP InstructionType = "fop"
-	InstructionDVP InstructionType = "dvp"
+	InstructionTypeFOP InstructionType = "fop"
+	InstructionTypeDVP InstructionType = "dvp"
 )
 
 // TODO: make this private
 const InstructionIndex = `Instruction`
 const PositionIndex = `Position`
+
+
+
+
+
 
 // Instruction is the main data type stored in ledger
 type Instruction struct {
@@ -52,14 +58,16 @@ type InstructionKey struct {
 	Reference       string          `json:"reference"`
 	InstructionDate string          `json:"instructionDate"`
 	TradeDate       string          `json:"tradeDate"`
-	//Type            InstructionType `json:"type"`
+	Type            InstructionType `json:"type"`
+
 }
 
 type InstructionValue struct {
-	DeponentFrom            string `json:"deponentFrom"`
-	DeponentTo              string `json:"deponentTo"`
 	Status                  InstructionStatus `json:"status"`
 	Initiator               string `json:"initiator"`
+
+	DeponentFrom            string `json:"deponentFrom"`
+	DeponentTo              string `json:"deponentTo"`
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
 	ReasonFrom              Reason `json:"reasonFrom"`
@@ -70,20 +78,6 @@ type InstructionValue struct {
 	AlamedaSignatureTo      string `json:"alamedaSignatureTo"`
 }
 
-
-// Position is the main data type stored in ledger
-type Position struct {
-	Balance  Balance `json:"balance"`
-	Security string  `json:"security"`
-	Quantity int     `json:"quantity"`
-}
-
-
-
-type Balance struct {
-	Account  string `json:"account"`
-	Division string `json:"division"`
-}
 
 type Reason struct {
 	DocumentDate string `json:"created"`
@@ -99,28 +93,8 @@ type InstructionHistoryValue struct {
 	IsDelete  bool             `json:"isDelete"`
 }
 
-type Organization struct {
-	Name     string    `json:"organization"`
-	Deponent string    `json:"deponent"`
-	Balances []Balance `json:"balances"`
-}
 
 
-func (this *Organization) ToJSON() []byte {
-	r, err := json.Marshal(this)
-	if err != nil {
-		return nil
-	}
-	return r
-}
-
-func (this *Organization) FillFromLedgerValue(bytes []byte) error {
-	if err := json.Unmarshal(bytes, &this); err != nil {
-		return err
-	} else {
-		return nil
-	}
-}
 
 func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
 	keyParts := []string{
@@ -137,33 +111,68 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 	return stub.CreateCompositeKey(InstructionIndex, keyParts)
 }
 
-func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) error {
-	if len(compositeKeyParts) < 9 {
-		return errors.New("Composite key parts array length must be at least 9.")
+
+// fill instruction key info
+// return index of the first data field ( == key length)
+func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (int, error) {
+	keyLengthFop := 10;
+	keyLengthDvp := keyLengthFop + 6;
+
+	if len(compositeKeyParts) < keyLengthFop {
+		return -1, errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
 	}
 
 	if _, err := strconv.Atoi(compositeKeyParts[5]); err != nil {
-		return errors.New("Quantity must be int.")
+		return -1, errors.New("Quantity must be int.")
 	}
 
-	this.Key.Transferer.Account = compositeKeyParts[0]
+	this.Key.Transferer.Account  = compositeKeyParts[0]
 	this.Key.Transferer.Division = compositeKeyParts[1]
-	this.Key.Receiver.Account = compositeKeyParts[2]
+	this.Key.Receiver.Account  = compositeKeyParts[2]
 	this.Key.Receiver.Division = compositeKeyParts[3]
-	this.Key.Security = compositeKeyParts[4]
-	this.Key.Quantity = compositeKeyParts[5]
+	this.Key.Security  = compositeKeyParts[4]
+	this.Key.Quantity  = compositeKeyParts[5]
 	this.Key.Reference = compositeKeyParts[6]
 	this.Key.InstructionDate = compositeKeyParts[7]
 	this.Key.TradeDate = compositeKeyParts[8]
 
-	return nil
+	// TODO it's better to make Type the first parameter
+	this.Key.Type = InstructionType(compositeKeyParts[9])
+	if this.Key.Type != InstructionTypeFOP && this.Key.Type != InstructionTypeDVP {
+
+		// support FOP by default
+		this.Key.Type = InstructionTypeFOP
+		return keyLengthFop - 1, nil
+		//return -1, errors.New("Unknown instruction type " + string(this.Key.Type))
+	}
+
+	if this.Key.Type == InstructionTypeDVP {
+		if len(compositeKeyParts) < keyLengthDvp {
+			return keyLengthDvp, errors.New("Composite key parts array length must be at least " + string(keyLengthDvp))
+		}
+
+		// TODO: add DVP fields
+		return keyLengthDvp, nil
+	}
+
+	return keyLengthFop, nil
 }
 
+
+
+
+
 func (this *Instruction) FillFromArgs(args []string) error {
-	if err := this.FillFromCompositeKeyParts(args); err != nil {
+	keyLength, err := this.FillFromCompositeKeyParts(args)
+	if err != nil {
 		return err
 	}
 	this.Key.Reference = strings.ToUpper(this.Key.Reference)
+
+	//
+	this.Value.DeponentFrom = args[ keyLength + 0 ]
+	this.Value.DeponentTo   = args[ keyLength + 1 ]
+	this.Value.MemberInstructionIdFrom = args[ keyLength + 2 ]
 	return nil
 }
 
@@ -239,120 +248,4 @@ func (this *Instruction) FillFromLedgerValue(bytes []byte) error {
 	} else {
 		return nil
 	}
-}
-
-// **** Position Methods **** //
-func (this *Position) toStringArray() []string {
-	return []string{
-		this.Balance.Account,
-		this.Balance.Division,
-		this.Security,
-	}
-}
-
-func (this *Position) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
-	return stub.CreateCompositeKey(PositionIndex, this.toStringArray())
-}
-
-func (this *Position) existsIn(stub shim.ChaincodeStubInterface) bool {
-	compositeKey, err := this.ToCompositeKey(stub)
-	if err != nil {
-		return false
-	}
-
-	bytes, _ := stub.GetState(compositeKey)
-	if bytes == nil {
-		return false
-	}
-
-	return true
-}
-
-func (this *Position) loadFrom(stub shim.ChaincodeStubInterface) error {
-	compositeKey, err := this.ToCompositeKey(stub)
-	if err != nil {
-		return err
-	}
-
-	bytes, err := stub.GetState(compositeKey)
-	if err != nil {
-		return err
-	}
-
-	return this.FillFromLedgerValue(bytes)
-}
-
-func (this *Position) UpsertIn(stub shim.ChaincodeStubInterface) error {
-	compositeKey, err := this.ToCompositeKey(stub)
-	if err != nil {
-		return err
-	}
-
-	value, err := this.toLedgerValue()
-	if err != nil {
-		return err
-	}
-
-	err = stub.PutState(compositeKey, value)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (this *Position) FillFromCompositeKeyParts(compositeKeyParts []string) error {
-	if len(compositeKeyParts) != 3 {
-		return errors.New("Composite key parts array length must be 3.")
-	}
-
-	this.Balance.Account = compositeKeyParts[0]
-	this.Balance.Division = compositeKeyParts[1]
-	this.Security = compositeKeyParts[2]
-
-	return nil
-}
-
-func (this *Position) FillFromArgs(args []string) error {
-	if len(args) < 3 {
-		return errors.New("Incorrect number of arguments. Expecting >=3.")
-	}
-
-	this.Balance.Account = args[0]
-	this.Balance.Division = args[1]
-	this.Security = args[2]
-
-	if len(args) > 3 {
-		quantity, err := strconv.Atoi(args[3])
-		if err != nil {
-			return errors.New("cannot convert to quantity")
-		}
-		this.Quantity = quantity
-	}
-
-	return nil
-}
-
-func (this *Position) toLedgerValue() ([]byte, error) {
-	return json.Marshal([]string{strconv.Itoa(this.Quantity)})
-}
-
-func (this *Position) toJSON() ([]byte, error) {
-	return json.Marshal(this)
-}
-
-func (this *Position) FillFromLedgerValue(bytes []byte) error {
-	var str []string
-	err := json.Unmarshal(bytes, &str)
-	if err != nil {
-		return err
-	}
-
-	quantity, err := strconv.Atoi(str[0])
-	if err != nil {
-		return err
-	}
-	this.Quantity = quantity
-
-	return nil
 }

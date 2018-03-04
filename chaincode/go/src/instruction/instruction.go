@@ -11,8 +11,8 @@ import (
 	"bytes"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
 	cert "github.com/olegabu/nsd-commercial-paper-common/certificates"
+	"github.com/olegabu/nsd-commercial-paper-common/nsd"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
@@ -250,11 +250,10 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer)
 	} else {
-		instruction.Value.DeponentFrom = args[9]
-		instruction.Value.DeponentTo = args[10]
-		instruction.Value.MemberInstructionIdTo = args[11]
+
 		instruction.Value.Initiator = nsd.InitiatorIsReceiver
 		instruction.Value.Status = nsd.InstructionInitiated
+
 		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
@@ -272,7 +271,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
-		return pb.Response{Status: 400, Message: "Wrong arguments."}
+		return pb.Response{Status: 400, Message: "Wrong arguments: " + err.Error()}
 	}
 
 	if authenticateCaller(stub, instruction.Key.Transferer) == false {
@@ -280,13 +279,14 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 	}
 
 	if instruction.ExistsIn(stub) {
+		// check sender/receiver
 		if err := instruction.LoadFrom(stub); err != nil {
-			return pb.Response{Status: 404, Message: "Instruction not found."}
+			return pb.Response{Status: 404, Message: "Instruction not found:" + err.Error()}
 		}
 
 		instruction.Value.MemberInstructionIdFrom = args[11]
 		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong arguments."}
+			return pb.Response{Status: 400, Message: "Wrong arguments:" + err.Error()}
 		}
 
 		if instruction.UpsertIn(stub) != nil {
@@ -295,13 +295,11 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver)
 	} else {
-		instruction.Value.DeponentFrom = args[9]
-		instruction.Value.DeponentTo = args[10]
-		instruction.Value.MemberInstructionIdFrom = args[11]
+		// create new instruction
 		instruction.Value.Initiator = nsd.InitiatorIsTransferer
 		instruction.Value.Status = nsd.InstructionInitiated
 		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
-			return pb.Response{Status: 400, Message: "Wrong reason argument"}
+			return pb.Response{Status: 400, Message: "Wrong reason argument:" + err.Error()}
 		}
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -430,7 +428,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		if err := instruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
+		if _, err := instruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
 			return shim.Error(err.Error())
 		}
 

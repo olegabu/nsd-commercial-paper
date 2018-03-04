@@ -8,7 +8,7 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
+	"github.com/olegabu/nsd-commercial-paper-common/nsd"
 )
 
 var logger = shim.NewLogger("PositionChaincode")

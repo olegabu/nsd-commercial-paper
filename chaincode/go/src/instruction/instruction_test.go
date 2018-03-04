@@ -68,7 +68,7 @@ func Test_InstructionInit(t *testing.T) {
 
 
 
-func Test_Transfer(t *testing.T) {
+func Test_TransferFOP(t *testing.T) {
 	//stub := shim.NewMockStub("instruction", new(InstructionChaincode))
 	stub := initInstructionCC(t)
 
@@ -92,6 +92,51 @@ func Test_Transfer(t *testing.T) {
 		[]byte("CA9861913023"), // deponentTo
 		[]byte("memberInstructionId"), // memberInstructionId
 		[]byte("{\"json_reason\":\"any json\"}"), // reason
+	}
+
+
+	res := stub.MockInvoke("1", transferArguments)
+	assert.Ok(t, res, "Transfer failed");
+}
+
+
+
+func Test_TransferDVP(t *testing.T) {
+	//stub := shim.NewMockStub("instruction", new(InstructionChaincode))
+	stub := initInstructionCC(t)
+
+
+	transferArguments := [][]byte{
+		[]byte("transfer"),
+
+		[]byte("MFONISSUEACC"),      // accountFrom
+		[]byte("19000000000000000"), // divisionFrom
+
+		[]byte("RBIOWNER0ACC"),      // accountTo
+		[]byte("00000000000000000"), // divisionTo
+
+		[]byte("RU000ABC0001"),      // security
+		[]byte("123"),				 // quantity
+		[]byte("ref-123"),           // reference
+		[]byte("2017-12-31"),        // instructionDate
+		[]byte("2017-12-31"),        // tradeDate
+
+		[]byte("DE000DB7HWY7"), // deponentFrom
+		[]byte("CA9861913023"), // deponentTo
+		[]byte("memberInstructionId"), // memberInstructionId
+		[]byte("{\"json_reason\":\"any json\"}"), // reason
+
+
+		[]byte("dvp"), // type
+
+		[]byte("40701810000000001000"), // transfererAccount
+		[]byte("f044525505op"), 		// transfererBic
+
+		[]byte("40701810000000001000"), // receiverAccount
+		[]byte("f044525505op"), 		// receiverBic
+
+		[]byte("30000000"), 			// paymentAmount
+		[]byte("RUB"), 					// paymentCurrency
 
 	}
 
