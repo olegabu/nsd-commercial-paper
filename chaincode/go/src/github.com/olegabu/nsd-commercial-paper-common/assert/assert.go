@@ -7,6 +7,13 @@ import (
 	"strconv"
 )
 
+func NotError(t *testing.T, actual error) {
+	if actual != nil {
+		fmt.Println("Assert error:", actual.Error())
+		t.FailNow()
+	}
+}
+
 
 func Equal(t *testing.T, actual string, expected string, message ...string ) {
 	if actual != expected {
