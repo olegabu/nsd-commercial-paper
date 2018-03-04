@@ -426,18 +426,13 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		}
 
 		instruction := nsd.Instruction{}
-
+		if err := instruction.FromCompositeKey(stub, response.Key); err != nil {
+			return shim.Error(err.Error())
+		}
 		if err := instruction.FillFromLedgerValue(response.Value); err != nil {
 			return shim.Error(err.Error())
 		}
 
-		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		if err := instruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
-			return shim.Error(err.Error())
-		}
 
 		callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)

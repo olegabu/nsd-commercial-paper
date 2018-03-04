@@ -116,8 +116,24 @@ type InstructionHistoryValue struct {
 	IsDelete  bool             `json:"isDelete"`
 }
 
+// fill instruction key info by compositeKey
+func (this *Instruction) FromCompositeKey(stub shim.ChaincodeStubInterface, compositeKey string) (error) {
+	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
+	if err != nil {
+		return err
+	}
+
+	if err := this.FillKeyFromArgs(compositeKeyParts); err != nil {
+		return err
+	}
+	return nil
+}
+
+// get compositeKey for the instruction
 func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
 	keyParts := []string{
+		string(this.Key.Type),
+
 		this.Key.Transferer.Account,
 		this.Key.Transferer.Division,
 		this.Key.Receiver.Account,
@@ -128,12 +144,10 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 		this.Key.InstructionDate,
 		this.Key.TradeDate,
 
-		string(this.Key.Type),
-
 		this.Key.PaymentFrom.Account,
 		this.Key.PaymentFrom.Bic,
 
-		this.Key.PaymentTo.Bic,
+		this.Key.PaymentTo.Account,
 		this.Key.PaymentTo.Bic,
 
 		this.Key.PaymentAmount,
@@ -143,13 +157,9 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 }
 
 
-// fill instruction key info
-// return index of the first data field ( == key length)
+
+// FillFromCompositeKeyParts() is the opposite to ToCompositeKey()
 func (this *Instruction) FillKeyFromArgs(compositeKeyParts []string) (error) {
-	return this.FillFromCompositeKeyParts(compositeKeyParts)
-}
-// DEPRECATED: use FillKeyFromArgs()
-func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (error) {
 	keyLengthFop := 10
 	keyLengthDvp := keyLengthFop + 6
 
@@ -174,10 +184,12 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 		if len(compositeKeyParts) < keyLengthDvp {
 			return errors.New("Composite key parts array length must be at least " + strconv.Itoa(keyLengthDvp))
 		}
-	} else {
+	} else if this.Key.Type == InstructionTypeFOP {
 		if len(compositeKeyParts) < keyLengthFop {
 			return errors.New("Composite key parts array length must be at least " + strconv.Itoa(keyLengthFop))
 		}
+	} else {
+		return errors.New("Invalid instruction type: " + string(this.Key.Type))
 	}
 
 	// this.Key.Quantity
