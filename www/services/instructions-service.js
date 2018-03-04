@@ -294,7 +294,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
    * @return {Array<string>}
    */
   InstructionService._instructionArguments = function(instruction) {
-    return [
+    var args = [
       instruction.type,                // instruction type
       instruction.transferer.account,  // accountFrom
       instruction.transferer.division, // divisionFrom
@@ -308,6 +308,19 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.instructionDate,     // instructionDate  (ISO)
       instruction.tradeDate            // tradeDate  (ISO)
     ];
+
+    if (instruction.type === 'dvp') {
+      args.push.apply(args, [
+        instruction.dvp.receiver.account,
+        instruction.dvp.receiver.bic,
+        instruction.dvp.transferer.account,
+        instruction.dvp.transferer.bic,
+        instruction.dvp.amount,
+        instruction.dvp.currency
+        // instruction.dvp.extra // TODO:
+      ]);
+    }
+    return args;
   };
 
 
