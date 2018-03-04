@@ -26,9 +26,9 @@ type InstructionChaincode struct {
 
 //
 //
-func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
+func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredInitiator nsd.InstructionInitiator) pb.Response {
 	if this.Value.Initiator != desiredInitiator {
-		return pb.Response{Status: 400, Message: "Instruction is already created by " + this.Value.Initiator}
+		return pb.Response{Status: 400, Message: "Instruction is already created by " + string(this.Value.Initiator)}
 	}
 
 	if this.Value.Status != nsd.InstructionInitiated {
@@ -432,7 +432,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		if _, err := instruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
+		if err := instruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
 			return shim.Error(err.Error())
 		}
 

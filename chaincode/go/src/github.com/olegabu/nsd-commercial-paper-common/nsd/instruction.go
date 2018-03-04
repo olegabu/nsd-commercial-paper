@@ -9,13 +9,15 @@ import (
 	"github.com/olegabu/nsd-commercial-paper-common/assert"
 )
 
+type InstructionInitiator string
+const (
+	InitiatorIsTransferer InstructionInitiator = "transferer"
+	InitiatorIsReceiver   InstructionInitiator = "receiver"
+)
+
 // instruction statuses
 type InstructionStatus string
-
 const (
-	InitiatorIsTransferer = "transferer"
-	InitiatorIsReceiver   = "receiver"
-
 	InstructionInitiated  InstructionStatus = "initiated"
 	InstructionMatched    InstructionStatus = "matched"
 	InstructionSigned     InstructionStatus = "signed"
@@ -27,7 +29,6 @@ const (
 
 // instruction types
 type InstructionType string
-
 const (
 	InstructionTypeFOP InstructionType = "fop"
 	InstructionTypeDVP InstructionType = "dvp"
@@ -70,8 +71,8 @@ type InstructionValue struct {
 	//CounteragentFrom InstructionContragent `json:"from"`
 	//CounteragentTo   InstructionContragent `json:"to"`
 
-	Status    InstructionStatus `json:"status"`
-	Initiator string            `json:"initiator"`
+	Status    InstructionStatus   `json:"status"`
+	Initiator InstructionInitiator `json:"initiator"`
 
 	DeponentFrom            string `json:"deponentFrom"`
 	DeponentTo              string `json:"deponentTo"`
@@ -142,12 +143,12 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 
 // fill instruction key info
 // return index of the first data field ( == key length)
-func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (int, error) {
+func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (error) {
 	keyLengthFop := 10
 	keyLengthDvp := keyLengthFop + 6
 
 	if len(compositeKeyParts) < keyLengthFop {
-		return -1, errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
+		return errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
 	}
 
 	fieldIndex := 0
@@ -165,17 +166,17 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 	// check arguments length
 	if this.Key.Type == InstructionTypeDVP {
 		if len(compositeKeyParts) < keyLengthDvp {
-			return keyLengthDvp, errors.New("Composite key parts array length must be at least " + string(keyLengthDvp))
+			return errors.New("Composite key parts array length must be at least " + string(keyLengthDvp))
 		}
 	} else {
 		if len(compositeKeyParts) < keyLengthFop {
-			return keyLengthFop, errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
+			return errors.New("Composite key parts array length must be at least " + string(keyLengthFop))
 		}
 	}
 
 	// this.Key.Quantity
 	if !assert.IsNumber(compositeKeyParts[fieldIndex+6]) {
-		return -1, errors.New("Quantity must be int.")
+		return errors.New("Quantity must be int.")
 	}
 
 	this.Key.Transferer.Account 	= compositeKeyParts[fieldIndex+1]
@@ -196,26 +197,35 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) (
 		this.Key.PaymentAmount 			= compositeKeyParts[fieldIndex+14]
 		this.Key.PaymentCurrency		= compositeKeyParts[fieldIndex+15]
 
-		return fieldIndex+16, nil
 	}
 
-	return fieldIndex+10, nil
+	this.Key.Reference = strings.ToUpper(this.Key.Reference)
+	return nil
 }
 
-func (this *Instruction) FillFromArgs(args []string) error {
-	keyLength, err := this.FillFromCompositeKeyParts(args)
-	if err != nil {
-		return err
-	}
-	this.Key.Reference = strings.ToUpper(this.Key.Reference)
-
+func (this *Instruction) FillValueFromArgs(args []string) error {
+	keyLength := len(args) - 3
 	//
 	this.Value.DeponentFrom = args[keyLength+0]
 	this.Value.DeponentTo = args[keyLength+1]
 	this.Value.MemberInstructionIdFrom = args[keyLength+2]
+
 	return nil
 }
 
+
+func (this *Instruction) FillFromArgs(args []string) error {
+	if err := this.FillFromCompositeKeyParts(args); err != nil {
+		return err
+	}
+	if err := this.FillValueFromArgs(args); err != nil {
+		return err
+	}
+	return nil
+}
+
+//
+//
 func (this *Instruction) ExistsIn(stub shim.ChaincodeStubInterface) bool {
 	compositeKey, err := this.ToCompositeKey(stub)
 	if err != nil {
@@ -229,6 +239,8 @@ func (this *Instruction) ExistsIn(stub shim.ChaincodeStubInterface) bool {
 	return true
 }
 
+//
+//
 func (this *Instruction) LoadFrom(stub shim.ChaincodeStubInterface) error {
 	compositeKey, err := this.ToCompositeKey(stub)
 	if err != nil {
@@ -243,6 +255,8 @@ func (this *Instruction) LoadFrom(stub shim.ChaincodeStubInterface) error {
 	return this.FillFromLedgerValue(data)
 }
 
+//
+//
 func (this *Instruction) UpsertIn(stub shim.ChaincodeStubInterface) error {
 	compositeKey, err := this.ToCompositeKey(stub)
 	if err != nil {
