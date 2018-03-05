@@ -35,14 +35,13 @@ function SocketService(env, $rootScope, $log) {
     socket.on('reconnecting', function(attemptNumber){ SocketService.state = STATE_CONNECTING;  $rootScope.$apply(); });
     socket.on('reconnect_error', function(error){      SocketService.state = STATE_ERROR;       $rootScope.$apply(); });
 
-
     socket.on('status', function(status){
       $log.debug('server status:', status);
       SocketService.state = status;
       $rootScope.$apply();
     });
 
-    // TODO: this is an application-specific logic
+
     socket.on('chainblock', function(block){
 
       block.getChannel = block_getChannel;
@@ -50,7 +49,7 @@ function SocketService(env, $rootScope, $log) {
       $rootScope.$broadcast('chainblock', block); // emit global event
 
       // emit channel specific event ('-c-' - is a first letter from 'channel')
-      var blockChannel = SocketService.getBlockChannel(block);
+      var blockChannel = block.getChannel();
       $log.debug('server block channel:', blockChannel);
       $rootScope.$broadcast('chainblock-ch-'+blockChannel, block);
 
@@ -69,25 +68,25 @@ function SocketService(env, $rootScope, $log) {
     return socket;
   };
 
-  // THIS is a block
+  // 'this' is a block
   function block_getChannel(){
     try{
       return this.data.data[0].payload.header.channel_header.channel_id;
-    }catch(e){
+    } catch(e) {
       return null;
     }
   }
 
   SocketService.getBlockChannel = function(block){
    return block.getChannel();
-  }
+  };
 
   /**
    *
    */
   SocketService.getSocket = function(){
     return socket;
-  }
+  };
 
 
   /**
@@ -95,7 +94,7 @@ function SocketService(env, $rootScope, $log) {
    */
   SocketService.getState = function(){
     return SocketService.state;
-  }
+  };
 
 
 

@@ -16,17 +16,25 @@ function ChannelService(ApiService, $q) {
 
 
   /**
+   * list installed chaincodes. it's exist outside of any channel on the peer
    */
   ChannelService.listChaincodes = function() {
     return ApiService.chaincodes.list();
   };
 
+  /**
+   * list intantiated (ready) chaincodes
+   */
+  ChannelService.listChannelChaincodes = function(channelID) {
+    return ApiService.chaincodes.list({type:'ready', channel:channelID});
+  };
+
 
 
   /**
-   * @param {string} blockHash
+   *
    */
-  ChannelService.getLastBlock = function(channelId, blockHash) {
+  ChannelService.getLastBlock = function(channelId) {
     return ApiService.channels.get(channelId)
       .then(function(currentBlockHash){
         if(!currentBlockHash){
@@ -36,11 +44,11 @@ function ChannelService(ApiService, $q) {
       });
   };
 
-  ChannelService.getTransactionById = function(txId){
+  ChannelService.getTransactionById = function(channelID, txId){
     if(!txId){
       return $q.resolve(null);
     }
-    return ApiService.transaction.getById(txId);
+    return ApiService.transaction.getById(channelID, txId);
   };
 
   /**
@@ -62,6 +70,17 @@ function ChannelService(ApiService, $q) {
    */
   ChannelService.invoke = function(channelId, contractId, peers, fcn, args){
     return ApiService.sc.invoke(channelId, contractId, peers, fcn, args);
+  };
+
+  /**
+   * @param {string} channelId
+   * @param {string} contractId
+   * @param {string} peer - peerId
+   * @param {string} fcn
+   * @param {Array} [args]
+   */
+  ChannelService.query = function(channelId, contractId, peer, fcn, args){
+    return ApiService.sc.query(channelId, contractId, peer, fcn, args);
   };
 
 }

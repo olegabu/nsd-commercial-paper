@@ -90,7 +90,7 @@ angular.module('nsd.directive.form', [])
   function _inputLinkController(scope, elm, attrs, ctrl) {
 
     // SET input id the same as name
-    var inputName = elm.attr('name') || elm.attr('ng-model');
+    var inputName = elm.attr('name') || elm.attr('ng-model') || elm.attr('id');
     if(!elm.attr('name')){
       elm.attr('name', inputName);
     }

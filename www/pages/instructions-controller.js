@@ -1,9 +1,23 @@
+/* globals angular */
+/* jshint eqeqeq: false */
+/* jshint -W014 */
+
 /**
+ * @param $scope
+ * @param $q
+ * @param $filter
+ * @param {InstructionService} InstructionService
+ * @param {BookService} BookService
+ * @param {UserService} UserService
+ * @param {DialogService} DialogService
+ * @param {ConfigLoader} ConfigLoader
+ * @constructor
+ *
  * @class InstructionsController
- * @classdesc
  * @ngInject
  */
-function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader /*, SocketService*/) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader) {
+  "use strict";
 
   var ctrl = this;
   ctrl.list = [];
@@ -19,22 +33,24 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.org = ConfigLoader.get().org;
   ctrl.account = ConfigLoader.getAccount(ctrl.org);
 
-  // ConfigLoader.getAccount(orgID)
-  ctrl.accountFrom = null;
-  ctrl.accountTo   = null;
+  /**
+   * @type {boolean}
+   */
+  ctrl.test = true;
+
 
 
   /**
    *
    */
   ctrl.init = function(){
-      $scope.$on('chainblock', function(e, block){
-        if( InstructionService.isBilateralChannel(block.getChannel()) || block.getChannel() == BookService.getChannelID()){
+      $scope.$on('chainblock', function(e, block) {
+        if( InstructionService.isBilateralChannel(block.getChannel()) || block.getChannel() === BookService.getChannelID()){
           ctrl.reload();
         }
       });
       ctrl.reload();
-  }
+  };
 
   /**
    *
@@ -57,27 +73,27 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     .finally(function(){
       ctrl.invokeInProgress = false;
     });
-  }
+  };
 
 
   ctrl.isTransferer = function(instruction){
     var acc = Object.keys(ctrl.account.acc);
     return acc.indexOf(instruction.transferer.account) > -1;
-  }
+  };
 
   ctrl.isReceiver = function(instruction){
     var acc = Object.keys(ctrl.account.acc);
     return acc.indexOf(instruction.receiver.account) > -1;
-  }
+  };
 
 
   ctrl.isInitiator = function(instruction){
-    return instruction.initiator=='transferer' ? ctrl.isTransferer(instruction) : ctrl.isReceiver(instruction);
-  }
+    return instruction.initiator === 'transferer' ? ctrl.isTransferer(instruction) : ctrl.isReceiver(instruction);
+  };
 
   ctrl.isAdmin = function(){
     return ctrl.org === NSD_ROLE;
-  }
+  };
 
 
   /**
@@ -92,7 +108,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
         (type === TRANSFER_SIDE_TRANSFERER && acc.indexOf(inst.transferer.account) > -1) ||
         (type === TRANSFER_SIDE_RECEIVER && acc.indexOf(inst.receiver.account) > -1);
         // (acc.indexOf(inst.transferer.account) > -1) || (acc.indexOf(inst.receiver.account) > -1);
-  }
+  };
 
   /**
    * Displays reason based on role
@@ -103,7 +119,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.showReason = function(inst, key) {
     var curDep = inst[key];
     return ctrl.org === NSD_ROLE || curDep === ctrl.account.dep;
-  }
+  };
 
   /**
    * @return {Instruction}
@@ -111,15 +127,18 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl._getDefaultInstruction = function(transferSide, opponentID){
     var orgID = ctrl.org;
     return {
-      deponentFrom: ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_TRANSFERER ? orgID : opponentID),
-      deponentTo:   ctrl._getDeponentCode(transferSide == TRANSFER_SIDE_RECEIVER ? orgID : opponentID),
-
+      transferer: {
+        deponent: ctrl._getDeponentCode(transferSide === TRANSFER_SIDE_TRANSFERER ? orgID : opponentID)
+      },
+      receiver: {
+        deponent: ctrl._getDeponentCode(transferSide === TRANSFER_SIDE_RECEIVER ? orgID : opponentID)
+      },
       initiator: transferSide,
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
       tradeDate    : new Date(),
       instructionDate : new Date()
     };
-  }
+  };
 
   ctrl._getDeponentCode = function(orgID){
     if(orgID === ctrl.org) {
@@ -127,7 +146,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     }
     var account = ConfigLoader.getAccount(orgID) || {};
     return account.dep;
-  }
+  };
 
   /**
    *
@@ -140,13 +159,13 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       case 'canceled': return 'grey-text';
       default: return '';
     }
-  }
+  };
 
 
 
   ctrl.cancelInstruction = function(instruction){
-
-    return DialogService.confirm( $filter('translate')('CANCEL_INSTRUCTION_PROMPT').replace('%s', instruction.deponentFrom).replace('%s', instruction.deponentTo), {yesKlass:'red white-text'})
+    var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT').replace('%s', instruction.deponentFrom).replace('%s', instruction.deponentTo);
+    return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){
           ctrl.invokeInProgress = true;
@@ -155,36 +174,24 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
               ctrl.invokeInProgress = false;
             });
         }
-      })
+      });
 
-  }
+  };
 
 
   /**
    *
    */
   ctrl.newInstructionTransfer = function(transferSide, _channel){
-    if(!$scope.inst || $scope.inst.initiator != transferSide){
+    if(!$scope.inst || $scope.inst.initiator !== transferSide){
         // preset values
 
         var opponentOrgID = ctrl._getOrgIDByChannel(_channel);
         $scope.inst = ctrl._getDefaultInstruction(transferSide, opponentOrgID);
         $scope.formInstruction.$setPristine();
-
-        // preset
-        ctrl._fillAccount(transferSide, opponentOrgID);
     }
   };
 
-  ctrl._fillAccount = function(transferSide, opponentID){
-    if(transferSide == TRANSFER_SIDE_TRANSFERER){
-      ctrl.accountFrom = ConfigLoader.getAccount(ctrl.org);
-      ctrl.accountTo = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-    } else {
-      ctrl.accountFrom = opponentID ? ConfigLoader.getAccount(opponentID) : null;
-      ctrl.accountTo = ConfigLoader.getAccount(ctrl.org);
-    }
-  };
 
 
 
@@ -192,15 +199,20 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    *
    */
   ctrl._getOrgIDByChannel = function(channelID){
-    if(!channelID) return null;
-    return channelID.split('-').filter(function(org){ return org != ctrl.org; })[0];
-  }
+    if(!channelID) {
+      return null;
+    }
+    return channelID.split('-').filter(function(org){ return org !== ctrl.org; })[0];
+  };
 
   /**
    *
    */
   ctrl.sendInstruction = function(instruction){
     $scope.inst = null;
+
+    instruction.deponentFrom = instruction.transferer.deponent;
+    instruction.deponentTo = instruction.receiver.deponent;
 
     // FIXME here date can come in two different formats:
     //  Date object when we change form value
@@ -221,7 +233,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
         p = InstructionService.receive(instruction);
         break;
       default:
-        throw new Error('Unknpown transfer side: ' + instruction.initiator);
+        throw new Error('Unknown transfer side: ' + instruction.initiator);
     }
 
 
@@ -233,11 +245,13 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   /**
    * Parse date in format dd/mm/yyyy
-   * @param {string|Date} dateStr
+   * @param {string|Date} date
    * @return {Date}
    */
-  function formatDate(date){
-    if(!date) return null;
+  function formatDate(date) {
+    if(!date) {
+      return null;
+    }
 
     if(!(date instanceof Date)){
       // assumind date is a string: '1 August, 2017'
@@ -253,7 +267,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    */
   ctrl.newRedemption = function(){
     $scope.redemption = $scope.redemption || ctrl._getDefaultRedemption();
-  }
+  };
   /**
    * @return {Redemption}
    */
@@ -263,7 +277,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
         created   : new Date()//.format(DATE_INPUT_FORMAT)
       }
     };
-  }
+  };
 
   /**
    * @param {Redemption} redemption
@@ -283,7 +297,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       .then(function(){
         $scope.redemption = null;
       });
-  }
+  };
 
 
   /**
@@ -295,28 +309,47 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
         var scope = {history: result, getStatusClass: ctrl.getStatusClass, showReason: ctrl.showReason};
         return DialogService.dialog('balance-history.html', scope);
       });
-  }
+  };
 
-  ctrl.showABPrefill = function(transferSide){
-    var orglc= (''+UserService.getOrg()).toLowerCase();
-      return ( orglc === 'megafon' && transferSide == 'transferer')
-          || ( orglc === 'raiffeisen' && transferSide == 'receiver');
-  }
+  ctrl.isShowABPrefill = function(transferSide){
+      var orglc = (''+UserService.getOrg()).toLowerCase();
+      return ( orglc === 'megafon' && transferSide === 'transferer')
+          || ( orglc === 'raiffeisen' && transferSide === 'receiver');
+  };
 
+  /**
+   * @param transferSide
+   * @return {Instruction}
+   */
   ctrl.getABStub = function(transferSide){
     var accountConfig = ConfigLoader.get()['account-config'];
     var orgFrom = 'megafon';
     var orgTo   = 'raiffeisen';
     return {
-      deponentFrom: accountConfig[orgFrom].dep,
-      deponentTo:   accountConfig[orgTo].dep,
+      type:'dvp',
+
+      dvp: {
+        transferer:{
+          account: "40701810000000001000",
+          bic: "044525505"
+        },
+        receiver:{
+          account: "30109810000000000000",
+          bic: "044525505"
+        },
+        amount: 30000000,
+        currency: 'RUB',
+        extra: transferSide === 'receiver' ? 'payment no. DLT/001' : null
+      },
 
       security:'RU000A0JWGG3',
       transferer:{
+        deponent: accountConfig[orgFrom].dep,
         account : Object.keys(accountConfig[orgFrom].acc)[0],
         division: accountConfig[orgFrom].acc[ Object.keys(accountConfig[orgFrom].acc)[0] ][0]
       },
       receiver:{
+        deponent: accountConfig[orgTo].dep,
         account : Object.keys(accountConfig[orgTo].acc)[0],
         division: accountConfig[orgTo].acc[ Object.keys(accountConfig[orgTo].acc)[0] ][0]
       },
@@ -327,22 +360,24 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       tradeDate    : new Date(),
       instructionDate : new Date()
     };
-  }
+  };
 
-
+  /**
+   * @param transferSide
+   * @return {Instruction}
+   */
   ctrl.getACStub = function(transferSide){
     return {
-      deponentFrom: 'CA9861913023',
-      deponentTo:   'NL0000729408',
-
       security:'RU0DLTMFONCB',
       transferer:{
+        deponent: 'CA9861913023',
         account: "AC0689654902",
-        division: "87680000045800005",
+        division: "87680000045800005"
       },
       receiver:{
+        deponent: 'NL0000729408',
         account: "YN0927654908",
-        division: "37800007360900016",
+        division: "37800007360900016"
       },
       initiator: transferSide,
       quantity: 1,
@@ -351,7 +386,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       tradeDate    : new Date(),
       instructionDate : new Date()
     };
-  }
+  };
 
 
 

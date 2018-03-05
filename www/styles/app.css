@@ -263,6 +263,10 @@ textarea.ng-dirty.ng-invalid-required:not(:focus) + label:after,
 }
 
 
+.switch-block{
+  height: 38px;
+}
+
 
 /* compaction fix */
 html {
