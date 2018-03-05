@@ -227,7 +227,7 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillKeyFromArgs(args); err != nil {
-		return pb.Response{Status: 400, Message: "Wrong arguments."}
+		return pb.Response{Status: 400, Message: "Wrong arguments: " + err.Error()}
 	}
 
 	if authenticateCaller(stub, instruction.Key.Receiver) == false {
@@ -236,7 +236,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 
 	if instruction.ExistsIn(stub) {
 		if err := instruction.LoadFrom(stub); err != nil {
-			return pb.Response{Status: 404, Message: "Instruction not found."}
+			return pb.Response{Status: 404, Message: "Instruction not found: " + err.Error()}
 		}
 
 		// merge instructions data
@@ -246,9 +246,8 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		instruction.Value.MemberInstructionIdTo = instructionCounteragent.Value.MemberInstructionIdTo;
 		instruction.Value.ReasonTo = instructionCounteragent.Value.ReasonTo;
 
-		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 500, Message: "Persistence failure."}
-
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure: " + err.Error()}
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer)
 	} else {
@@ -261,8 +260,8 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
-		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 500, Message: "Persistence failure."}
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure: " + err.Error()}
 
 		}
 		return shim.Success(nil)
@@ -296,8 +295,8 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		instruction.Value.ReasonFrom = instructionCounteragent.Value.ReasonFrom;
 
 
-		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 500, Message: "Persistence failure."}
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure: " + err.Error()}
 		}
 		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver)
 	} else {
@@ -309,8 +308,8 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		instruction.Value.Status = nsd.InstructionInitiated
 
 		//
-		if instruction.UpsertIn(stub) != nil {
-			return pb.Response{Status: 500, Message: "Persistence failure."}
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure: " + err.Error()}
 		}
 		return shim.Success(nil)
 	}
