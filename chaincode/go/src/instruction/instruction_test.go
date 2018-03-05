@@ -63,39 +63,6 @@ func Test_InstructionInit(t *testing.T) {
 
 
 
-func Test_TransferFOP_legacy(t *testing.T) {
-	//stub := shim.NewMockStub("instruction", new(InstructionChaincode))
-	stub := initInstructionCC(t)
-
-
-	transferArguments := getInvokeArgs("transfer", []string{
-		//"fop", No type here!
-		"MFONISSUEACC",      // accountFrom
-		"19000000000000000", // divisionFrom
-
-		"RBIOWNER0ACC",      // accountTo
-		"00000000000000000", // divisionTo
-
-		"RU000ABC0001",      // security
-		"123",        		 // quantity
-		"ref-123",           // reference
-		"2017-12-31",        // instructionDate
-		"2017-12-31",        // tradeDate
-
-		"DE000DB7HWY7", 	// deponentFrom
-		"CA9861913023", 	// deponentTo
-		"memberInstructionId", // memberInstructionId
-		"{\"json_reason\":\"any json\"}", // reason
-	})
-
-
-	res := stub.MockInvoke("1", transferArguments)
-	assert.Ok(t, res, "Transfer failed");
-
-}
-
-
-
 func Test_TransferFOP(t *testing.T) {
 	//stub := shim.NewMockStub("instruction", new(InstructionChaincode))
 	stub := initInstructionCC(t)

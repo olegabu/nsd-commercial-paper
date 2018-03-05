@@ -167,16 +167,11 @@ func (this *Instruction) FillKeyFromArgs(compositeKeyParts []string) (error) {
 		return errors.New("Composite key parts array length must be at least " + strconv.Itoa(keyLengthFop))
 	}
 
-	fieldOffset := 0
-
 	// get and check instruction type
-	this.Key.Type = InstructionType(compositeKeyParts[fieldOffset+0])
+	this.Key.Type = InstructionType(compositeKeyParts[0])
 
 	if this.Key.Type != InstructionTypeFOP && this.Key.Type != InstructionTypeDVP {
-		// FOP by default
-		this.Key.Type = InstructionTypeFOP
-		fieldOffset = -1
-		//return -1, errors.New("Unknown instruction type " + string(this.Key.Type))
+		return errors.New("Unknown instruction type " + string(this.Key.Type))
 	}
 
 	// check arguments length
@@ -193,27 +188,32 @@ func (this *Instruction) FillKeyFromArgs(compositeKeyParts []string) (error) {
 	}
 
 	// this.Key.Quantity
-	if !assert.IsNumber(compositeKeyParts[fieldOffset+6]) {
+	if !assert.IsNumber(compositeKeyParts[6]) {
 		return errors.New("Quantity must be int.")
 	}
 
-	this.Key.Transferer.Account 	= compositeKeyParts[fieldOffset+1]
-	this.Key.Transferer.Division 	= compositeKeyParts[fieldOffset+2]
-	this.Key.Receiver.Account 		= compositeKeyParts[fieldOffset+3]
-	this.Key.Receiver.Division 		= compositeKeyParts[fieldOffset+4]
-	this.Key.Security 				= compositeKeyParts[fieldOffset+5]
-	this.Key.Quantity 				= compositeKeyParts[fieldOffset+6]
-	this.Key.Reference 				= compositeKeyParts[fieldOffset+7]
-	this.Key.InstructionDate 		= compositeKeyParts[fieldOffset+8]
-	this.Key.TradeDate 				= compositeKeyParts[fieldOffset+9]
+	this.Key.Transferer.Account 	= compositeKeyParts[1]
+	this.Key.Transferer.Division 	= compositeKeyParts[2]
+	this.Key.Receiver.Account 		= compositeKeyParts[3]
+	this.Key.Receiver.Division 		= compositeKeyParts[4]
+	this.Key.Security 				= compositeKeyParts[5]
+	this.Key.Quantity 				= compositeKeyParts[6]
+	this.Key.Reference 				= compositeKeyParts[7]
+	this.Key.InstructionDate 		= compositeKeyParts[8]
+	this.Key.TradeDate 				= compositeKeyParts[9]
 
 	if this.Key.Type == InstructionTypeDVP {
-		this.Key.PaymentFrom.Account 	= compositeKeyParts[fieldOffset+10]
-		this.Key.PaymentFrom.Bic 		= compositeKeyParts[fieldOffset+11]
-		this.Key.PaymentTo.Account 		= compositeKeyParts[fieldOffset+12]
-		this.Key.PaymentTo.Bic 			= compositeKeyParts[fieldOffset+13]
-		this.Key.PaymentAmount 			= compositeKeyParts[fieldOffset+14]
-		this.Key.PaymentCurrency		= compositeKeyParts[fieldOffset+15]
+		// this.Key.PaymentAmount
+		if !assert.IsNumber(compositeKeyParts[14]) {
+			return errors.New("Transfer value must be int.")
+		}
+
+		this.Key.PaymentFrom.Account 	= compositeKeyParts[10]
+		this.Key.PaymentFrom.Bic 		= compositeKeyParts[11]
+		this.Key.PaymentTo.Account 		= compositeKeyParts[12]
+		this.Key.PaymentTo.Bic 			= compositeKeyParts[13]
+		this.Key.PaymentAmount 			= compositeKeyParts[14]
+		this.Key.PaymentCurrency		= compositeKeyParts[15]
 	}
 
 	this.Key.Reference = strings.ToUpper(this.Key.Reference)
