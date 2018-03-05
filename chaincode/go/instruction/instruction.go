@@ -15,20 +15,33 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/olegabu/nsd-commercial-paper-common"
+	"flag"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
 
 const authenticationIndex = `Authentication`
 
+// TODO: think about making these constants public in nsd.go
+// args base lengths
+const (
+	fopArgsLength = 9
+	dvpArgsLength = 16
+)
+
 type InstructionChaincode struct {
 }
 
 // **** Instruction Methods **** //
 
-func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface, desiredInitiator string) pb.Response {
+func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface,
+			 desiredInitiator, desiredDeponentFrom, desiredDeponentTo string) pb.Response {
 	if this.Value.Initiator != desiredInitiator {
 		return pb.Response{Status: 400, Message: "Instruction is already created by " + this.Value.Initiator}
+	}
+
+	if this.Value.DeponentFrom != desiredDeponentFrom || this.Value.DeponentTo != desiredDeponentTo {
+		return pb.Response{Status: 400, Message: "Deponents differ from entered by another party."}
 	}
 
 	if this.Value.Status != nsd.InstructionInitiated {
@@ -167,24 +180,23 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 
 func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### InstructionChaincode Invoke ###########")
-	const numberOfBaseArgs = 16
 
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "receive" {
-		if len(args) < numberOfBaseArgs+4 {
+		if len(args) < fopArgsLength + 4 {
 			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
 		}
 		return t.receive(stub, args)
 	}
 	if function == "transfer" {
-		if len(args) < numberOfBaseArgs+4 {
+		if len(args) < fopArgsLength + 4 {
 			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
 		}
 		return t.transfer(stub, args)
 	}
 	if function == "status" {
-		if len(args) < numberOfBaseArgs+1 {
+		if len(args) < fopArgsLength + 1 {
 			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
 		}
 		return t.status(stub, args)
@@ -202,13 +214,13 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		return t.queryByType(stub, args)
 	}
 	if function == "history" {
-		if len(args) < numberOfBaseArgs {
+		if len(args) < fopArgsLength {
 			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
 		}
 		return t.history(stub, args)
 	}
 	if function == "sign" {
-		if len(args) < numberOfBaseArgs+1 {
+		if len(args) < fopArgsLength + 1 {
 			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
 		}
 		return t.sign(stub, args)
@@ -230,28 +242,43 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		return pb.Response{Status: 403, Message: "Caller must be receiver."}
 	}
 
+	var argsOffset int
+	if instruction.Key.Type == nsd.InstructionTypeFOP {
+		argsOffset = len(args) - 4
+	} else { // nsd.InstructionTypeDVP
+		argsOffset = len(args) - 5
+	}
+
 	if instruction.ExistsIn(stub) {
 		if err := instruction.LoadFrom(stub); err != nil {
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		instruction.Value.MemberInstructionIdTo = args[11]
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
+		instruction.Value.MemberInstructionIdTo = args[argsOffset + 2]
+		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
+		}
+
+		if instruction.Key.Type == nsd.InstructionTypeDVP {
+			// additional info argument passed
+			if err := json.Unmarshal([]byte(args[argsOffset + 4]), &instruction.Value.AdditionalInformation);
+			   err != nil {
+				return pb.Response{Status: 400, Message: "Wrong arguments."}
+			}
 		}
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
-
 		}
-		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer)
+
+		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer, args[argsOffset], args[argsOffset + 1])
 	} else {
-		instruction.Value.DeponentFrom = args[9]
-		instruction.Value.DeponentTo = args[10]
-		instruction.Value.MemberInstructionIdTo = args[11]
+		instruction.Value.DeponentFrom = args[argsOffset]
+		instruction.Value.DeponentTo = args[argsOffset + 1]
+		instruction.Value.MemberInstructionIdTo = args[argsOffset + 2]
 		instruction.Value.Initiator = nsd.InitiatorIsReceiver
 		instruction.Value.Status = nsd.InstructionInitiated
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonTo); err != nil {
+		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 		if instruction.UpsertIn(stub) != nil {
@@ -272,13 +299,15 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		return pb.Response{Status: 403, Message: "Caller must be transferer."}
 	}
 
+	argsOffset := len(args) - 4
+
 	if instruction.ExistsIn(stub) {
 		if err := instruction.LoadFrom(stub); err != nil {
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		instruction.Value.MemberInstructionIdFrom = args[11]
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
+		instruction.Value.MemberInstructionIdFrom = args[argsOffset + 2]
+		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonFrom); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 
@@ -286,14 +315,14 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
 		}
-		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver)
+		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver, args[argsOffset], args[argsOffset + 1])
 	} else {
-		instruction.Value.DeponentFrom = args[9]
-		instruction.Value.DeponentTo = args[10]
-		instruction.Value.MemberInstructionIdFrom = args[11]
+		instruction.Value.DeponentFrom = args[argsOffset]
+		instruction.Value.DeponentTo = args[argsOffset + 1]
+		instruction.Value.MemberInstructionIdFrom = args[argsOffset + 2]
 		instruction.Value.Initiator = nsd.InitiatorIsTransferer
 		instruction.Value.Status = nsd.InstructionInitiated
-		if err := json.Unmarshal([]byte(args[12]), &instruction.Value.ReasonFrom); err != nil {
+		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonFrom); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 		if instruction.UpsertIn(stub) != nil {
