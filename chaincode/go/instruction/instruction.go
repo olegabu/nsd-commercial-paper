@@ -280,6 +280,14 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
+		if instruction.Key.Type == nsd.InstructionTypeDVP {
+			// additional info argument passed
+			if err := json.Unmarshal([]byte(args[argsOffset + 4]), &instruction.Value.AdditionalInformation);
+				err != nil {
+				return pb.Response{Status: 400, Message: "Wrong arguments."}
+			}
+		}
+
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
@@ -367,14 +375,16 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
-		callerIsNSD && status == nsd.InstructionExecuted,
-		callerIsNSD && status == nsd.InstructionDownloaded:
+		 callerIsNSD && status == nsd.InstructionExecuted,
+		 callerIsNSD && status == nsd.InstructionDownloaded:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
-	case (callerIsTransferer || callerIsReceiver) && instruction.Value.Status == nsd.InstructionInitiated && status == nsd.InstructionCanceled:
-		if (callerIsTransferer && instruction.Value.Initiator == nsd.InitiatorIsTransferer) || (callerIsReceiver && instruction.Value.Initiator == nsd.InitiatorIsReceiver) {
+	case (callerIsTransferer || callerIsReceiver) && instruction.Value.Status == nsd.InstructionInitiated &&
+		 status == nsd.InstructionCanceled:
+		if (callerIsTransferer && instruction.Value.Initiator == nsd.InitiatorIsTransferer) ||
+			(callerIsReceiver && instruction.Value.Initiator == nsd.InitiatorIsReceiver) {
 			instruction.Value.Status = status
 			if err := instruction.UpsertIn(stub); err != nil {
 				return pb.Response{Status: 500, Message: "Persistence failure."}
