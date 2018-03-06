@@ -157,7 +157,17 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       initiator: transferSide,
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
       tradeDate    : new Date(),
-      instructionDate : new Date()
+      instructionDate : new Date(),
+
+
+      transfererRequisites:{
+        bic: "044525505"
+      },
+      receiverRequisites:{
+        bic: "044525505"
+      },
+      paymentCurrency: 'RUB'
+
     };
   };
 
@@ -380,34 +390,6 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       instructionDate : new Date()
     };
   };
-
-  /**
-   * @param transferSide
-   * @return {Instruction}
-   */
-  ctrl.getACStub = function(transferSide){
-    return {
-      security:'RU0DLTMFONCB',
-      transferer:{
-        deponent: 'CA9861913023',
-        account: "AC0689654902",
-        division: "87680000045800005"
-      },
-      receiver:{
-        deponent: 'NL0000729408',
-        account: "YN0927654908",
-        division: "37800007360900016"
-      },
-      initiator: transferSide,
-      quantity: 1,
-      reference: 'test',
-      memberInstructionId:123,
-      tradeDate    : new Date(),
-      instructionDate : new Date()
-    };
-  };
-
-
 
 
   //////////////
