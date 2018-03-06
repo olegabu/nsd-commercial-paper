@@ -92,6 +92,7 @@
   "RECEIVER_PAY_LABEL":"Реквизиты Получателя",
   "SECURITY_PAY_LABEL":"Платеж",
   "FREE_OF_PAYMENT":"Free of payment",
+  "DVP_EXTRA":"Дополнительная информация",
 
   "REFERENCE_LABEL": "Референс",
   "INSTRUCTION_ID_LABEL": "Номер поручения",

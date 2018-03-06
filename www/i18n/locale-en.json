@@ -93,6 +93,7 @@
   "RECEIVER_PAY_LABEL":"Payment receiver",
   "SECURITY_PAY_LABEL":"Payment value",
   "FREE_OF_PAYMENT":"Free of payment",
+  "DVP_EXTRA":"Extra info",
 
   "REFERENCE_LABEL": "Reference",
   "INSTRUCTION_ID_LABEL": "Reference",
