@@ -86,6 +86,27 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return acc.indexOf(instruction.receiver.account) > -1;
   };
 
+  /**
+   * @param {Instruction} instruction
+   * @param {boolean} getTheOppositeSide
+   */
+  ctrl.getInstructionID = function(instruction, getTheOppositeSide){
+    if(instruction.type === 'dvp') {
+      if (instruction.initiator === 'transferer' && !getTheOppositeSide) {
+        return 'INSTRUCTION_TRANSFER_DVP_ID';
+      } else {
+        return 'INSTRUCTION_RECEIVER_DVP_ID';
+      }
+    } else {
+      // type === 'fop'
+      if (instruction.initiator === 'transferer' && !getTheOppositeSide) {
+        return 'INSTRUCTION_TRANSFER_FOP_ID';
+      } else {
+        return 'INSTRUCTION_RECEIVER_FOP_ID';
+      }
+    }
+  };
+
 
   ctrl.isInitiator = function(instruction){
     return instruction.initiator === 'transferer' ? ctrl.isTransferer(instruction) : ctrl.isReceiver(instruction);

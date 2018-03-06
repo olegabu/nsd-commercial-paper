@@ -45,8 +45,7 @@
 
             <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || ctl.isInitiator(o)">
                 <!-- initiator -->
-                <th ng-if="::o.initiator=='transferer'" translate>INSTRUCTION_TRANSFER_ID</th>
-                <th ng-if="::o.initiator=='receiver'" translate>INSTRUCTION_RECEIVER_ID</th>
+                <th translate>{{:: ctl.getInstructionID(o) }}</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -73,8 +72,7 @@
 
             <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && (ctl.isAdmin() || !ctl.isInitiator(o))">
                 <!-- second member -->
-                <th ng-if="::o.initiator=='receiver'" translate>INSTRUCTION_TRANSFER_ID</th>
-                <th ng-if="::o.initiator=='transferer'" translate>INSTRUCTION_RECEIVER_ID</th>
+                <th translate>{{:: ctl.getInstructionID(o, true) }}</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -162,10 +160,10 @@
 <div id="transferInstruction" class="modal modal-fixed-footer modal-70">
   <form name="formInstruction" class="form-horizontal" novalidate>
     <div class="modal-content">
-        <h4 ng-if="inst.initiator=='transferer' && !inst.type_dov" translate>TRANSFER_INSTRUCTION_160_TITLE</h4>
-        <h4 ng-if="inst.initiator=='receiver'   && !inst.type_dov" translate>RECEIVE_INSTRUCTION_161_TITLE</h4>
-        <h4 ng-if="inst.initiator=='transferer' &&  inst.type_dov" translate>TRANSFER_INSTRUCTION_162_TITLE</h4>
-        <h4 ng-if="inst.initiator=='receiver'   &&  inst.type_dov" translate>RECEIVE_INSTRUCTION_163_TITLE</h4>
+        <h4 ng-if="inst.initiator=='transferer' && inst.type!=='dvp'" translate>TRANSFER_INSTRUCTION_160_TITLE</h4>
+        <h4 ng-if="inst.initiator=='receiver'   && inst.type!=='dvp'" translate>RECEIVE_INSTRUCTION_161_TITLE</h4>
+        <h4 ng-if="inst.initiator=='transferer' && inst.type==='dvp'" translate>TRANSFER_INSTRUCTION_162_TITLE</h4>
+        <h4 ng-if="inst.initiator=='receiver'   && inst.type==='dvp'" translate>RECEIVE_INSTRUCTION_163_TITLE</h4>
 
 
         <div class="row">
