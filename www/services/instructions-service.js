@@ -23,16 +23,16 @@
  * @property {Date} tradeDate
  *
  * @property {InstructionService.type} type ('fop'|'dvp')
+
+ * @property {object} [transfererRequisites]
+ * @property {string} [transfererRequisites.account]
+ * @property {string} [transfererRequisites.bic]
+ * @property {object} [receiverRequisites]
+ * @property {string} [receiverRequisites.account]
+ * @property {string} [receiverRequisites.bic]
  *
- *
- * @property {object} [dvp]
- * @property {string} dvp.transferer.account
- * @property {string} dvp.transferer.bic
- * @property {string} dvp.receiver.account
- * @property {string} dvp.receiver.bic
- * @property {number} dvp.amount
- * @property {'RUB'}  dvp.currency
- * @property {string} [dvp.extra] for 16/3 only
+ * @property {string} [paymentAmount]
+ * @property {'RUB'}  [paymentCurrency]
  *
  *
  * extra properties:
@@ -64,6 +64,12 @@
  * @property {object} reasonTo.created
  * @property {object} reasonTo.description
  * @property {object} reasonTo.document
+ *
+ *
+ * @property {string} [additionalInformation] for 16/3 only
+ * @property {object} [additionalInformation.created]
+ * @property {object} [additionalInformation.description]
+ * @property {object} [additionalInformation.document]
  */
 
 /**
@@ -221,7 +227,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   };
 
   /**
-   *
+   * @param {Instruction} instruction
    */
   InstructionService.receive = function(instruction) {
     $log.debug('InstructionService.receive', instruction);
@@ -237,6 +243,13 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       instruction.memberInstructionId,
       JSON.stringify(instruction.reason||{})
     );
+
+    // only for receiver!
+    if (instruction.type === 'dvp') {
+      args.push(
+       JSON.stringify(instruction.additionalInformation||{})
+      );
+    }
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'receive', args);
   };
@@ -312,13 +325,12 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
     if (instruction.type === 'dvp') {
       args.push.apply(args, [
-        instruction.dvp.receiver.account,
-        instruction.dvp.receiver.bic,
-        instruction.dvp.transferer.account,
-        instruction.dvp.transferer.bic,
-        instruction.dvp.amount,
-        instruction.dvp.currency
-        // instruction.dvp.extra // TODO:
+        instruction.transfererRequisites.account,
+        instruction.transfererRequisites.bic,
+        instruction.receiverRequisites.account,
+        instruction.receiverRequisites.bic,
+        instruction.paymentAmount,
+        instruction.paymentCurrency
       ]);
     }
     return args;

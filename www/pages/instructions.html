@@ -237,19 +237,19 @@
             <div class="row">
                 <div class="input-field col s4">
                     <input name="i_sen_acc" id="i_sen_acc"
-                           type="text" class="uppercase" ng-model="inst.dvp.transferer.account" required ng-length="20">
+                           type="text" class="uppercase" ng-model="inst.transfererRequisites.account" required ng-length="20">
                     <label for="i_sen_acc" translate>PAYMENT_ACCOUNT_SENDER_LABEL</label>
                     <span class="input-error-message" ng-show="formInstruction.i_sen_acc.$error.length" translate>20_CHARACTERS_LABEL</span>
                 </div>
                 <div class="input-field col s4">
                     <input name="i_rec_acc" id="i_rec_acc"
-                           type="text" class="uppercase" ng-model="inst.dvp.receiver.account" required ng-length="20">
+                           type="text" class="uppercase" ng-model="inst.receiverRequisites.account" required ng-length="20">
                     <label for="i_rec_acc" translate>PAYMENT_ACCOUNT_RECEIVER_LABEL</label>
                     <span class="input-error-message" ng-show="formInstruction.i_rec_acc.$error.length" translate>20_CHARACTERS_LABEL</span>
                 </div>
                 <div class="input-field col s4">
                     <input name="i_pay_sum" id="i_pay_sum"
-                           type="number" class="uppercase" ng-model="inst.dvp.amount" required>
+                           type="number" class="uppercase" ng-model="inst.paymentAmount" required>
                     <label for="i_pay_sum" translate>PAYMENT_AMOUNT_LABEL</label>
                     <span class="input-error-message" ng-show="formInstruction.i_pay_sum.$error.length" translate>20_CHARACTERS_LABEL</span>
                 </div>
@@ -258,7 +258,7 @@
             <div class="row" ng-if="inst.initiator=='receiver'">
                 <div class="row">
                     <div class="input-field col s12">
-                        <textarea name="i_add_info" class="materialize-textarea" ng-model="inst.dvp.extra" required></textarea>
+                        <textarea name="i_add_info" class="materialize-textarea" ng-model="inst.additionalInformation.description" required></textarea>
                         <label for="i_add_info" translate>DESCRIPTION_EXTRA_LABEL</label>
                     </div>
                 </div>

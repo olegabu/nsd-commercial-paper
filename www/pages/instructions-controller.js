@@ -328,19 +328,17 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return {
       type:'dvp',
 
-      dvp: {
-        transferer:{
-          account: "40701810000000001000",
-          bic: "044525505"
-        },
-        receiver:{
-          account: "30109810000000000000",
-          bic: "044525505"
-        },
-        amount: 30000000,
-        currency: 'RUB',
-        extra: transferSide === 'receiver' ? 'payment no. DLT/001' : null
+      transfererRequisites:{
+        account: "40701810000000001000",
+        bic: "044525505"
       },
+      receiverRequisites:{
+        account: "30109810000000000000",
+        bic: "044525505"
+      },
+      paymentAmount: 30000000,
+      paymentCurrency: 'RUB',
+      additionalInformation: transferSide === 'receiver' ? {description: 'payment no. DLT/001'} : null,
 
       security:'RU000A0JWGG3',
       transferer:{
@@ -356,7 +354,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       initiator: transferSide,
       quantity: 1,
       reference: 'test',
-      memberInstructionId:123,
+      memberInstructionId: 123,
       tradeDate    : new Date(),
       instructionDate : new Date()
     };
