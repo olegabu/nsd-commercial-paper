@@ -1,9 +1,11 @@
+/* globals angular */
 /**
  * @class PositionsController
  * @classdesc
  * @ngInject
  */
 function PositionsController($scope, PositionsService, ConfigLoader, DialogService) {
+  "use strict";
 
   var ctrl = this;
 
@@ -15,7 +17,7 @@ function PositionsController($scope, PositionsService, ConfigLoader, DialogServi
   ctrl.init = function(){
       $scope.$on('chainblock-ch-'+ PositionsService.getChannelID(), ctrl.reload);
       ctrl.reload();
-  }
+  };
 
   /**
    *
@@ -29,11 +31,11 @@ function PositionsController($scope, PositionsService, ConfigLoader, DialogServi
       .finally(function(){
         ctrl.invokeInProgress = false;
       });
-  }
+  };
 
 
   /**
-   * @param {Instruction} instruction
+   * @param {Book} book
    */
   ctrl.showHistory = function(book){
     return PositionsService.history(book)
@@ -41,7 +43,7 @@ function PositionsController($scope, PositionsService, ConfigLoader, DialogServi
         var scope = {history: result};
         return DialogService.dialog('book-history.html', scope);
       });
-  }
+  };
 
 
   ctrl.init();

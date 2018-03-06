@@ -228,20 +228,32 @@ function position2string(position){
  */
 function instructionArguments(instruction) {
   var args = [
-    instruction.transferer.account,  // 0: accountFrom
-    instruction.transferer.division, // 1: divisionFrom
+      instruction.transferer.account,  // accountFrom
+      instruction.transferer.division, // divisionFrom
 
-    instruction.receiver.account,    // 2: accountTo
-    instruction.receiver.division,   // 3: divisionTo
+      instruction.receiver.account,    // accountTo
+      instruction.receiver.division,   // divisionTo
 
-    instruction.security,            // 4: security
-    ''+instruction.quantity,         // 5: quantity
-    instruction.reference,           // 6: reference
-    instruction.instructionDate,     // 7: instructionDate
-    instruction.tradeDate,           // 8: tradeDate
-  ];
+      instruction.security,            // security
+      ''+instruction.quantity,            // quantity // TODO: fix: string parameters
+      instruction.reference,           // reference
+      instruction.instructionDate,     // instructionDate  (ISO)
+      instruction.tradeDate,           // tradeDate  (ISO)
 
-  return args;
+      instruction.type                 // instruction type
+    ];
+
+    if (instruction.type === 'dvp') {
+      args.push.apply(args, [
+        instruction.transfererRequisites.account,
+        instruction.transfererRequisites.bic,
+        instruction.receiverRequisites.account,
+        instruction.receiverRequisites.bic,
+        instruction.paymentAmount,
+        instruction.paymentCurrency
+      ]);
+    }
+    return args;
 }
 
 

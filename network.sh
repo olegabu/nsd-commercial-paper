@@ -15,7 +15,7 @@ STARTTIME=$(date +%s)
 : ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\",\"security\":\"RU000A0JWGG3\",\"quantity\":\"1998899\"}]"]}'}
 : ${SECURITY_INIT:='{"Args":["init","RU000A0JWGG3","active","MZ130605006C","22000000000000000"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
-
+#"
 export INSTRUCTION_INIT
 
 CLI_TIMEOUT=10000
@@ -701,6 +701,9 @@ elif [ "${MODE}" == "devdown" ]; then
   devNetworkDown
 elif [ "${MODE}" == "print-args" ]; then
     printArgs
+elif [ "${MODE}" == "rmi" ]; then
+    removeUnwantedContainers
+    removeUnwantedImages
 else
   printHelp
   exit 1

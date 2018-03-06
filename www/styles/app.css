@@ -263,6 +263,10 @@ textarea.ng-dirty.ng-invalid-required:not(:focus) + label:after,
 }
 
 
+.switch-block{
+  height: 38px;
+}
+
 
 /* compaction fix */
 html {
@@ -279,4 +283,8 @@ td, th, .clock, .endpoint {
 }
 td, th{
   padding: 5px 3px;
+}
+
+.gray{
+  color: gray;
 }
