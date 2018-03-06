@@ -88,6 +88,11 @@
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Создать поручение списания (10/50)",
   "TRANSFERER_LABEL": "Отправитель",
   "RECEIVER_LABEL": "Получатель",
+  "TRANSFERER_PAY_LABEL":"Реквизиты Плательщика",
+  "RECEIVER_PAY_LABEL":"Реквизиты Получателя",
+  "SECURITY_PAY_LABEL":"Платеж",
+  "FREE_OF_PAYMENT":"Free of payment",
+
   "REFERENCE_LABEL": "Референс",
   "INSTRUCTION_ID_LABEL": "Номер поручения",
   "MEMBER_INSTRUCTION_ID_LABEL": "Номер поручения",

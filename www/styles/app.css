@@ -284,3 +284,7 @@ td, th, .clock, .endpoint {
 td, th{
   padding: 5px 3px;
 }
+
+.gray{
+  color: gray;
+}

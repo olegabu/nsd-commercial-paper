@@ -39,6 +39,11 @@
                 <th translate>TRADE_DATE_LABEL</th>
                 <th translate>STATUS_LABEL</th>
                 <th translate>REASON_LABEL</th>
+
+                <!-- DVP -->
+                <th translate>TRANSFERER_PAY_LABEL</th>
+                <th translate>RECEIVER_PAY_LABEL</th>
+                <th translate>SECURITY_PAY_LABEL</th>
             </tr>
         </thead>
         <tbody ng-repeat="o in ctl.list|orderBy:['-instructionDate', '-reference']" ng-click="ctl.showHistory(o)">
@@ -68,6 +73,12 @@
                   <span>{{::o.reasonTo.description}}</span>
                   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span>
                 </td>
+
+                <!-- DVP -->
+                <td class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="3"><i translate>FREE_OF_PAYMENT</i></td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}</td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}</td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
             </tr>
 
             <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && (ctl.isAdmin() || !ctl.isInitiator(o))">
@@ -86,6 +97,12 @@
                 </td>
                 <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
                 <td ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
+
+                <!-- DVP -->
+                <td class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="3"><i translate>FREE_OF_PAYMENT</i></td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}</td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}</td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
             </tr>
 
         </tbody>

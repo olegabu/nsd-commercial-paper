@@ -89,6 +89,11 @@
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Create Redemption Instruction",
   "TRANSFERER_LABEL": "Transferer",
   "RECEIVER_LABEL": "Receiver",
+  "TRANSFERER_PAY_LABEL":"Payment transferer",
+  "RECEIVER_PAY_LABEL":"Payment receiver",
+  "SECURITY_PAY_LABEL":"Payment value",
+  "FREE_OF_PAYMENT":"Free of payment",
+
   "REFERENCE_LABEL": "Reference",
   "INSTRUCTION_ID_LABEL": "Reference",
   "MEMBER_INSTRUCTION_ID_LABEL": "Member Instruction Id",
