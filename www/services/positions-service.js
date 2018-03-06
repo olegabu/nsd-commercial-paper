@@ -82,11 +82,11 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
         return list.map(function(singleValue){
           return Object.assign(singleValue.value, bookKey, {_created: parseDate(singleValue.timestamp) });
         });
+      })
+      .then(function(list){
+        list.forEach(PositionsService._processBookItem);
+        return list;
       });
-      // .then(function(list){
-      //   list.forEach(BookService._processBookItem);
-      //   return list;
-      // });
   };
 
   function parseDate(datestr){
