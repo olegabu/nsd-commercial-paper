@@ -49,7 +49,11 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface,
 
 	this.Value.Status = nsd.InstructionMatched
 
-	this.Value.AlamedaFrom, this.Value.AlamedaTo = createAlamedaXMLs(this)
+	if this.Key.Type == nsd.InstructionTypeFOP {
+		this.Value.AlamedaFrom, this.Value.AlamedaTo = createAlamedaFopXMLs(this)
+	} else { // nsd.InstructionTypeDvp
+		this.Value.AlamedaFrom, this.Value.AlamedaTo = createAlamedaDvpXMLs(this)
+	}
 
 	if err := this.UpsertIn(stub); err != nil {
 		return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -62,7 +66,7 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface,
 	return shim.Success(nil)
 }
 
-func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
+func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
 	const xmlTemplate = `<?xml version="1.0"?>
 <Batch>
 <Documents_amount>1</Documents_amount>
@@ -142,6 +146,124 @@ func createAlamedaXMLs(this *nsd.Instruction) (string, string) {
 	instructionWrapper.InstructionID = this.Value.MemberInstructionIdTo
 	instructionWrapper.Reason = this.Value.ReasonTo
 	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") && (instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
+
+	t.Execute(buf, instructionWrapper)
+	alamedaTo := buf.String()
+
+	return alamedaFrom, alamedaTo
+}
+
+func CreateAlamedaDvpXMLsTestWrapper(this *nsd.Instruction) (string, string) {
+	return createAlamedaDvpXMLs(this)
+}
+
+func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
+	const xmlTemplate = `<?xml version="1.0" encoding="Windows-1251"?>
+<Batch>
+<Documents_amount>1</Documents_amount>
+<Document DOC_ID="1" version="7">
+<ORDER_HEADER>
+<deposit_c>{{.Depositary}}</deposit_c>
+<contrag_c>{{.Initiator}}</contrag_c>
+<contr_d_id>{{.InstructionID}}</contr_d_id>
+<createdate>{{.Instruction.Key.InstructionDate}}</createdate>
+<order_t_id>{{.OperationCode}}</order_t_id>
+<execute_dt>{{.InstructionDate}}</execute_dt>
+<expirat_dt>{{.ExpirationDate}}</expirat_dt>
+</ORDER_HEADER>
+<MF170>
+<dep_acc_c>{{.Instruction.Key.Transferer.Account}}</dep_acc_c>
+<sec_c>{{.Instruction.Key.Transferer.Division}}</sec_c>
+<corr_acc_c>{{.Instruction.Key.Receiver.Account}}</corr_acc_c>
+<corr_sec_c>{{.Instruction.Key.Receiver.Division}}</corr_sec_c>
+<deal_num>{{.Reference}}</deal_num>
+<deal_date>{{.Instruction.Key.TradeDate}}</deal_date>
+<con_code>{{.Contragent}}</con_code>
+<sen_acc>{{.Instruction.Key.ReceiverRequisites.Account}}</sen_acc>
+<sen_bic>{{.Instruction.Key.ReceiverRequisites.Bic}}</sen_bic>
+<rec_acc>{{.Instruction.Key.TransfererRequisites.Account}}</rec_acc>
+<rec_bic>{{.Instruction.Key.TransfererRequisites.Bic}}</rec_bic>
+<pay_sum>{{.Instruction.Key.PaymentAmount}}</pay_sum>
+<pay_curr>{{.Instruction.Key.PaymentCurrency}}</pay_curr>
+{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
+{{with .Reason.Document -}}<based_numb>{{.}}</based_numb>{{end}}
+{{with .Reason.DocumentDate -}}<based_date>{{.}}</based_date>{{end}}{{end}}
+<block_securities>{{.BlockSecurities}}</block_securities>
+<f_instruction>{{.FInstruction}}</f_instruction>
+<auto_borr>{{.AutoBorr}}</auto_borr>
+{{if .AdditionalInfoExists}}{{with .AdditionalInfo.Description -}}<add_info>{{.}}</add_info>{{end}}{{end}}
+<securities>
+<security>
+<security_c>{{.Instruction.Key.Security}}</security_c>
+<security_q>{{.Instruction.Key.Quantity}}</security_q>
+</security>
+</securities>
+</MF170>
+</Document>
+</Batch>
+`
+
+	type InstructionWrapper struct {
+		Instruction          nsd.Instruction
+		Depositary           string
+		Initiator      	     string
+		InstructionID        string
+		OperationCode        string
+		InstructionDate      string
+		ExpirationDate       string
+		ReasonExists    	 bool
+		Reason          	 nsd.Reason
+		Reference       	 string
+		Contragent      	 string
+		BlockSecurities      string
+		FInstruction         string
+		AutoBorr             string
+		AdditionalInfoExists bool
+		AdditionalInfo       nsd.Reason
+	}
+
+	dateLayout := "2006-01-02"
+	instructionDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
+	expirationDate := instructionDate
+	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*(29*24+23) + time.Minute*59 + time.Second*59)
+
+	instructionWrapper := InstructionWrapper{
+		Instruction:          *this,
+		Depositary:           "NDC000000000",
+		Initiator:            this.Value.DeponentFrom,
+		InstructionID:        this.Value.MemberInstructionIdFrom,
+		OperationCode:        "16/2",
+		InstructionDate:      instructionDate.Format("2006-01-02 15:04:05"),
+		ExpirationDate:       expirationDate.Format("2006-01-02 15:04:05"),
+		Reason:               this.Value.ReasonFrom,
+		Reference:            strings.ToUpper(this.Key.Reference),
+		Contragent:           this.Value.DeponentTo,
+		BlockSecurities:      "N",
+		FInstruction:         "N",
+		AutoBorr:             "N",
+		AdditionalInfoExists: false,
+		AdditionalInfo:       this.Value.AdditionalInformation,
+	}
+	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") &&
+		(instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
+
+	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
+
+	buf := new(bytes.Buffer)
+	t.Execute(buf, instructionWrapper)
+	alamedaFrom := buf.String()
+
+	buf.Reset()
+	instructionWrapper.OperationCode = "16/3"
+	instructionWrapper.Initiator = this.Value.DeponentTo
+	instructionWrapper.InstructionID = this.Value.MemberInstructionIdTo
+	instructionWrapper.Reason = this.Value.ReasonTo
+	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") &&
+		(instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
+	instructionWrapper.Contragent = this.Value.DeponentFrom
+	instructionWrapper.FInstruction = "Y"
+	instructionWrapper.AdditionalInfoExists = true
+	instructionWrapper.AdditionalInfo.Description = "/NZP " + instructionWrapper.AdditionalInfo.Description
 
 	t.Execute(buf, instructionWrapper)
 	alamedaTo := buf.String()
@@ -280,6 +402,14 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonTo); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
+		if instruction.Key.Type == nsd.InstructionTypeDVP {
+			// additional info argument passed
+			if err := json.Unmarshal([]byte(args[argsOffset + 4]), &instruction.Value.AdditionalInformation);
+				err != nil {
+				return pb.Response{Status: 400, Message: "Wrong arguments."}
+			}
+		}
+
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
@@ -367,14 +497,16 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
-		callerIsNSD && status == nsd.InstructionExecuted,
-		callerIsNSD && status == nsd.InstructionDownloaded:
+		 callerIsNSD && status == nsd.InstructionExecuted,
+		 callerIsNSD && status == nsd.InstructionDownloaded:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
-	case (callerIsTransferer || callerIsReceiver) && instruction.Value.Status == nsd.InstructionInitiated && status == nsd.InstructionCanceled:
-		if (callerIsTransferer && instruction.Value.Initiator == nsd.InitiatorIsTransferer) || (callerIsReceiver && instruction.Value.Initiator == nsd.InitiatorIsReceiver) {
+	case (callerIsTransferer || callerIsReceiver) && instruction.Value.Status == nsd.InstructionInitiated &&
+		 status == nsd.InstructionCanceled:
+		if (callerIsTransferer && instruction.Value.Initiator == nsd.InitiatorIsTransferer) ||
+			(callerIsReceiver && instruction.Value.Initiator == nsd.InitiatorIsReceiver) {
 			instruction.Value.Status = status
 			if err := instruction.UpsertIn(stub); err != nil {
 				return pb.Response{Status: 500, Message: "Persistence failure."}
