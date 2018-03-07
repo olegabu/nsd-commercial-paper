@@ -190,8 +190,8 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 {{with .Reason.DocumentDate -}}<based_date>{{.}}</based_date>{{end}}{{end}}
 <block_securities>{{.BlockSecurities}}</block_securities>
 <f_instruction>{{.FInstruction}}</f_instruction>
-<auto_borr>{{.AutoBorr}}</auto_borr>
-{{if .AdditionalInfoExists}}{{with .AdditionalInfo.Description -}}<add_info>{{.}}</add_info>{{end}}{{end}}
+<auto_borr>{{.AutoBorr}}</auto_borr>{{if .AdditionalInfoExists}}
+{{with .AdditionalInfo.Description -}}<add_info>{{.}}</add_info>{{end}}{{end}}
 <securities>
 <security>
 <security_c>{{.Instruction.Key.Security}}</security_c>
@@ -225,7 +225,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 	dateLayout := "2006-01-02"
 	instructionDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
 	expirationDate := instructionDate
-	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*(29*24+23) + time.Minute*59 + time.Second*59)
+	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*23 + time.Minute*59 + time.Second*59)
 
 	instructionWrapper := InstructionWrapper{
 		Instruction:          *this,
