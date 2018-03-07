@@ -75,9 +75,12 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
   ctrl.getBookBalance = function(book){
     if(book && book.balance) {
       for (var i = ctrl.books.length - 1; i >= 0; i--) {
-        var b = ctrl.books[i];
+        var b = /** @type {Book} */ ctrl.books[i];
 
-        if (b.balance.account === book.balance.account && b.balance.division === book.balance.division) {
+        // jshint -W014
+        if (b.balance.account === book.balance.account
+          && b.balance.division === book.balance.division
+          && b.security === book.security) {
           return b.quantity;
         }
       }
