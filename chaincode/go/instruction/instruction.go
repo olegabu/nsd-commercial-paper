@@ -346,9 +346,15 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		}
 		return t.sign(stub, args)
 	}
+	if function == "rollback" {
+		if len(args) < fopArgsLength {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.rollback(stub, args)
+	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
-		"receive, transfer, query, history, status, sign. But got: %v", args[0])
+		"receive, transfer, query, history, status, sign, rollback. But got: %v", args[0])
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -737,6 +743,39 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+
+	if !callerIsNSD {
+		return pb.Response{Status: 403, Message: "Instruction can be rolled back only by NSD."}
+	}
+
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
+	if instruction.ExistsIn(stub) {
+		if err := instruction.LoadFrom(stub); err != nil {
+			return pb.Response{Status: 404, Message: "Instruction not found."}
+		}
+
+		// TODO: add "rollback" to predefined constants
+		instruction.Value.Status = "rollback"
+
+		if instruction.UpsertIn(stub) != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+		if err := instruction.EmitState(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Event emission failure."}
+		}
+
+		return shim.Success(nil)
+	} else {
+		return pb.Response{Status: 404, Message: "Instruction does not exist in ledger."}
+	}
 }
 
 // **** Security Methods **** //
