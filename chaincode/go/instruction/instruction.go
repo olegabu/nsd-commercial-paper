@@ -185,13 +185,11 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 <rec_bic>{{.Instruction.Key.TransfererRequisites.Bic}}</rec_bic>
 <pay_sum>{{.Instruction.Key.PaymentAmount}}</pay_sum>
 <pay_curr>{{.Instruction.Key.PaymentCurrency}}</pay_curr>
-{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
-{{with .Reason.Document -}}<based_numb>{{.}}</based_numb>{{end}}
-{{with .Reason.DocumentDate -}}<based_date>{{.}}</based_date>{{end}}{{end}}
+{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}{{end}}
 <block_securities>{{.BlockSecurities}}</block_securities>
 <f_instruction>{{.FInstruction}}</f_instruction>
-<auto_borr>{{.AutoBorr}}</auto_borr>
-{{if .AdditionalInfoExists}}{{with .AdditionalInfo.Description -}}<add_info>{{.}}</add_info>{{end}}{{end}}
+<auto_borr>{{.AutoBorr}}</auto_borr>{{if .AdditionalInfoExists}}
+{{with .AdditionalInfo.Description -}}<add_info>{{.}}</add_info>{{end}}{{end}}
 <securities>
 <security>
 <security_c>{{.Instruction.Key.Security}}</security_c>
@@ -225,7 +223,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 	dateLayout := "2006-01-02"
 	instructionDate, _ := time.Parse(dateLayout, this.Key.InstructionDate)
 	expirationDate := instructionDate
-	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*(29*24+23) + time.Minute*59 + time.Second*59)
+	expirationDate = expirationDate.Truncate(time.Hour * 24).Add(time.Hour*23 + time.Minute*59 + time.Second*59)
 
 	instructionWrapper := InstructionWrapper{
 		Instruction:          *this,
@@ -346,9 +344,15 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		}
 		return t.sign(stub, args)
 	}
+	if function == "rollback" {
+		if len(args) < fopArgsLength {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.rollback(stub, args)
+	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
-		"receive, transfer, query, history, status, sign. But got: %v", args[0])
+		"receive, transfer, query, history, status, sign, rollback. But got: %v", args[0])
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -498,7 +502,9 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
 		 callerIsNSD && status == nsd.InstructionExecuted,
-		 callerIsNSD && status == nsd.InstructionDownloaded:
+		 callerIsNSD && status == nsd.InstructionDownloaded,
+		 callerIsNSD && status == nsd.InstructionRollbackDone,
+		 callerIsNSD && status == nsd.InstructionRollbackDeclined:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -737,6 +743,38 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+
+	if !callerIsNSD {
+		return pb.Response{Status: 403, Message: "Instruction can be rolled back only by NSD."}
+	}
+
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
+	if instruction.ExistsIn(stub) {
+		if err := instruction.LoadFrom(stub); err != nil {
+			return pb.Response{Status: 404, Message: "Instruction not found."}
+		}
+
+		instruction.Value.Status = nsd.InstructionRollbackInitialized
+
+		if instruction.UpsertIn(stub) != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+		if err := instruction.EmitState(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Event emission failure."}
+		}
+
+		return shim.Success(nil)
+	} else {
+		return pb.Response{Status: 404, Message: "Instruction does not exist in ledger."}
+	}
 }
 
 // **** Security Methods **** //
