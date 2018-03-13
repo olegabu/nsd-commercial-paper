@@ -53,10 +53,10 @@
   "SECURITY_MASTER_MENU":"Security Master",
   "INSTRUCTION_MENU":"Instructions",
 
-
   "ORGANISATION_LABEL": "Organisation",
   "ACCOUNT_LABEL": "Account",
   "SECURITY_LABEL": "Security",
+  "INSTRUCTION_DETAILS": "Details",
   "QUANTITY_LABEL": "Quantity",
   "CREATED_LABEL": "Created",
   "CLOSE_LABEL": "Close",

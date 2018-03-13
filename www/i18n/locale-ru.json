@@ -11,6 +11,7 @@
     "ACCOUNT_MONEY_LABEL":"Лицевой счет"
   },
 
+
   "STATUS_active":"Активен",
   "STATUS_matured":"Погашено",
 
@@ -55,6 +56,7 @@
   "ORGANISATION_LABEL": "Организация",
   "ACCOUNT_LABEL": "Счёт",
   "SECURITY_LABEL": "Ценная бумага",
+  "INSTRUCTION_DETAILS": "Информация о сделке",
   "MONEY_LABEL": "Денежное средство",
   "QUANTITY_LABEL": "Количество",
   "CREATED_LABEL": "Создано",
