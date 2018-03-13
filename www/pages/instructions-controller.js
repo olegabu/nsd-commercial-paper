@@ -197,10 +197,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    * @return {boolean}
    */
   ctrl.canRollback = function(instruction){
-    return instruction.status === 'executed'
-      || instruction.status === 'signed'
-      || instruction.status === 'downloaded'
+    return instruction.status === 'downloaded'
       || instruction.status === 'rollbackDeclined';
+      // || instruction.status === 'executed'
+      // || instruction.status === 'signed'
+
   };
 
   /**
@@ -213,12 +214,12 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
     return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(isConfirmed){
-        if(isConfirmed) {
-          // ctrl.invokeInProgress = true;
-          // return InstructionService.cancelInstruction(instruction)
-          //   .finally(function(){
-          //     ctrl.invokeInProgress = false;
-          //   });
+        if(isConfirmed){
+          ctrl.invokeInProgress = true;
+          return InstructionService.rollbackInstruction(instruction)
+            .finally(function(){
+              ctrl.invokeInProgress = false;
+            });
         }
       });
   };

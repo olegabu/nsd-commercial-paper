@@ -24,6 +24,9 @@
   "STATUS_downloaded":"downloaded",
   "STATUS_declined":"declined",
   "STATUS_canceled":"canceled",
+  "STATUS_rollbackInitiated":"rollback initiated",
+  "STATUS_rollbackDone":"rollback done",
+  "STATUS_rollbackDeclined":"rollback declined",
 
   "INITIATOR_transferer":"transferer",
   "INITIATOR_receiver":"receiver",
