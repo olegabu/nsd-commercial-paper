@@ -10,6 +10,14 @@
     "ACCOUNT_LABEL":"Account",
     "ACCOUNT_MONEY_LABEL":"Account"
   },
+  "dialog":{
+    "CONFIRM_TITLE":"Confirm your actions",
+    "PROMPT_TITLE":"Confirm your actions",
+    "PROMPT_LABEL":"Enter the reason",
+
+    "CONFIRM_ACTION":"Confirm",
+    "DECLINE_ACTION":"Decline"
+  },
 
 
   "STATUS_active":"active",
@@ -138,9 +146,5 @@
 
   "CANCEL_INSTRUCTION_PROMPT":"Cancel %s -> %s ?",
   "ROLLBACK_INSTRUCTION_PROMPT":"Rollback %s -> %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?",
-
-  "CONFIRM_TITLE":"Confirm your actions",
-  "CONFIRM_ACTION":"Confirm",
-  "DECLINE_ACTION":"Decline"
+  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?"
 }

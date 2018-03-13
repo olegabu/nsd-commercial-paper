@@ -10,7 +10,14 @@
     "ACCOUNT_LABEL":"Cчет",
     "ACCOUNT_MONEY_LABEL":"Лицевой счет"
   },
+  "dialog":{
+    "CONFIRM_TITLE":"Подтвердите действие",
+    "PROMPT_TITLE":"Подтвердите действие",
+    "PROMPT_LABEL":"Введите причину",
 
+    "CONFIRM_ACTION":"Подтвердить",
+    "DECLINE_ACTION":"Отменить"
+  },
 
   "STATUS_active":"Активен",
   "STATUS_matured":"Погашено",
@@ -139,9 +146,6 @@
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
   "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s -> %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
+  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
 
-  "CONFIRM_TITLE":"Подтвердите действие",
-  "CONFIRM_ACTION":"Подтвердить",
-  "DECLINE_ACTION":"Отменить"
 }
