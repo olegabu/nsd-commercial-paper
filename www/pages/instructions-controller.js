@@ -212,11 +212,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       .replace('%s', instruction.deponentFrom)
       .replace('%s', instruction.deponentTo);
 
-    return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
-      .then(function(isConfirmed){
-        if(isConfirmed){
+    return DialogService.confirmReason(cancelInstructionMessage, {yesKlass:'red white-text'})
+      .then(function(result){
+        if(result.confirmed){
           ctrl.invokeInProgress = true;
-          return InstructionService.rollbackInstruction(instruction)
+          return InstructionService.rollbackInstruction(instruction, result.reason)
             .finally(function(){
               ctrl.invokeInProgress = false;
             });

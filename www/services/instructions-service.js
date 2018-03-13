@@ -282,8 +282,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
 
-    // TODO: send reaason
-    args.push(status/*, reason*/);
+    args.push(reason, status);
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'status', args);
   };
