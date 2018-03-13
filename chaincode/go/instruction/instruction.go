@@ -503,6 +503,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	case callerIsNSD && status == nsd.InstructionDeclined,
 		 callerIsNSD && status == nsd.InstructionExecuted,
 		 callerIsNSD && status == nsd.InstructionDownloaded,
+		 callerIsNSD && status == nsd.InstructionRollbackInitialized,
 		 callerIsNSD && status == nsd.InstructionRollbackDone,
 		 callerIsNSD && status == nsd.InstructionRollbackDeclined:
 		instruction.Value.Status = status
