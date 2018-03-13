@@ -295,9 +295,12 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       });
   };
 
-
-  function parseDate(datestr){
-    return new Date((datestr||'').replace(/\s*\+.+$/,''));
+  /**
+   * parse "2018-03-13 13:30:46.909727155 +0000 UTC" to date
+   * @param datestr
+   */
+  function parseDate(datestr) {
+    return new Date((datestr||'').replace(/\s*\+.+$/,'').replace(' ','T'));
   }
 
 
