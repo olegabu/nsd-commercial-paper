@@ -113,6 +113,7 @@
   "12_CHARACTERS_LABEL": "Должно быть ровно 12 символов",
   "17_CHARACTERS_LABEL": "Должно быть ровно 17 символов",
   "20_CHARACTERS_LABEL": "Должно быть ровно 20 символов",
+  "37_CHARACTERS_LABEL": "Должно быть ровно 37 символов",
   "MAX_16_CHARACTERS_LABEL": "Не более 16 символов",
   "DOCUMENT_NUMBER_LABEL": "Номер документа",
   "DOCUMENT_DATE_LABEL": "Дата документа",
