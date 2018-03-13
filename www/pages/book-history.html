@@ -9,8 +9,11 @@
                 <tr>
                     <th translate>CREATED_LABEL</th>
                     <th role-show="nsd" translate>ORGANISATION_LABEL</th>
-                    <th translate>ACCOUNT_LABEL</th>
-                    <th translate>SECURITY_LABEL</th>
+                    <th translate ng-if="$options.type=='paper'">book.ACCOUNT_LABEL</th>
+                    <th translate ng-if="$options.type=='money'">book.ACCOUNT_MONEY_LABEL</th>
+
+                    <th translate ng-if="$options.type=='paper'">SECURITY_LABEL</th>
+                    <th translate ng-if="$options.type=='money'">MONEY_LABEL</th>
                     <th translate>QUANTITY_LABEL</th>
                 </tr>
             </thead>
@@ -18,7 +21,8 @@
                 <tr ng-repeat="o in $options.history|orderBy:['-_created']">
                     <td class="grey-text nowrap">{{::o._created|date:'M/d/yy H:mm:ss'}}</td>
                     <td role-show="nsd" class="nowrap">{{::o.org}}</td>
-                    <td>{{::o.deponent}} / {{::o.balance.account}} / {{::o.balance.division}}</td>
+                    <td ng-if="$options.type=='paper'">{{::o.deponent}} / {{::o.balance.account}} / {{::o.balance.division}}</td>
+                    <td ng-if="$options.type=='money'">{{::o.balance.account}}</td>
                     <td>{{::o.security}}</td>
                     <td>{{::o.quantity}}</td>
                 </tr>

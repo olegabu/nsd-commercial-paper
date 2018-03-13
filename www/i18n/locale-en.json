@@ -5,7 +5,10 @@
 
 
     "NEW_BOOK_LABEL" : "Установить баланс",
-    "NEW_MONEY_LABEL" : "Установить баланс"
+    "NEW_MONEY_LABEL" : "Установить баланс",
+
+    "ACCOUNT_LABEL":"Account",
+    "ACCOUNT_MONEY_LABEL":"Account"
   },
 
 

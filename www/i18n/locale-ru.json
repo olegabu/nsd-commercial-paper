@@ -5,7 +5,10 @@
 
 
     "NEW_BOOK_LABEL" : "Установить баланс",
-    "NEW_MONEY_LABEL" : "Установить баланс"
+    "NEW_MONEY_LABEL" : "Установить баланс",
+
+    "ACCOUNT_LABEL":"Cчет",
+    "ACCOUNT_MONEY_LABEL":"Лицевой счет"
   },
 
   "STATUS_active":"Активен",
@@ -52,6 +55,7 @@
   "ORGANISATION_LABEL": "Организация",
   "ACCOUNT_LABEL": "Счёт",
   "SECURITY_LABEL": "Ценная бумага",
+  "MONEY_LABEL": "Денежное средство",
   "QUANTITY_LABEL": "Количество",
   "CREATED_LABEL": "Создано",
   "CLOSE_LABEL": "Закрыть",
