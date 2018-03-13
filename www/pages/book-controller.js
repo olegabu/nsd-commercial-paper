@@ -13,6 +13,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
   ctrl.securities = [];
   ctrl.moneys = [];
   ctrl.accounts = ConfigLoader.getAllAccounts();
+  ctrl.bics = ConfigLoader.getAllBics();
 
   /**
    *

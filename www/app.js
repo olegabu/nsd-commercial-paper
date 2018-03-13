@@ -438,6 +438,22 @@ angular.module('nsd.app',[
       }, {});
     }
 
+    /**
+     * @return {Object<Array<string>>} key-value of account => [divisions]
+     * @deprecated
+     */
+    function getAllBics(){
+      var accountConfig = _config['account-config'] || {};
+      return Object.keys(accountConfig).reduce(function(result, orgID){
+
+        Object.keys( accountConfig[orgID].bic ).forEach(function(account){
+          result[account] = angular.copy(accountConfig[orgID].bic[account]);
+          result[account].org = orgID;
+        });
+        return result;
+      }, {});
+    }
+
     function getOrg(){
       return _config.org;
     }
@@ -445,8 +461,8 @@ angular.module('nsd.app',[
 
     /**
      * get organosation ID by deponent code (1 to 1 matching)
-     * @param  {srting} depCode
-     * @return {srting} orgID
+     * @param  {string} depCode
+     * @return {string} orgID
      */
     function getOrgByDepcode(depCode){
       var accountConfig = _config['account-config'];
@@ -500,6 +516,7 @@ angular.module('nsd.app',[
       getPeers   : getPeers,
       getOrgs    : getOrgs,
       getAllAccounts : getAllAccounts,
+      getAllBics : getAllBics,
 
       getOrgByAccountDivision : getOrgByAccountDivision,
       getOrgByDepcode:getOrgByDepcode,

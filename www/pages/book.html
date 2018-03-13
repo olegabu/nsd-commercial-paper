@@ -100,7 +100,7 @@
 
 
 
-<!-- Modal Structure -->
+<!-- new security paper Modal Structure -->
 <div id="newBookEntry" class="modal modal-fixed-footer">
     <form name="bookForm" class="form-horizontal" novalidate>
         <div class="modal-content">
@@ -214,12 +214,21 @@
                 <div class="input-field col s2">
                     <h5 class="nowrap" translate>NEW_BOOK_FOR_LABEL</h5>
                 </div>
-
-                <div class="input-field col s10">
-                  <input name="b_acc" type="text" class="uppercase" ng-model="book.balance.account" required ng-length="37">
-                  <label for="b_acc" translate>ACCOUNT_LABEL</label>
-                  <span class="input-error-message" ng-show="moneyForm.b_acc.$error.length" translate>37_CHARACTERS_LABEL</span>
+                <div class="input-field col s5">
+                    <select name="b_acc" id="b_acc"
+                            ng-model="book.balance.account" material-select watch class=""
+                            ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.bics"
+                            translate-attr="{ placeholder: 'ACCOUNT_INPUT_PLACEHOLDER' }" required></select>
+                    <label for="b_acc" translate>ACCOUNT_LABEL</label>
                 </div>
+
+                <!--
+                <div class="input-field col s10">
+                    <input name="b_acc" type="text" class="uppercase" ng-model="book.balance.account" required ng-length="37">
+                    <label for="b_acc" translate>ACCOUNT_LABEL</label>
+                    <span class="input-error-message" ng-show="moneyForm.b_acc.$error.length" translate>37_CHARACTERS_LABEL</span>
+                </div>
+                -->
             </div>
 
             <div ng-show="book.balance.account && moneyForm.b_acc.$valid">
