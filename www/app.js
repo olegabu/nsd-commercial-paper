@@ -287,9 +287,29 @@ angular.module('nsd.app',[
  * @deprecated: use environment service
  * @ngInject
  */
-.service('ConfigLoader', function(ApiService, $rootScope){
+.service('ConfigLoader', function(ApiService, $rootScope) {
+    "use strict";
 
-    /** @type {Promise<FabricConfig>} */
+  /**
+   * @typedef {object} FabricConfig
+   * @property {string} org - your org ID
+   * @property {string[]} endorsers - org ID of root endorsers
+   *
+   * @property {object} network-config
+   * @property {string} network-config.role
+   * @property {string} network-config.dep
+   * @property {object} network-config.acc
+   *
+   * @property {object} account-config
+   * @property {object} account-config.orderer
+   * @property {object} account-config.<org>.acc
+   * @property {object} account-config.<org>.bic
+   * @property {string} account-config.<org>.dep
+   * @property {string} account-config.<org>.role
+   */
+
+
+  /** @type {Promise<FabricConfig>} */
     var configPromise;
     var _config = null;
 
@@ -297,10 +317,11 @@ angular.module('nsd.app',[
       if( !configPromise ){
         configPromise = ApiService.getConfig()
           .then(function(config){
-            console.log('ConfigLoader - got config');
             $rootScope._config = config;
             _config = config;
             _extendConfig();
+            _extendAccountConfig();
+            console.log('ConfigLoader - got config:', config); // jshint ignore:line
             return config;
           });
       }
@@ -322,7 +343,7 @@ angular.module('nsd.app',[
       var netConfig = _config['network-config'];
 
       Object.keys(netConfig)
-        .filter(function(key){ return key != 'orderer' })
+        .filter(function(key){ return key !== 'orderer'; })
         .forEach(function(orgId){
 
           // add org.id
@@ -341,6 +362,24 @@ angular.module('nsd.app',[
 
         });
     }
+
+  function _extendAccountConfig(){
+    var accConfig = _config['account-config'];
+
+    Object.keys(accConfig)
+      .forEach(function(orgId){
+
+        accConfig[orgId].bic = {};
+        Object.keys(accConfig[orgId].acc).forEach(function(account){
+          if (account.length > 12) {
+            // assume it's bic
+            accConfig[orgId].bic[account] = accConfig[orgId].acc[account];
+            delete accConfig[orgId].acc[account];
+          }
+        });
+
+      });
+  }
 
     function getPeers(orgId){
         var netConfig = _config['network-config'];
@@ -440,7 +479,10 @@ angular.module('nsd.app',[
       var orgArr = Object.keys(accountConfig);
       for (var i = orgArr.length - 1; i >= 0; i--) {
         var orgID = orgArr[i];
-        if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ){
+        if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ) {
+          return orgID;
+        }
+        if( accountConfig[orgID].bic[account] && accountConfig[orgID].bic[account].indexOf(division)>=0 ) {
           return orgID;
         }
       }
