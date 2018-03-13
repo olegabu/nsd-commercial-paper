@@ -404,7 +404,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       paymentCurrency: 'RUB',
       additionalInformation: transferSide === 'receiver' ? {description: 'payment no. DLT/001'} : null,
 
-      security:'RU000A0JWGG3',
+      security:'RU000A0JVVB5',
       transferer:{
         deponent: accountConfig[orgFrom].dep,
         account : Object.keys(accountConfig[orgFrom].acc)[0],
