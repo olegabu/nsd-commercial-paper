@@ -252,7 +252,7 @@ module.exports = function (require) {
         const err = helper.parseFabricError(e)
         // console.log('**********************************************');
         // console.log(err, err.message, err.code, err.status);
-        if(err.code == 409 /*'Already executed.'*/ ){
+        if(err.code == 202 /*'Already executed.'*/ ){
           // assume it's not an error
           return null;
         }
