@@ -93,7 +93,7 @@
   "RECEIVE_INSTRUCTION_163_TITLE": "Новое поручение 16/3 Перевод с подтверждением (встречное)",
   "REDEEM_INSTRUCTIONS_TITLE":"Список поручений списания (10/50)",
 
-  "TRANSFERER_TYPE_LABEL":"Transfer type",
+  "TRANSFERER_TYPE_LABEL":"Способ расчетов",
   "TRANSFERER_TYPE_FOP":"FOP",
   "TRANSFERER_TYPE_DVP":"DVP",
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Создать поручение списания (10/50)",
@@ -125,10 +125,11 @@
   "EVENT_TYPE_LABEL": "Тип события",
   "NO_ITEMS_LABEL": "Нет записей",
 
-  "PAYMENT_LABEL": "Payment",
-  "PAYMENT_ACCOUNT_SENDER_LABEL": "Sender Account",
-  "PAYMENT_ACCOUNT_RECEIVER_LABEL": "Receiver Account",
-  "PAYMENT_AMOUNT_LABEL": "Transfer value",
+  "PAYMENT_LABEL": "Платежные реквизиты",
+  "PAYMENT_ACCOUNT_SENDER_LABEL": "БИК банка отправителя",
+  "PAYMENT_ACCOUNT_RECEIVER_LABEL": "БИК банка получателя",
+  "PAYMENT_AMOUNT_LABEL": "Cумма платежа",
+  "PAYMENT_CURRENCY": "Валюта",
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
