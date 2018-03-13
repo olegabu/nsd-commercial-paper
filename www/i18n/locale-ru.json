@@ -80,6 +80,7 @@
   "REDEMPTION_LABEL": "Погашение",
   "OK_LABEL": "ОК",
   "CANCEL_LABEL": "Отменить",
+  "ROLLBACK_LABEL": "Откатить",
   "EXPLORER_LABEL": "Блокчейн",
   "LOGOUT_LABEL": "Выйти из системы",
   "LOGGED_IN_LABEL": "Авторизирован",
@@ -134,6 +135,7 @@
   "PAYMENT_CURRENCY": "Валюта",
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
+  "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s -> %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
 
   "CONFIRM_TITLE":"Подтвердите действие",

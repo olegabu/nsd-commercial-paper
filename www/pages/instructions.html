@@ -61,10 +61,15 @@
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
-                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
-                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
-                        value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
-                        ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                    <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
+
+                    <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
+                           value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
+                           ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+
+                    <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
+                           value="ROLLBACK_LABEL" translate-attr="{value:'ROLLBACK_LABEL'}"
+                           ng-show="::ctl.canRollback(o)" role-show="nsd" ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
                 </td>
                 <td ng-if="::o.initiator=='transferer'">
                   <span>{{::o.reasonFrom.description}}</span>

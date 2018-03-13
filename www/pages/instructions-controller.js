@@ -192,10 +192,42 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     }
   };
 
+  /**
+   * @param {Instruction} instruction
+   * @return {boolean}
+   */
+  ctrl.canRollback = function(instruction){
+    return instruction.status === 'executed'
+      || instruction.status === 'signed'
+      || instruction.status === 'downloaded'
+      || instruction.status === 'rollbackDeclined';
+  };
 
+  /**
+   * @param {Instruction} instruction
+   */
+  ctrl.rollbackInstruction = function(instruction){
+    var cancelInstructionMessage = $filter('translate')('ROLLBACK_INSTRUCTION_PROMPT')
+      .replace('%s', instruction.deponentFrom)
+      .replace('%s', instruction.deponentTo);
+
+    return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
+      .then(function(isConfirmed){
+        if(isConfirmed) {
+          // ctrl.invokeInProgress = true;
+          // return InstructionService.cancelInstruction(instruction)
+          //   .finally(function(){
+          //     ctrl.invokeInProgress = false;
+          //   });
+        }
+      });
+  };
 
   ctrl.cancelInstruction = function(instruction){
-    var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT').replace('%s', instruction.deponentFrom).replace('%s', instruction.deponentTo);
+    var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT')
+      .replace('%s', instruction.deponentFrom)
+      .replace('%s', instruction.deponentTo);
+
     return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){

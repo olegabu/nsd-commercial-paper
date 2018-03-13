@@ -79,6 +79,7 @@
   "REDEMPTION_LABEL": "Redemption",
   "OK_LABEL": "Ok",
   "CANCEL_LABEL": "Cancel",
+  "ROLLBACK_LABEL": "Rollback",
   "EXPLORER_LABEL": "Explorer",
   "LOGOUT_LABEL": "Logout",
   "LOGGED_IN_LABEL": "Logged in",
@@ -133,6 +134,7 @@
   "PAYMENT_CURRENCY": "Currency",
 
   "CANCEL_INSTRUCTION_PROMPT":"Cancel %s -> %s ?",
+  "ROLLBACK_INSTRUCTION_PROMPT":"Rollback %s -> %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?",
 
   "CONFIRM_TITLE":"Confirm your actions",
