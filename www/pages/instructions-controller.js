@@ -393,11 +393,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       type:'dvp',
 
       transfererRequisites:{
-        account: "40701810000000001000",
+        account: "30109810000000000000",
         bic: "044525505"
       },
       receiverRequisites:{
-        account: "30109810000000000000",
+        account: "40701810000000001000",
         bic: "044525505"
       },
       paymentAmount: 30000000,
