@@ -23,7 +23,7 @@ module.exports = function (require) {
   const CHECK_INTERVAL = parseInt(process.env.CHECK_INTERVAL) || 5*60*1000;
 
   var tools = require('../lib/tools');
-  let hfc = require('../lib-fabric/hfc.js');
+  var hfc = require('../lib-fabric/hfc.js');
   var config = hfc.getConfigSetting('config');
   var configHelper = new ConfigHelper(config);
   var networkConfig = configHelper.networkConfig;
@@ -71,21 +71,28 @@ module.exports = function (require) {
             }
             logger.trace(`event ${event.event_name}`);
 
-            if(event.event_name === 'Instruction.matched') {
+            if(event.event_name === 'Instruction.matched' || event.event_name === 'Instruction.rollbackInitiated') {
               // instruction is matched, so we should move the values within 'book' cc
               var instruction = JSON.parse(event.payload.toString());
-              logger.trace('Instruction.matched', JSON.stringify(instruction));
+              logger.trace(event.event_name, JSON.stringify(instruction));
+
               instruction = helper.normalizeInstruction(instruction);
               moveBookByInstruction(instruction);
+              return;
             }
 
-            if(channel === 'depository' && event.event_name === 'Instruction.executed') {
+            if(channel === 'depository' && (event.event_name === 'Instruction.executed' || event.event_name === 'Instruction.rollbackDone')) {
               // instruction is executed, however still has 'matched' status in ledger (but 'executed' in the event)
               var instruction = JSON.parse(event.payload.toString());
-              logger.trace('Instruction.executed', JSON.stringify(instruction));
+              logger.trace(event.event_name, JSON.stringify(instruction));
+
               instruction = helper.normalizeInstruction(instruction);
               updateInstructionStatus(instruction, instruction.status /* 'executed' */);
+              return;
             }
+
+
+            logger.log('Event not processed:', event.event_name);
           }); // thru action elements
 
 
@@ -124,11 +131,13 @@ module.exports = function (require) {
   }, CHECK_INTERVAL);
 
 
+  var INSTRUCTION_MATCHED_STATUS = 'matched';
+  var INSTRUCTION_ROLLBACK_INITATED_STATUS = 'rollbackInitiated';
+
   // QUERY INSTRUCTIONS
 
   function _processMatchedInstructions(){
     logger.info('Process missed instructions');
-    var INSTRUCTION_MATCHED_STATUS = 'matched';
 
     return _getAllInstructions(endorsePeerId/*, INSTRUCTION_MATCHED_STATUS*/) // TODO: uncomment this line when 'key' will be received
         .then(function(instructionInfoList){
@@ -139,8 +148,8 @@ module.exports = function (require) {
             // var channelID = instructionInfo.channel_id;
             var instruction = instructionInfo.instruction;
 
-            if(instruction.status !== INSTRUCTION_MATCHED_STATUS){
-              logger.warn('Skip instruction with status "%s" (not "%s")', instruction.status, INSTRUCTION_MATCHED_STATUS);
+            if(instruction.status !== INSTRUCTION_MATCHED_STATUS && instruction.status !== INSTRUCTION_ROLLBACK_INITATED_STATUS){
+              logger.warn('Skip instruction with status "%s" (not "%s"|"%s")', instruction.status, INSTRUCTION_MATCHED_STATUS, INSTRUCTION_ROLLBACK_INITATED_STATUS);
               return;
             }
 
@@ -150,6 +159,9 @@ module.exports = function (require) {
               //   logger.error('_processInstruction failed:', e);
               // });
           });
+        })
+        .then(()=>{
+          return updatePositionsFromBook();
         })
         .catch(e=>{
           logger.error('_processMatchedInstructions failed:', e);
@@ -231,13 +243,36 @@ module.exports = function (require) {
 
     //
     var args = helper.instructionArguments(instruction);
-    return invoke.invokeChaincode([endorsePeerHost], 'depository', 'book', 'move', args, USERNAME, ORG)
+    var operation = instruction.status === INSTRUCTION_ROLLBACK_INITATED_STATUS ? 'rollback' : 'move';
+    return invoke.invokeChaincode([endorsePeerHost], 'depository', 'book', operation, args, USERNAME, ORG)
       .then(function (/*transactionId*/) {
         logger.info('Move book record success', helper.instruction2string(instruction));
       })
       .catch(function(e) {
+        const err = helper.parseFabricError(e)
+        // console.log('**********************************************');
+        // console.log(err, err.message, err.code, err.status);
+        if(err.code == 409 /*'Already executed.'*/ ){
+          // assume it's not an error
+          return null;
+        }
+        throw err;
+      })
+      .then( () => {
+        if (instruction.status === INSTRUCTION_ROLLBACK_INITATED_STATUS) {
+          return updateInstructionStatus(instruction, 'rollbackDone');
+        } else {
+          return updateInstructionStatus(instruction, 'executed');
+        }
+      })
+      .catch(function(e) {
         logger.error('Move book record error', helper.instruction2string(instruction), e);
-        return updateInstructionStatus(instruction, 'declined');
+        if (instruction.status === INSTRUCTION_ROLLBACK_INITATED_STATUS) {
+          return updateInstructionStatus(instruction, 'rollbackDeclined');
+        } else {
+          return updateInstructionStatus(instruction, 'declined');
+        }
+
       });
   }
 
@@ -300,7 +335,7 @@ module.exports = function (require) {
             })
             .catch(function (e) {
               logger.error('Put position error', helper.position2string(position), e);
-              throw e;
+              // throw e;
             });
 
         });
