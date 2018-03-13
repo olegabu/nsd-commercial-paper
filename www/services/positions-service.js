@@ -51,8 +51,8 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
   PositionsService._processBookItem = function(book){
     book.org = ConfigLoader.getOrgByAccountDivision(book.balance.account, book.balance.division);
     book.deponent = (ConfigLoader.getAccount(book.org) || {}).dep;
+    book.type = book.security.length > 3 ? 'paper' : 'money';
   };
-
 
   /**
    *

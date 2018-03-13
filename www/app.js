@@ -97,6 +97,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'POSITIONS_MENU',
+        title: false,
         roles: ['issuer', 'investor']
       }
     })
