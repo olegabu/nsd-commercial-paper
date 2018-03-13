@@ -88,8 +88,6 @@ func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 <pay_sum>10000.00</pay_sum>
 <pay_curr>RUB</pay_curr>
 <based_on>Doc_from</based_on>
-<based_numb>123</based_numb>
-<based_date>2018-03-29</based_date>
 <block_securities>N</block_securities>
 <f_instruction>N</f_instruction>
 <auto_borr>N</auto_borr>
@@ -132,8 +130,6 @@ func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 <pay_sum>10000.00</pay_sum>
 <pay_curr>RUB</pay_curr>
 <based_on>Doc_to</based_on>
-<based_numb>321</based_numb>
-<based_date>2018-03-29</based_date>
 <block_securities>N</block_securities>
 <f_instruction>Y</f_instruction>
 <auto_borr>N</auto_borr>

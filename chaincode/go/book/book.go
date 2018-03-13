@@ -187,31 +187,8 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 	return shim.Success(nil)
 }
 
-// TODO: remove duplicated code (move/rollback)
-func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
-		return pb.Response{Status: 400, Message: "Wrong arguments."}
-	}
-
-	//check stored list for this instructions has been executed already
-	if instruction.ExistsIn(stub) {
-		if err := instruction.LoadFrom(stub); err != nil {
-			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
-		}
-
-		if instruction.Value.Status == nsd.InstructionExecuted {
-			return pb.Response{Status: 409, Message: "Already executed."}
-		}
-	}
-
-	accountFrom := instruction.Key.Transferer.Account
-	divisionFrom := instruction.Key.Transferer.Division
-	security := instruction.Key.Security
-	quantity, _ := strconv.Atoi(instruction.Key.Quantity)
-	accountTo := instruction.Key.Receiver.Account
-	divisionTo := instruction.Key.Receiver.Division
-
+func moveSecurity(stub shim.ChaincodeStubInterface, accountFrom, divisionFrom, security string,
+				  quantity int, accountTo, divisionTo string) pb.Response {
 	keyFrom, err := stub.CreateCompositeKey(bookIndex, []string{accountFrom, divisionFrom, security})
 	if err != nil {
 		return shim.Error(err.Error())
@@ -283,10 +260,58 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
+	return shim.Success(nil)
+}
+
+func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
+	// check stored list for this instructions has been executed already
+	if instruction.ExistsIn(stub) {
+		if err := instruction.LoadFrom(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
+		}
+
+		if instruction.Value.Status == nsd.InstructionExecuted {
+			return pb.Response{Status: 409, Message: "Already executed."}
+		}
+	}
+
+	// Security transaction
+	accountFrom := instruction.Key.Transferer.Account
+	divisionFrom := instruction.Key.Transferer.Division
+	security := instruction.Key.Security
+	quantity, _ := strconv.Atoi(instruction.Key.Quantity)
+	accountTo := instruction.Key.Receiver.Account
+	divisionTo := instruction.Key.Receiver.Division
+
+	if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+	   response.GetStatus() != shim.OK {
+		return response
+	}
+
+	if instruction.Key.Type == nsd.InstructionTypeDVP {
+		// Money transaction
+		accountFrom = instruction.Key.ReceiverRequisites.Account
+		divisionFrom = instruction.Key.ReceiverRequisites.Bic
+		security = instruction.Key.PaymentCurrency
+		quantity, _ = strconv.Atoi(instruction.Key.PaymentAmount)
+		accountTo = instruction.Key.TransfererRequisites.Account
+		divisionTo = instruction.Key.TransfererRequisites.Bic
+
+		if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+			response.GetStatus() != shim.OK {
+			return response
+		}
+	}
+
 	if instruction != (nsd.Instruction{}) {
 		instruction.Value.Status = nsd.InstructionExecuted
 
-		//save to the ledger list of executed instructions
+		// save to the ledger list of executed instructions
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
@@ -305,14 +330,14 @@ func (t *BookChaincode) rollback(stub shim.ChaincodeStubInterface, args []string
 		return pb.Response{Status: 400, Message: "Wrong arguments."}
 	}
 
-	//check stored list for this instructions has been executed already
+	// check stored list for this instructions has been rolled back already
 	if instruction.ExistsIn(stub) {
 		if err := instruction.LoadFrom(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
 		}
 
-		if instruction.Value.Status == nsd.InstructionDeclined {
-			return pb.Response{Status: 409, Message: "Already declined."}
+		if instruction.Value.Status == nsd.InstructionRollbackDone {
+			return pb.Response{Status: 409, Message: "Already rolled back."}
 		}
 	}
 
@@ -324,81 +349,30 @@ func (t *BookChaincode) rollback(stub shim.ChaincodeStubInterface, args []string
 	accountTo := instruction.Key.Transferer.Account
 	divisionTo := instruction.Key.Transferer.Division
 
-	keyFrom, err := stub.CreateCompositeKey(bookIndex, []string{accountFrom, divisionFrom, security})
-	if err != nil {
-		return shim.Error(err.Error())
+	if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+		response.GetStatus() != shim.OK {
+		return response
 	}
 
-	bytes, err := stub.GetState(keyFrom)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
+	if instruction.Key.Type == nsd.InstructionTypeDVP {
+		// returning money from Transferer to Receiver
+		accountFrom = instruction.Key.TransfererRequisites.Account
+		divisionFrom = instruction.Key.TransfererRequisites.Bic
+		security = instruction.Key.PaymentCurrency
+		quantity, _ = strconv.Atoi(instruction.Key.PaymentAmount)
+		accountTo = instruction.Key.ReceiverRequisites.Account
+		divisionTo = instruction.Key.ReceiverRequisites.Bic
 
-	if bytes == nil {
-		return pb.Response{Status:404, Message: "cannot find position"}
-	}
-
-	var valueFrom BookValue
-	err = json.Unmarshal(bytes, &valueFrom)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	if valueFrom.Quantity < quantity {
-		return pb.Response{Status:409, Message: "cannot move quantity less than current balance"}
-	}
-
-	valueFrom.Quantity = valueFrom.Quantity - quantity
-
-	newBytes, err := json.Marshal(valueFrom)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	err = stub.PutState(keyFrom, newBytes)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	keyTo, err := stub.CreateCompositeKey(bookIndex, []string{accountTo, divisionTo, security})
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	bytes, err = stub.GetState(keyTo)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	if bytes == nil {
-		newBytes, err = json.Marshal(BookValue{Quantity: quantity})
-		if err != nil {
-			return shim.Error(err.Error())
+		if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+			response.GetStatus() != shim.OK {
+			return response
 		}
-	} else {
-		var valueTo BookValue
-		err = json.Unmarshal(bytes, &valueTo)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		valueTo.Quantity = valueTo.Quantity + quantity
-
-		newBytes, err = json.Marshal(valueTo)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-	}
-
-	err = stub.PutState(keyTo, newBytes)
-	if err != nil {
-		return shim.Error(err.Error())
 	}
 
 	if instruction != (nsd.Instruction{}) {
-		instruction.Value.Status = nsd.InstructionDeclined
+		instruction.Value.Status = nsd.InstructionRollbackDone
 
-		// save to the ledger list of executed instructions
+		// save to the ledger list of rolled back instructions
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}

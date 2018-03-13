@@ -24,6 +24,10 @@ const (
 	InstructionDownloaded = "downloaded"
 	InstructionDeclined   = "declined"
 	InstructionCanceled   = "canceled"
+
+	InstructionRollbackInitialized = "rollbackInitiated"
+	InstructionRollbackDone        = "rollbackDone"
+	InstructionRollbackDeclined    = "rollbackDeclined"
 )
 
 // Instruction types

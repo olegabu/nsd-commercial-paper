@@ -185,9 +185,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 <rec_bic>{{.Instruction.Key.TransfererRequisites.Bic}}</rec_bic>
 <pay_sum>{{.Instruction.Key.PaymentAmount}}</pay_sum>
 <pay_curr>{{.Instruction.Key.PaymentCurrency}}</pay_curr>
-{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
-{{with .Reason.Document -}}<based_numb>{{.}}</based_numb>{{end}}
-{{with .Reason.DocumentDate -}}<based_date>{{.}}</based_date>{{end}}{{end}}
+{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}{{end}}
 <block_securities>{{.BlockSecurities}}</block_securities>
 <f_instruction>{{.FInstruction}}</f_instruction>
 <auto_borr>{{.AutoBorr}}</auto_borr>{{if .AdditionalInfoExists}}
@@ -504,7 +502,9 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
 		 callerIsNSD && status == nsd.InstructionExecuted,
-		 callerIsNSD && status == nsd.InstructionDownloaded:
+		 callerIsNSD && status == nsd.InstructionDownloaded,
+		 callerIsNSD && status == nsd.InstructionRollbackDone,
+		 callerIsNSD && status == nsd.InstructionRollbackDeclined:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -762,8 +762,7 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		// TODO: add "rollback" to predefined constants
-		instruction.Value.Status = "rollback"
+		instruction.Value.Status = nsd.InstructionRollbackInitialized
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
