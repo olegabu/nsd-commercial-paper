@@ -11,6 +11,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
 
   ctrl.books = [];
   ctrl.securities = [];
+  ctrl.moneys = [];
   ctrl.accounts = ConfigLoader.getAllAccounts();
 
   /**
@@ -31,7 +32,12 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
 
         SecurityService.list(SecurityService.STATUS_ACTIVE)
           .then(function(list){
-            ctrl.securities = list;
+            ctrl.securities = list.filter(function(security){
+              return security.type === SecurityService.TYPE_PAPER;
+            });
+            ctrl.moneys = list.filter(function(security){
+              return security.type === SecurityService.TYPE_MONEY;
+            });
           }),
 
         BookService.list()
@@ -63,7 +69,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
    * prepare book for create/update book
    * @param {Book} [book]
    */
-  ctrl.newBook = function(book){
+  ctrl.newBook = function(book) {
 
   };
 

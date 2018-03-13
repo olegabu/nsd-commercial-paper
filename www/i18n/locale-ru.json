@@ -1,4 +1,12 @@
 {
+  "book":{
+    "MONEY_BALANCE":"Денежные средства",
+    "PAPER_TITLE":"Ценные бумаги",
+
+
+    "NEW_BOOK_LABEL" : "Установить баланс",
+    "NEW_MONEY_LABEL" : "Установить баланс"
+  },
 
   "STATUS_active":"Активен",
   "STATUS_matured":"Погашено",
@@ -55,7 +63,6 @@
   "NEW_SECURITY_LABEL" : "Добавить ценную бумагу",
   "NEW_SECURITY_TITLE" : "Новая запись в каталоге ценных бумаг",
   "NEW_CALENDAR_ENTRY_LABEL" : "Добавить в календарь КД",
-  "NEW_BOOK_LABEL" : "Установить баланс",
   "NEW_BOOK_TITLE" : "Новая запись в каталоге балансов",
   "CURRENT_BALANCE":"Текущий баланс",
   "NEW_BALANCE":"Новый баланс",
