@@ -46,10 +46,12 @@ angular.module('nsd.app',[
    'pascalprecht.translate'
 ])
 .config(function($stateProvider) {
+  // jshint: -W033
 
   /*
    Custom state options are:
       name:string      [<stateId>] - menu name
+      title:string     [<stateId>] - page title name
       visible:boolean  [true]      - 'false' is hide element from menu. setting abstract:true also hide it
       roles:string                 - array of of nsd|issuer|investor
       (not implemented) default:boolean  [false]     - navigate to this item by default
@@ -84,6 +86,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'BOOK_MENU',
+        title: false,
         roles:'nsd'
       }
     })
@@ -133,7 +136,7 @@ angular.module('nsd.app',[
 })
 
 .run(function(env, $log){
-  if(!env.role){
+  if (!env.role) {
     $log.warn('Client role not set');
     env.role = '*';
   }
