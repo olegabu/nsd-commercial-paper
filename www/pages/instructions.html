@@ -61,10 +61,15 @@
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
-                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
-                  <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
-                        value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
-                        ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                    <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
+
+                    <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
+                           value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
+                           ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+
+                    <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
+                           value="ROLLBACK_LABEL" translate-attr="{value:'ROLLBACK_LABEL'}"
+                           ng-show="::ctl.canRollback(o)" role-show="nsd" ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
                 </td>
                 <td ng-if="::o.initiator=='transferer'">
                   <span>{{::o.reasonFrom.description}}</span>
@@ -226,6 +231,10 @@
             <label for="i_quantity" translate>QUANTITY_LABEL</label>
           </div>
         </div>
+
+        <div class="row">
+            <h5 class="col s12" translate>INSTRUCTION_DETAILS</h5>
+        </div>
         <div class="row">
           <div class="input-field col s6">
             <input name="i_reference" type="text" class="" ng-model="inst.reference" ng-maxlength="16" required>
@@ -271,11 +280,15 @@
                     <label for="i_rec_acc" translate>PAYMENT_ACCOUNT_RECEIVER_LABEL</label>
                     <span class="input-error-message" ng-show="formInstruction.i_rec_acc.$error.length" translate>20_CHARACTERS_LABEL</span>
                 </div>
-                <div class="input-field col s4">
+                <div class="input-field col s3">
                     <input name="i_pay_sum" id="i_pay_sum"
                            type="number" class="uppercase" ng-model="inst.paymentAmount" required>
                     <label for="i_pay_sum" translate>PAYMENT_AMOUNT_LABEL</label>
                     <span class="input-error-message" ng-show="formInstruction.i_pay_sum.$error.length" translate>20_CHARACTERS_LABEL</span>
+                </div>
+                <div class="input-field col s1">
+                    <input type="text" class="uppercase" value="RUB" disabled style="color: black;">
+                    <label translate class="active">PAYMENT_CURRENCY</label>
                 </div>
             </div>
 
@@ -300,7 +313,7 @@
             <label for="i_a_description" translate>DESCRIPTION_LABEL</label>
           </div>
         </div>
-        <div class="row">
+        <div class="row" ng-if="inst.type!='dvp'">
           <div class="input-field col s8">
             <input name="i_a_document" type="text" class="" ng-model="inst.reason.document">
             <label for="i_a_document" translate>DOCUMENT_NUMBER_LABEL</label>

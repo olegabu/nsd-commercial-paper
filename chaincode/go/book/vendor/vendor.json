@@ -3,10 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "VEmQOzm/RXtcLno3++hgyHOb0+E=",
+			"checksumSHA1": "xUlEMH4+WC9Veok52hJJptXjt18=",
 			"path": "github.com/olegabu/nsd-commercial-paper-common",
-			"revision": "39b780d912e3745ff58784fc09997734a2391cff",
-			"revisionTime": "2018-03-03T15:04:27Z"
+			"revision": "7190ee661a2a96c682df8668bb959dda6e2a0e7c",
+			"revisionTime": "2018-03-13T12:56:44Z"
 		},
 		{
 			"checksumSHA1": "sJnw2pvZd/SuAmbGRTuUW04ztKI=",

@@ -149,6 +149,10 @@ input.locked:disabled{
   min-height: 250px;
 }
 
+.modal.modal-dialog.modal-prompt{
+  min-height: 300px;
+}
+
 .modal.modal-70{
   width: 70%;
 }

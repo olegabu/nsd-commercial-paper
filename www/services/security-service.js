@@ -4,12 +4,37 @@
  * @ngInject
  */
 function SecurityService(ApiService, ConfigLoader, BookService, $q, $log) {
+  "use strict";
+
+  /**
+   * @typedef {object} Security
+   * @property {string} security
+   * @property {'active'} status
+   * @property {'money'|'paper'} type
+   *
+   * @property {any[]} entries
+   * @property {object} redeem
+   * @property {string} redeem.account
+   * @property {string} redeem.division
+   */
 
   // jshint shadow: true
   var SecurityService = this;
 
-
+  /**
+   * @memberOf SecurityService
+   */
   SecurityService.STATUS_ACTIVE = 'active';
+
+
+  /**
+   * @memberOf SecurityService
+   */
+  SecurityService.TYPE_PAPER = 'paper';
+  /**
+   * @memberOf SecurityService
+   */
+  SecurityService.TYPE_MONEY = 'money';
 
   /**
    *
@@ -35,6 +60,7 @@ function SecurityService(ApiService, ConfigLoader, BookService, $q, $log) {
   /**
    * @param {string} [status] - security status to fetch
    * @param {boolean} [withRedeem] - fetch redeem instructions for each security
+   * @return {Security[]}
    */
   SecurityService.list = function(status, withRedeem) {
     $log.debug('SecurityService.list');
@@ -46,14 +72,23 @@ function SecurityService(ApiService, ConfigLoader, BookService, $q, $log) {
     return ApiService.sc.query(channelID, chaincodeID, peer, 'query')
         .then(function(data){ return data.result; })
         .then(function(list){
-          if(status){
-            return list.filter(function(s){ return s.status == status; });
+          if (status) {
+            return list.filter(function(s){ return s.status === status; });
           } else {
             return list;
           }
         })
         .then(function(list){
-          if(!withRedeem) return list;
+          // fill type
+          list.forEach(function(item){
+            item.type = item.security.length > 3 ? SecurityService.TYPE_PAPER : SecurityService.TYPE_MONEY;
+          });
+          return list;
+        })
+        .then(function(list){
+          if(!withRedeem) {
+            return list;
+          }
 
           return $q.all(list.map(function(security){
             return BookService.redeemHistory(security.security)

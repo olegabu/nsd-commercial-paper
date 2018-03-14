@@ -46,10 +46,12 @@ angular.module('nsd.app',[
    'pascalprecht.translate'
 ])
 .config(function($stateProvider) {
+  // jshint: -W033
 
   /*
    Custom state options are:
       name:string      [<stateId>] - menu name
+      title:string     [<stateId>] - page title name
       visible:boolean  [true]      - 'false' is hide element from menu. setting abstract:true also hide it
       roles:string                 - array of of nsd|issuer|investor
       (not implemented) default:boolean  [false]     - navigate to this item by default
@@ -84,6 +86,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'BOOK_MENU',
+        title: false,
         roles:'nsd'
       }
     })
@@ -94,6 +97,7 @@ angular.module('nsd.app',[
       controllerAs : 'ctl',
       data:{
         name: 'POSITIONS_MENU',
+        title: false,
         roles: ['issuer', 'investor']
       }
     })
@@ -133,7 +137,7 @@ angular.module('nsd.app',[
 })
 
 .run(function(env, $log){
-  if(!env.role){
+  if (!env.role) {
     $log.warn('Client role not set');
     env.role = '*';
   }
@@ -284,9 +288,29 @@ angular.module('nsd.app',[
  * @deprecated: use environment service
  * @ngInject
  */
-.service('ConfigLoader', function(ApiService, $rootScope){
+.service('ConfigLoader', function(ApiService, $rootScope) {
+    "use strict";
 
-    /** @type {Promise<FabricConfig>} */
+  /**
+   * @typedef {object} FabricConfig
+   * @property {string} org - your org ID
+   * @property {string[]} endorsers - org ID of root endorsers
+   *
+   * @property {object} network-config
+   * @property {string} network-config.role
+   * @property {string} network-config.dep
+   * @property {object} network-config.acc
+   *
+   * @property {object} account-config
+   * @property {object} account-config.orderer
+   * @property {object} account-config.<org>.acc
+   * @property {object} account-config.<org>.bic
+   * @property {string} account-config.<org>.dep
+   * @property {string} account-config.<org>.role
+   */
+
+
+  /** @type {Promise<FabricConfig>} */
     var configPromise;
     var _config = null;
 
@@ -294,10 +318,11 @@ angular.module('nsd.app',[
       if( !configPromise ){
         configPromise = ApiService.getConfig()
           .then(function(config){
-            console.log('ConfigLoader - got config');
             $rootScope._config = config;
             _config = config;
             _extendConfig();
+            _extendAccountConfig();
+            console.log('ConfigLoader - got config:', config); // jshint ignore:line
             return config;
           });
       }
@@ -319,7 +344,7 @@ angular.module('nsd.app',[
       var netConfig = _config['network-config'];
 
       Object.keys(netConfig)
-        .filter(function(key){ return key != 'orderer' })
+        .filter(function(key){ return key !== 'orderer'; })
         .forEach(function(orgId){
 
           // add org.id
@@ -338,6 +363,24 @@ angular.module('nsd.app',[
 
         });
     }
+
+  function _extendAccountConfig(){
+    var accConfig = _config['account-config'];
+
+    Object.keys(accConfig)
+      .forEach(function(orgId){
+
+        accConfig[orgId].bic = {};
+        Object.keys(accConfig[orgId].acc).forEach(function(account){
+          if (account.length > 12) {
+            // assume it's bic
+            accConfig[orgId].bic[account] = accConfig[orgId].acc[account];
+            delete accConfig[orgId].acc[account];
+          }
+        });
+
+      });
+  }
 
     function getPeers(orgId){
         var netConfig = _config['network-config'];
@@ -396,6 +439,22 @@ angular.module('nsd.app',[
       }, {});
     }
 
+    /**
+     * @return {Object<Array<string>>} key-value of account => [divisions]
+     * @deprecated
+     */
+    function getAllBics(){
+      var accountConfig = _config['account-config'] || {};
+      return Object.keys(accountConfig).reduce(function(result, orgID){
+
+        Object.keys( accountConfig[orgID].bic ).forEach(function(account){
+          result[account] = angular.copy(accountConfig[orgID].bic[account]);
+          result[account].org = orgID;
+        });
+        return result;
+      }, {});
+    }
+
     function getOrg(){
       return _config.org;
     }
@@ -403,8 +462,8 @@ angular.module('nsd.app',[
 
     /**
      * get organosation ID by deponent code (1 to 1 matching)
-     * @param  {srting} depCode
-     * @return {srting} orgID
+     * @param  {string} depCode
+     * @return {string} orgID
      */
     function getOrgByDepcode(depCode){
       var accountConfig = _config['account-config'];
@@ -437,7 +496,10 @@ angular.module('nsd.app',[
       var orgArr = Object.keys(accountConfig);
       for (var i = orgArr.length - 1; i >= 0; i--) {
         var orgID = orgArr[i];
-        if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ){
+        if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ) {
+          return orgID;
+        }
+        if( accountConfig[orgID].bic[account] && accountConfig[orgID].bic[account].indexOf(division)>=0 ) {
           return orgID;
         }
       }
@@ -455,6 +517,7 @@ angular.module('nsd.app',[
       getPeers   : getPeers,
       getOrgs    : getOrgs,
       getAllAccounts : getAllAccounts,
+      getAllBics : getAllBics,
 
       getOrgByAccountDivision : getOrgByAccountDivision,
       getOrgByDepcode:getOrgByDepcode,

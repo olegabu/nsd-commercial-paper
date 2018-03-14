@@ -1,4 +1,24 @@
 {
+  "book":{
+    "MONEY_BALANCE":"Денежные средства",
+    "PAPER_TITLE":"Ценные бумаги",
+
+
+    "NEW_BOOK_LABEL" : "Установить баланс",
+    "NEW_MONEY_LABEL" : "Установить баланс",
+
+    "ACCOUNT_LABEL":"Account",
+    "ACCOUNT_MONEY_LABEL":"Account"
+  },
+  "dialog":{
+    "CONFIRM_TITLE":"Confirm your actions",
+    "PROMPT_TITLE":"Confirm your actions",
+    "PROMPT_LABEL":"Enter the reason",
+
+    "CONFIRM_ACTION":"Confirm",
+    "DECLINE_ACTION":"Decline"
+  },
+
 
   "STATUS_active":"active",
   "STATUS_matured":"matured",
@@ -12,6 +32,9 @@
   "STATUS_downloaded":"downloaded",
   "STATUS_declined":"declined",
   "STATUS_canceled":"canceled",
+  "STATUS_rollbackInitiated":"rollback initiated",
+  "STATUS_rollbackDone":"rollback done",
+  "STATUS_rollbackDeclined":"rollback declined",
 
   "INITIATOR_transferer":"transferer",
   "INITIATOR_receiver":"receiver",
@@ -41,10 +64,10 @@
   "SECURITY_MASTER_MENU":"Security Master",
   "INSTRUCTION_MENU":"Instructions",
 
-
   "ORGANISATION_LABEL": "Organisation",
   "ACCOUNT_LABEL": "Account",
   "SECURITY_LABEL": "Security",
+  "INSTRUCTION_DETAILS": "Details",
   "QUANTITY_LABEL": "Quantity",
   "CREATED_LABEL": "Created",
   "CLOSE_LABEL": "Close",
@@ -56,7 +79,6 @@
   "NEW_SECURITY_LABEL" : "New Security",
   "NEW_SECURITY_TITLE" : "New Security",
   "NEW_CALENDAR_ENTRY_LABEL" : "New Calendar Entry",
-  "NEW_BOOK_LABEL" : "Set Book Entry",
   "NEW_BOOK_TITLE" : "New Book Entry",
   "CURRENT_BALANCE":"Current value",
   "NEW_BALANCE":"New value",
@@ -68,6 +90,7 @@
   "REDEMPTION_LABEL": "Redemption",
   "OK_LABEL": "Ok",
   "CANCEL_LABEL": "Cancel",
+  "ROLLBACK_LABEL": "Rollback",
   "EXPLORER_LABEL": "Explorer",
   "LOGOUT_LABEL": "Logout",
   "LOGGED_IN_LABEL": "Logged in",
@@ -107,6 +130,7 @@
   "12_CHARACTERS_LABEL": "Should be exactly 12 characters",
   "17_CHARACTERS_LABEL": "Should be exactly 17 characters",
   "20_CHARACTERS_LABEL": "Should be exactly 20 characters",
+  "37_CHARACTERS_LABEL": "Should be exactly 37 characters",
   "MAX_16_CHARACTERS_LABEL": "Maximum 16 characters",
   "DOCUMENT_NUMBER_LABEL": "Document number",
   "DOCUMENT_DATE_LABEL": "Document date",
@@ -118,11 +142,9 @@
   "PAYMENT_ACCOUNT_SENDER_LABEL": "Sender Account",
   "PAYMENT_ACCOUNT_RECEIVER_LABEL": "Receiver Account",
   "PAYMENT_AMOUNT_LABEL": "Transfer value",
+  "PAYMENT_CURRENCY": "Currency",
 
   "CANCEL_INSTRUCTION_PROMPT":"Cancel %s -> %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?",
-
-  "CONFIRM_TITLE":"Confirm your actions",
-  "CONFIRM_ACTION":"Confirm",
-  "DECLINE_ACTION":"Decline"
+  "ROLLBACK_INSTRUCTION_PROMPT":"Rollback %s -> %s ?",
+  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?"
 }

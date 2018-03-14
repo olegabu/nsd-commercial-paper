@@ -17,12 +17,30 @@ module.exports = {
   normalizeInstruction: normalizeInstruction,
   // getRoleInInstruction: getRoleInInstruction,
   isBilateralChannel  : isBilateralChannel,
+  parseFabricError    : parseFabricError,
 
   ConfigHelper : ConfigHelper
 }
 
 
 const TYPE_ENDORSER_TRANSACTION = 'ENDORSER_TRANSACTION';
+
+/**
+ * @return {{code:number, message:string}}
+ * @example: e.message == "chaincode error (status: 409, message: Already executed.)"
+ */
+function parseFabricError(e) {
+  const msg = e.toString();
+  //                         111                 222                 33
+  const match = msg.match(/^(.*?)\s*\(status:\s*(\d+),\s*message:\s*(.*)\)\s*$/) || [];
+  const pureMsg = match[3] || msg;
+
+  var e = new Error(pureMsg); // e.name is 'Error'
+  e.name = match[1] || 'ChaincodeError';
+  e.code = parseInt(match[2]) || 500;
+  e.message = pureMsg;
+  return e;
+}
 
 
 /**

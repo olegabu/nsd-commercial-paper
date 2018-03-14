@@ -3,11 +3,13 @@
     <div class="indeterminate"></div>
 </div>
 
+<h2 translate>book.PAPER_TITLE</h2>
+
 <div class="row" role-show="nsd">
   <div class="col s12">
     <div>
-      <button class="btn btn-primary" type="button" ng-click="ctl.newBook()" modal href="#newBookEntry">
-        <span translate>NEW_BOOK_LABEL</span>
+      <button class="btn btn-primary" type="button" ng-click="ctl.newBook('paper')" modal href="#newBookEntry">
+        <span translate>book.NEW_BOOK_LABEL</span>
       </button>
     </div>
   </div>
@@ -19,15 +21,15 @@
       <table class="table-bordered highlight responsive-table">
         <thead>
             <tr>
-                <th translate>ORGANISATION_LABEL</th>
+                <th role-show="nsd" translate>ORGANISATION_LABEL</th>
                 <th translate>ACCOUNT_LABEL</th>
                 <th translate>SECURITY_LABEL</th>
                 <th translate>QUANTITY_LABEL</th>
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="o in ctl.books" ng-click="ctl.showHistory(o)">
-                <td>{{::o.org}}</td>
+            <tr ng-repeat="o in ctl.books|filter:{type:'paper'} as paperBooks" ng-click="ctl.showHistory(o, 'paper')">
+                <td role-show="nsd">{{::o.org}}</td>
                 <td>{{::o.deponent}} / {{::o.balance.account}} / {{::o.balance.division}}</td>
                 <td>{{::o.security}}</td>
                 <td>{{::o.quantity}}</td>
@@ -37,7 +39,7 @@
                 </td> -->
             </tr>
 
-            <tr ng-hide="ctl.books.length">
+            <tr ng-hide="paperBooks.length">
                 <td colspan="99" align="center">
                     <i translate>NO_ITEMS_LABEL</i>
                 </td>
@@ -45,110 +47,222 @@
         </tbody>
       </table>
   </div>
+</div>
 
+
+<!-- money -->
+<h2 translate>book.MONEY_BALANCE</h2>
+<div class="row" role-show="nsd">
+    <div class="col s12">
+        <div>
+            <button class="btn btn-primary" type="button" ng-click="ctl.newBook('money')" modal href="#newMoneyEntry">
+                <span translate>book.NEW_MONEY_LABEL</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col s12">
+        <table class="table-bordered highlight responsive-table">
+            <thead>
+            <tr>
+                <th role-show="nsd" translate>ORGANISATION_LABEL</th>
+                <th translate>ACCOUNT_LABEL</th>
+                <th translate>MONEY_LABEL</th>
+                <th translate>QUANTITY_LABEL</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="o in ctl.books|filter:{type:'money'} as moneyBooks" ng-click="ctl.showHistory(o, 'money')">
+                <td role-show="nsd">{{::o.org}}</td>
+                <td>{{::o.balance.account}} </td>
+                <td>{{::o.security}}</td>
+                <td>{{::o.quantity}}</td>
+                <!-- <td>
+                    <input type="button" class="btn btn-default" ng-click="ctl.verify(o)" value="Verify" ng-hide="o.status"/>
+                    <input type="button" class="btn btn-danger" ng-click="ctl.decline(o)" value="Decline" ng-show="o.status"/>
+                </td> -->
+            </tr>
+
+            <tr ng-hide="moneyBooks.length">
+                <td colspan="99" align="center">
+                    <i translate>NO_ITEMS_LABEL</i>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 
 
 
 
-
-
-<!-- Modal Structure -->
+<!-- new security paper Modal Structure -->
 <div id="newBookEntry" class="modal modal-fixed-footer">
-  <form name="bookForm" class="form-horizontal" novalidate>
-    <div class="modal-content">
-      <h4 translate>NEW_BOOK_LABEL</h4>
+    <form name="bookForm" class="form-horizontal" novalidate>
+        <div class="modal-content">
+            <h4 translate>book.NEW_BOOK_LABEL</h4>
 
-        <div class="row">
-          <!-- organisation credentials -->
-          <div class="input-field col s2">
-            <h5 class="nowrap" translate>NEW_BOOK_FOR_LABEL</h5>
-          </div>
-          <div class="input-field col s5">
-            <select name="b_acc" id="b_acc"
-                    ng-model="book.balance.account" material-select watch class=""
-                    ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts"
-                    translate-attr="{ placeholder: 'ACCOUNT_INPUT_PLACEHOLDER' }" required></select>
-            <label for="b_acc" translate>ACCOUNT_LABEL</label>
-          </div>
-          <!--
-          <div class="input-field col s5" hidden>
-            <input name="b_acc" type="text" class="uppercase" ng-model="book.balance.account" required ng-length="12">
-            <label for="b_acc" translate>ACCOUNT_LABEL</label>
-            <span class="input-error-message" ng-show="bookForm.b_acc.$error.length" translate>12_CHARACTERS_LABEL</span>
-          </div>
-          -->
-
-          <div class="input-field col s5">
-            <select name="b_div" id="b_div"
-                    ng-model="book.balance.division" material-select watch class=""
-                    ng-options="o for o in ctl.accounts[book.balance.account]"
-                    translate-attr="{ placeholder: 'DIVISION_INPUT_PLACEHOLDER' }" required></select>
-            <label for="b_div" translate>DIVISION_LABEL</label>
-          </div>
-          <!--
-          <div class="input-field col s5">
-            <input name="b_div" type="text" class="uppercase" ng-model="book.balance.division" required ng-length="17">
-            <label for="b_div" translate>DIVISION_LABEL</label>
-            <span class="input-error-message" ng-show="bookForm.b_div.$error.length" translate>17_CHARACTERS_LABEL</span>
-          </div>
-          -->
-
-        </div>
-
-
-        <div class="row">
-          <div class="input-field col offset-s2 s5">
-            <select name="b_security" id="b_security"
-                    ng-model="book.security" material-select watch class=""
-                    ng-options="o.security as o.security for o in ctl.securities"
-                    translate-attr="{ placeholder: 'SECURITY_INPUT_PLACEHOLDER' }" required></select>
-            <label for="b_security" translate>SECURITY_LABEL</label>
-          </div>
-
-          <!--
-          <div class="input-field col s6">
-            <input name="b_quantity" id="b_quantity" type="number" min="0" class="" ng-model="book.quantity" required>
-            <label for="b_quantity" translate>QUANTITY_LABEL</label>
-          </div>
-          -->
-
-        </div>
-
-
-        <div ng-show="book.balance.account && book.balance.division && book.security">
             <div class="row">
-                <div class="col s3">
-                    <p class="flow-text" translate>CURRENT_BALANCE</p>
+                <!-- organisation credentials -->
+                <div class="input-field col s2">
+                    <h5 class="nowrap" translate>NEW_BOOK_FOR_LABEL</h5>
                 </div>
-                <div class="col s9">
-                    <p class="flow-text">{{ctl.getBookBalance(book)}}</p>
+                <div class="input-field col s5">
+                    <select name="b_acc" id="b_acc"
+                            ng-model="book.balance.account" material-select watch class=""
+                            ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts"
+                            translate-attr="{ placeholder: 'ACCOUNT_INPUT_PLACEHOLDER' }" required></select>
+                    <label for="b_acc" translate>ACCOUNT_LABEL</label>
+                </div>
+                <!--
+                <div class="input-field col s5" hidden>
+                  <input name="b_acc" type="text" class="uppercase" ng-model="book.balance.account" required ng-length="12">
+                  <label for="b_acc" translate>ACCOUNT_LABEL</label>
+                  <span class="input-error-message" ng-show="bookForm.b_acc.$error.length" translate>12_CHARACTERS_LABEL</span>
+                </div>
+                -->
+
+                <div class="input-field col s5">
+                    <select name="b_div" id="b_div"
+                            ng-model="book.balance.division" material-select watch class=""
+                            ng-options="o for o in ctl.accounts[book.balance.account]"
+                            translate-attr="{ placeholder: 'DIVISION_INPUT_PLACEHOLDER' }" required></select>
+                    <label for="b_div" translate>DIVISION_LABEL</label>
+                </div>
+                <!--
+                <div class="input-field col s5">
+                  <input name="b_div" type="text" class="uppercase" ng-model="book.balance.division" required ng-length="17">
+                  <label for="b_div" translate>DIVISION_LABEL</label>
+                  <span class="input-error-message" ng-show="bookForm.b_div.$error.length" translate>17_CHARACTERS_LABEL</span>
+                </div>
+                -->
+
+            </div>
+
+
+            <div class="row">
+                <div class="input-field col offset-s2 s5">
+                    <select name="b_security" id="b_security"
+                            ng-model="book.security" material-select watch class=""
+                            ng-options="o.security as o.security for o in ctl.securities"
+                            translate-attr="{ placeholder: 'SECURITY_INPUT_PLACEHOLDER' }" required></select>
+                    <label for="b_security" translate>SECURITY_LABEL</label>
+                </div>
+
+                <!--
+                <div class="input-field col s6">
+                  <input name="b_quantity" id="b_quantity" type="number" min="0" class="" ng-model="book.quantity" required>
+                  <label for="b_quantity" translate>QUANTITY_LABEL</label>
+                </div>
+                -->
+
+            </div>
+
+
+            <div ng-show="book.balance.account && book.balance.division && book.security">
+                <div class="row">
+                    <div class="col s3">
+                        <p class="flow-text" translate>CURRENT_BALANCE</p>
+                    </div>
+                    <div class="col s9">
+                        <p class="flow-text">{{ctl.getBookBalance(book)}}</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s3">
+                        <p class="flow-text" translate>NEW_BALANCE</p>
+                    </div>
+                    <div class="input-field col s9">
+                        <input name="b_quantity" id="b_quantity2" class="flow-text" type="number" min="0" class="" ng-model="book.quantity" required>
+                        <label for="b_quantity2" translate>QUANTITY_LABEL</label>
+                    </div>
                 </div>
             </div>
 
+        </div>
+        <div class="modal-footer">
+
+            <input type="submit"
+                   class="modal-action modal-close waves-effect waves-green btn-flat"
+                   ng-disabled="bookForm.$invalid"
+                   ng-click="ctl.addBook(book)" value="OK_LABEL" translate-attr="{value:'OK_LABEL'}"/>
+
+            <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
+                   ng-click="book = null; bookForm.$setPristine();" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
+
+        </div>
+    </form>
+</div>
+
+
+
+
+
+<!-- Money entry Modal Structure -->
+<div id="newMoneyEntry" class="modal modal-fixed-footer">
+    <form name="moneyForm" class="form-horizontal" novalidate>
+        <div class="modal-content">
+            <h4 translate>book.NEW_BOOK_LABEL</h4>
+
             <div class="row">
-                <div class="col s3">
-                    <p class="flow-text" translate>NEW_BALANCE</p>
+                <!-- organisation credentials -->
+                <div class="input-field col s2">
+                    <h5 class="nowrap" translate>NEW_BOOK_FOR_LABEL</h5>
                 </div>
-                <div class="input-field col s9">
-                    <input name="b_quantity" id="b_quantity" class="flow-text" type="number" min="0" class="" ng-model="book.quantity" required>
-                    <label for="b_quantity" translate>QUANTITY_LABEL</label>
+                <div class="input-field col s5">
+                    <select name="b_acc" id="b_acc"
+                            ng-model="book.balance.account" material-select watch class=""
+                            ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.bics"
+                            translate-attr="{ placeholder: 'ACCOUNT_INPUT_PLACEHOLDER' }" required></select>
+                    <label for="b_acc" translate>ACCOUNT_LABEL</label>
+                </div>
+
+                <!--
+                <div class="input-field col s10">
+                    <input name="b_acc" type="text" class="uppercase" ng-model="book.balance.account" required ng-length="37">
+                    <label for="b_acc" translate>ACCOUNT_LABEL</label>
+                    <span class="input-error-message" ng-show="moneyForm.b_acc.$error.length" translate>37_CHARACTERS_LABEL</span>
+                </div>
+                -->
+            </div>
+
+            <div ng-show="book.balance.account && moneyForm.b_acc.$valid">
+                <div class="row">
+                    <div class="col s3">
+                        <p class="flow-text" translate>CURRENT_BALANCE</p>
+                    </div>
+                    <div class="col s9">
+                        <p class="flow-text">{{ctl.getBookBalance(book)}}</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s3">
+                        <p class="flow-text" translate>NEW_BALANCE</p>
+                    </div>
+                    <div class="input-field col s9">
+                        <input name="b_quantity" id="b_quantity" class="flow-text" type="number" min="0" class="" ng-model="book.quantity" required>
+                        <label for="b_quantity" translate>QUANTITY_LABEL</label>
+                    </div>
                 </div>
             </div>
+
         </div>
+        <div class="modal-footer">
 
-    </div>
-    <div class="modal-footer">
+            <input type="submit"
+                   class="modal-action modal-close waves-effect waves-green btn-flat"
+                   ng-disabled="moneyForm.$invalid"
+                   ng-click="ctl.addBook(book)" value="OK_LABEL" translate-attr="{value:'OK_LABEL'}"/>
 
-      <input type="submit"
-            class="modal-action modal-close waves-effect waves-green btn-flat"
-            ng-disabled="bookForm.$invalid"
-            ng-click="ctl.addBook(book)" value="OK_LABEL" translate-attr="{value:'OK_LABEL'}"/>
+            <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
+                   ng-click="book = null; moneyForm.$setPristine();" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
 
-      <input type="button" class="modal-action modal-close waves-effect waves-red btn-flat"
-            ng-click="book = null; bookForm.$setPristine();" value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"/>
-
-    </div>
-  </form>
+        </div>
+    </form>
 </div>

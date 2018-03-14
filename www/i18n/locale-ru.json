@@ -1,17 +1,39 @@
 {
+  "book":{
+    "MONEY_BALANCE":"Денежные средства",
+    "PAPER_TITLE":"Ценные бумаги",
+
+
+    "NEW_BOOK_LABEL" : "Установить баланс",
+    "NEW_MONEY_LABEL" : "Установить баланс",
+
+    "ACCOUNT_LABEL":"Cчет",
+    "ACCOUNT_MONEY_LABEL":"Лицевой счет"
+  },
+  "dialog":{
+    "CONFIRM_TITLE":"Подтвердите действие",
+    "PROMPT_TITLE":"Подтвердите действие",
+    "PROMPT_LABEL":"Введите причину",
+
+    "CONFIRM_ACTION":"Подтвердить",
+    "DECLINE_ACTION":"Отменить"
+  },
 
   "STATUS_active":"Активен",
   "STATUS_matured":"Погашено",
 
-  "STATUS_initiated":"На исполнении",
-  "STATUS_matched":"Сквитовано",
-  "STATUS_executed":"Исполнено",
+  "STATUS_initiated":"на исполнении",
+  "STATUS_matched":"сквитовано",
+  "STATUS_executed":"исполнено",
   "STATUS_transferer-signed":"подписано отправителем",
   "STATUS_receiver-signed":"подписано получателем",
   "STATUS_signed":"подписано участниками",
   "STATUS_downloaded":"скачано в депозитарий",
   "STATUS_declined":"отвергнуто",
   "STATUS_canceled":"отменено",
+  "STATUS_rollbackInitiated":"возврат инициирован",
+  "STATUS_rollbackDone":"отклонено депозитарием",
+  "STATUS_rollbackDeclined":"возврат отвергнут",
 
   "INITIATOR_transferer":"отправитель",
   "INITIATOR_receiver":"получатель",
@@ -44,6 +66,8 @@
   "ORGANISATION_LABEL": "Организация",
   "ACCOUNT_LABEL": "Счёт",
   "SECURITY_LABEL": "Ценная бумага",
+  "INSTRUCTION_DETAILS": "Информация о сделке",
+  "MONEY_LABEL": "Денежное средство",
   "QUANTITY_LABEL": "Количество",
   "CREATED_LABEL": "Создано",
   "CLOSE_LABEL": "Закрыть",
@@ -55,10 +79,9 @@
   "NEW_SECURITY_LABEL" : "Добавить ценную бумагу",
   "NEW_SECURITY_TITLE" : "Новая запись в каталоге ценных бумаг",
   "NEW_CALENDAR_ENTRY_LABEL" : "Добавить в календарь КД",
-  "NEW_BOOK_LABEL" : "Установить баланс",
   "NEW_BOOK_TITLE" : "Новая запись в каталоге балансов",
-  "CURRENT_BALANCE":"Current value",
-  "NEW_BALANCE":"New value",
+  "CURRENT_BALANCE":"Текущий баланс",
+  "NEW_BALANCE":"Новый баланс",
   "CALENDAR_ENTRY_DATE_LABEL": "Дата календарной записи",
   "STATUS_LABEL": "Статус",
   "CALENDAR_ENTRY_TITLE": "Новая календарная запись",
@@ -67,6 +90,7 @@
   "REDEMPTION_LABEL": "Погашение",
   "OK_LABEL": "ОК",
   "CANCEL_LABEL": "Отменить",
+  "ROLLBACK_LABEL": "Откатить",
   "EXPLORER_LABEL": "Блокчейн",
   "LOGOUT_LABEL": "Выйти из системы",
   "LOGGED_IN_LABEL": "Авторизирован",
@@ -82,7 +106,7 @@
   "RECEIVE_INSTRUCTION_163_TITLE": "Новое поручение 16/3 Перевод с подтверждением (встречное)",
   "REDEEM_INSTRUCTIONS_TITLE":"Список поручений списания (10/50)",
 
-  "TRANSFERER_TYPE_LABEL":"Transfer type",
+  "TRANSFERER_TYPE_LABEL":"Способ расчетов",
   "TRANSFERER_TYPE_FOP":"FOP",
   "TRANSFERER_TYPE_DVP":"DVP",
   "CREATE_REDEMPTION_INSTRUCTION_LABEL": "Создать поручение списания (10/50)",
@@ -106,6 +130,7 @@
   "12_CHARACTERS_LABEL": "Должно быть ровно 12 символов",
   "17_CHARACTERS_LABEL": "Должно быть ровно 17 символов",
   "20_CHARACTERS_LABEL": "Должно быть ровно 20 символов",
+  "37_CHARACTERS_LABEL": "Должно быть ровно 37 символов",
   "MAX_16_CHARACTERS_LABEL": "Не более 16 символов",
   "DOCUMENT_NUMBER_LABEL": "Номер документа",
   "DOCUMENT_DATE_LABEL": "Дата документа",
@@ -113,15 +138,14 @@
   "EVENT_TYPE_LABEL": "Тип события",
   "NO_ITEMS_LABEL": "Нет записей",
 
-  "PAYMENT_LABEL": "Payment",
-  "PAYMENT_ACCOUNT_SENDER_LABEL": "Sender Account",
-  "PAYMENT_ACCOUNT_RECEIVER_LABEL": "Receiver Account",
-  "PAYMENT_AMOUNT_LABEL": "Transfer value",
+  "PAYMENT_LABEL": "Платежные реквизиты",
+  "PAYMENT_ACCOUNT_SENDER_LABEL": "БИК банка отправителя",
+  "PAYMENT_ACCOUNT_RECEIVER_LABEL": "БИК банка получателя",
+  "PAYMENT_AMOUNT_LABEL": "Cумма платежа",
+  "PAYMENT_CURRENCY": "Валюта",
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
+  "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s -> %s ?",
+  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
 
-  "CONFIRM_TITLE":"Подтвердите действие",
-  "CONFIRM_ACTION":"Подтвердить",
-  "DECLINE_ACTION":"Отменить"
 }

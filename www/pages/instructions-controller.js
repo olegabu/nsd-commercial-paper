@@ -192,10 +192,43 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     }
   };
 
+  /**
+   * @param {Instruction} instruction
+   * @return {boolean}
+   */
+  ctrl.canRollback = function(instruction){
+    return instruction.status === 'downloaded'
+      || instruction.status === 'rollbackDeclined';
+      // || instruction.status === 'executed'
+      // || instruction.status === 'signed'
 
+  };
+
+  /**
+   * @param {Instruction} instruction
+   */
+  ctrl.rollbackInstruction = function(instruction){
+    var cancelInstructionMessage = $filter('translate')('ROLLBACK_INSTRUCTION_PROMPT')
+      .replace('%s', instruction.deponentFrom)
+      .replace('%s', instruction.deponentTo);
+
+    return DialogService.confirmReason(cancelInstructionMessage, {yesKlass:'red white-text'})
+      .then(function(result){
+        if(result.confirmed){
+          ctrl.invokeInProgress = true;
+          return InstructionService.rollbackInstruction(instruction, result.reason)
+            .finally(function(){
+              ctrl.invokeInProgress = false;
+            });
+        }
+      });
+  };
 
   ctrl.cancelInstruction = function(instruction){
-    var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT').replace('%s', instruction.deponentFrom).replace('%s', instruction.deponentTo);
+    var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT')
+      .replace('%s', instruction.deponentFrom)
+      .replace('%s', instruction.deponentTo);
+
     return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(isConfirmed){
         if(isConfirmed){
@@ -360,18 +393,18 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       type:'dvp',
 
       transfererRequisites:{
-        account: "40701810000000001000",
+        account: "30109810000000000000",
         bic: "044525505"
       },
       receiverRequisites:{
-        account: "30109810000000000000",
+        account: "40701810000000001000",
         bic: "044525505"
       },
       paymentAmount: 30000000,
       paymentCurrency: 'RUB',
       additionalInformation: transferSide === 'receiver' ? {description: 'payment no. DLT/001'} : null,
 
-      security:'RU000A0JWGG3',
+      security:'RU000A0JVVB5',
       transferer:{
         deponent: accountConfig[orgFrom].dep,
         account : Object.keys(accountConfig[orgFrom].acc)[0],

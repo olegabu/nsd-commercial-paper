@@ -6,6 +6,7 @@
  * @property {string} balance.account
  * @property {string} balance.division
  * @property {string} security
+ * @property {'money'|'paper'} type
  */
 
 
@@ -65,6 +66,7 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
   BookService._processBookItem = function(book){
     book.org = ConfigLoader.getOrgByAccountDivision(book.balance.account, book.balance.division);
     book.deponent = (ConfigLoader.getAccount(book.org) || {}).dep;
+    book.type = book.security.length > 3 ? 'paper' : 'money';
   };
 
 
@@ -137,8 +139,12 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
       });
   };
 
+  /**
+   * parse "2018-03-13 13:30:46.909727155 +0000 UTC" to date
+   * @param datestr
+   */
   function parseDate(datestr) {
-    return new Date((datestr||'').replace(/\s*\+.+$/,''));
+    return new Date((datestr||'').replace(/\s*\+.+$/,'').replace(' ','T'));
   }
 
   /**

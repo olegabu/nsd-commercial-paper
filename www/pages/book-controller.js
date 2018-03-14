@@ -11,7 +11,9 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
 
   ctrl.books = [];
   ctrl.securities = [];
+  ctrl.moneys = [];
   ctrl.accounts = ConfigLoader.getAllAccounts();
+  ctrl.bics = ConfigLoader.getAllBics();
 
   /**
    *
@@ -31,7 +33,12 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
 
         SecurityService.list(SecurityService.STATUS_ACTIVE)
           .then(function(list){
-            ctrl.securities = list;
+            ctrl.securities = list.filter(function(security){
+              return security.type === SecurityService.TYPE_PAPER;
+            });
+            ctrl.moneys = list.filter(function(security){
+              return security.type === SecurityService.TYPE_MONEY;
+            });
           }),
 
         BookService.list()
@@ -50,21 +57,27 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
 
   /**
    * @param {Book} book
+   * @param {'paper'|'money'} type
    */
-  ctrl.showHistory = function(book){
+  ctrl.showHistory = function(book, type){
     return BookService.history(book)
       .then(function(result){
-        var scope = {history: result};
+        var scope = {history: result, type: type};
         return DialogService.dialog('book-history.html', scope);
       });
   };
 
   /**
    * prepare book for create/update book
-   * @param {Book} [book]
    */
-  ctrl.newBook = function(book){
-
+  ctrl.newBook = function(type) {
+    $scope.book = $scope.book || {};
+    $scope.book.type = type;
+    if ($scope.book.type === 'money') {
+      $scope.book.balance = $scope.book.balance || {};
+      $scope.book.balance.division = '044525505';
+      $scope.book.security = 'RUB';
+    }
   };
 
   /**
@@ -94,6 +107,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
       .then(function(){
         $scope.book = null;
         $scope.bookForm.$setPristine();
+        $scope.moneyForm.$setPristine();
       })
       .finally(function(){
         ctrl.invokeInProgress = false;

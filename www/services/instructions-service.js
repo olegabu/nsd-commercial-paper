@@ -95,7 +95,10 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       MATCHED : 'matched',
       DECLINED: 'declined',
       EXECUTED: 'executed',
-      CANCELED: 'canceled'
+      CANCELED: 'canceled',
+      ROLLBACK_INITIATED: 'rollbackInitiated',
+      ROLLBACK_DONE: 'rollbackDone',
+      ROLLBACK_FAILED: 'rollbackDeclined'
       // 'transferer-signed'
       // 'receiver-signed'
   };
@@ -257,15 +260,29 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   /**
    *
    */
+  InstructionService.rollbackInstruction = function(instruction, reason) {
+    return this.updateStatus(instruction, InstructionService.status.ROLLBACK_INITIATED, reason);
+  };
+
   InstructionService.cancelInstruction = function(instruction) {
-    $log.debug('InstructionService.cancelInstruction', instruction);
+    return this.updateStatus(instruction, InstructionService.status.CANCELED);
+  };
+
+  /**
+   * @param {Instruction} instruction
+   * @param {string} status
+   * @param {string} [reason]
+   */
+  InstructionService.updateStatus = function(instruction, status, reason) {
+    reason = reason || '';
+    $log.debug('InstructionService.updateStatus', instruction, status, reason);
 
     var chaincodeID = InstructionService._getChaincodeID();
     var channelID   = InstructionService._getInstructionChannel(instruction);
     var peers       = InstructionService._getEndorsePeers(instruction);
     var args        = InstructionService._instructionArguments(instruction);
 
-    args.push(InstructionService.status.CANCELED);
+    args.push(reason, status);
 
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'status', args);
   };
@@ -295,9 +312,12 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       });
   };
 
-
-  function parseDate(datestr){
-    return new Date((datestr||'').replace(/\s*\+.+$/,''));
+  /**
+   * parse "2018-03-13 13:30:46.909727155 +0000 UTC" to date
+   * @param datestr
+   */
+  function parseDate(datestr) {
+    return new Date((datestr||'').replace(/\s*\+.+$/,'').replace(' ','T'));
   }
 
 

@@ -84,6 +84,10 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 }
 
 func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
+		return shim.Error("Insufficient privileges. Only NSD can change Securities information.")
+	}
+
 	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. " +
 			"Expecting security, status, Redeem Account, Redeem Division")

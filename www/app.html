@@ -1,6 +1,6 @@
 
 <div class="container-fluid" style="margin-left: 20px; margin-right: 20px;">
-  <h2 ng-hide="$state.data.name===false" translate>{{$state.data.name||$state.name}}</h2>
+  <h2 ng-hide="$state.data.name===false || $state.data.title===false" translate>{{$state.data.title||$state.data.name||$state.name}}</h2>
   <ui-view></ui-view>
 
   <div class="row"></div>

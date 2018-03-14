@@ -11,11 +11,14 @@ STARTTIME=$(date +%s)
 : ${IP2:="83.149.14.164"}
 : ${IP3:="195.238.73.147"}
 
-: ${INSTRUCTION_INIT:='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'}
-: ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\",\"security\":\"RU000A0JWGG3\",\"quantity\":\"1998899\"}]"]}'}
-: ${SECURITY_INIT:='{"Args":["init","RU000A0JWGG3","active","MZ130605006C","22000000000000000"]}'}
+
+INSTRUCTION_INIT_JSON=$(cat ./chaincode/instruction_init.json |sed 's/"/\\"/g' |tr -d '\n ')
+
+: ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
+: ${BOOK_INIT:='{"Args":["init","[]"]}'}
+: ${SECURITY_INIT:='{"Args":["init","RUB","active","",""]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
-#"
+#'
 export INSTRUCTION_INIT
 
 CLI_TIMEOUT=10000
@@ -557,8 +560,9 @@ function clean() {
 }
 
 function generateWait() {
-  echo "$(date --rfc-3339='seconds' -u) *** Wait for 7 minutes to make sure the certificates become active ***"
-  sleep 7m
+  echo "$(date --rfc-3339='seconds' -u) no need to wait 7 minutes"
+  # echo "$(date --rfc-3339='seconds' -u) *** Wait for 7 minutes to make sure the certificates become active ***"
+  # sleep 7m
 }
 
 function generatePeerArtifacts1() {

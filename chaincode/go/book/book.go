@@ -86,6 +86,9 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "move" {
 		return t.move(stub, args)
 	}
+	if function == "rollback" {
+		return t.rollback(stub, args)
+	}
 	if function == "check" {
 		return t.check(stub, args)
 	}
@@ -184,30 +187,8 @@ func (t *BookChaincode) check(stub shim.ChaincodeStubInterface, args []string) p
 	return shim.Success(nil)
 }
 
-func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	instruction := nsd.Instruction{}
-	if err := instruction.FillFromArgs(args); err != nil {
-		return pb.Response{Status: 400, Message: "Wrong arguments."}
-	}
-
-	//check stored list for this instructions has been executed already
-	if instruction.ExistsIn(stub) {
-		if err := instruction.LoadFrom(stub); err != nil {
-			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
-		}
-
-		if instruction.Value.Status == nsd.InstructionExecuted {
-			return pb.Response{Status: 409, Message: "Already executed."}
-		}
-	}
-
-	accountFrom := instruction.Key.Transferer.Account
-	divisionFrom := instruction.Key.Transferer.Division
-	security := instruction.Key.Security
-	quantity, _ := strconv.Atoi(instruction.Key.Quantity)
-	accountTo := instruction.Key.Receiver.Account
-	divisionTo := instruction.Key.Receiver.Division
-
+func moveSecurity(stub shim.ChaincodeStubInterface, accountFrom, divisionFrom, security string,
+				  quantity int, accountTo, divisionTo string) pb.Response {
 	keyFrom, err := stub.CreateCompositeKey(bookIndex, []string{accountFrom, divisionFrom, security})
 	if err != nil {
 		return shim.Error(err.Error())
@@ -279,10 +260,119 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		return shim.Error(err.Error())
 	}
 
+	return shim.Success(nil)
+}
+
+func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
+	// check stored list for this instructions has been executed already
+	if instruction.ExistsIn(stub) {
+		if err := instruction.LoadFrom(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
+		}
+
+		if instruction.Value.Status == nsd.InstructionExecuted {
+			return pb.Response{Status: 202, Message: "Already executed."}
+		}
+	}
+
+	// Security transaction
+	accountFrom := instruction.Key.Transferer.Account
+	divisionFrom := instruction.Key.Transferer.Division
+	security := instruction.Key.Security
+	quantity, _ := strconv.Atoi(instruction.Key.Quantity)
+	accountTo := instruction.Key.Receiver.Account
+	divisionTo := instruction.Key.Receiver.Division
+
+	if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+	   response.GetStatus() != shim.OK {
+		return response
+	}
+
+	if instruction.Key.Type == nsd.InstructionTypeDVP {
+		// Money transaction
+		accountFrom = instruction.Key.ReceiverRequisites.Account
+		divisionFrom = instruction.Key.ReceiverRequisites.Bic
+		security = instruction.Key.PaymentCurrency
+		quantity, _ = strconv.Atoi(instruction.Key.PaymentAmount)
+		accountTo = instruction.Key.TransfererRequisites.Account
+		divisionTo = instruction.Key.TransfererRequisites.Bic
+
+		if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+			response.GetStatus() != shim.OK {
+			return response
+		}
+	}
+
 	if instruction != (nsd.Instruction{}) {
 		instruction.Value.Status = nsd.InstructionExecuted
 
-		//save to the ledger list of executed instructions
+		// save to the ledger list of executed instructions
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		if err := instruction.EmitState(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Event emission failure."}
+		}
+	}
+
+	return shim.Success(nil)
+}
+
+func (t *BookChaincode) rollback(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "Wrong arguments."}
+	}
+
+	// check stored list for this instructions has been rolled back already
+	if instruction.ExistsIn(stub) {
+		if err := instruction.LoadFrom(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Instruction cannot be loaded."}
+		}
+
+		if instruction.Value.Status == nsd.InstructionRollbackDone {
+			return pb.Response{Status: 202, Message: "Already rolled back."}
+		}
+	}
+
+	// returning securities from Receiver to Transferer
+	accountFrom := instruction.Key.Receiver.Account
+	divisionFrom := instruction.Key.Receiver.Division
+	security := instruction.Key.Security
+	quantity, _ := strconv.Atoi(instruction.Key.Quantity)
+	accountTo := instruction.Key.Transferer.Account
+	divisionTo := instruction.Key.Transferer.Division
+
+	if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+		response.GetStatus() != shim.OK {
+		return response
+	}
+
+	if instruction.Key.Type == nsd.InstructionTypeDVP {
+		// returning money from Transferer to Receiver
+		accountFrom = instruction.Key.TransfererRequisites.Account
+		divisionFrom = instruction.Key.TransfererRequisites.Bic
+		security = instruction.Key.PaymentCurrency
+		quantity, _ = strconv.Atoi(instruction.Key.PaymentAmount)
+		accountTo = instruction.Key.ReceiverRequisites.Account
+		divisionTo = instruction.Key.ReceiverRequisites.Bic
+
+		if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
+			response.GetStatus() != shim.OK {
+			return response
+		}
+	}
+
+	if instruction != (nsd.Instruction{}) {
+		instruction.Value.Status = nsd.InstructionRollbackDone
+
+		// save to the ledger list of rolled back instructions
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}

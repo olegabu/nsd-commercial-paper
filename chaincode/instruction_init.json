@@ -1,0 +1,34 @@
+[
+  {
+    "organization": "megafon.nsd.ru",
+    "deponent": "MCXXXXX00000",
+    "balances": [
+      {
+        "account": "MZ0987654321",
+        "division": "19000000000000000"
+      },
+      {
+        "account": "MZ0987654321",
+        "division": "22000000000000000"
+      },
+      {
+        "account": "30109810000000000000",
+        "division": "044525505"
+      }
+    ]
+  },
+  {
+    "organization": "raiffeisen.nsd.ru",
+    "deponent": "MSYYYYY00000",
+    "balances": [
+      {
+        "account": "TL1000000000",
+        "division": "70000000000000DVP"
+      },
+      {
+        "account": "40701810000000001000",
+        "division": "044525505"
+      }
+    ]
+  }
+]
