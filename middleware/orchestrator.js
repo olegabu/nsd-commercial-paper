@@ -141,27 +141,33 @@ module.exports = function (require) {
 
     return _getAllInstructions(endorsePeerId/*, INSTRUCTION_MATCHED_STATUS*/) // TODO: uncomment this line when 'key' will be received
         .then(function(instructionInfoList){
+          return instructionInfoList.filter(function(instructionInfo){
+            // var channelID = instructionInfo.channel_id;
+            var instruction = instructionInfo.instruction;
+            // logger.debug('***check', JSON.stringify(instruction));
+            return instruction.status === INSTRUCTION_MATCHED_STATUS || instruction.status === INSTRUCTION_ROLLBACK_INITATED_STATUS;
+          });
+        })
+        .then(function(instructionInfoList){
           // typeof instructionInfoList is {Array<{channel_id:string, instruction:instruction}>}
           logger.debug('Got %s instruction(s) to process', instructionInfoList.length);
+
+          if (instructionInfoList.length ===0 ){
+            return; // skip updatePositionsFromBook()
+          }
 
           return /*tools.*/chainPromise(instructionInfoList, function(instructionInfo){
             // var channelID = instructionInfo.channel_id;
             var instruction = instructionInfo.instruction;
-
-            if(instruction.status !== INSTRUCTION_MATCHED_STATUS && instruction.status !== INSTRUCTION_ROLLBACK_INITATED_STATUS){
-              logger.warn('Skip instruction with status "%s" (not "%s"|"%s")', instruction.status, INSTRUCTION_MATCHED_STATUS, INSTRUCTION_ROLLBACK_INITATED_STATUS);
-              return;
-            }
-
             return moveBookByInstruction(instruction)
               // already catched in 'moveBookByInstruction'
               // .catch(e=>{
               //   logger.error('_processInstruction failed:', e);
               // });
+          })
+          .then(()=>{
+            return updatePositionsFromBook();
           });
-        })
-        .then(()=>{
-          return updatePositionsFromBook();
         })
         .catch(e=>{
           logger.error('_processMatchedInstructions failed:', e);
@@ -254,16 +260,14 @@ module.exports = function (require) {
         // console.log(err, err.message, err.code, err.status);
         if(err.code == 202 /*'Already executed.'*/ ){
           // assume it's not an error
-          return null;
+          if (instruction.status === INSTRUCTION_ROLLBACK_INITATED_STATUS) {
+            return updateInstructionStatus(instruction, 'rollbackDone');
+          } else {
+            return updateInstructionStatus(instruction, 'executed');
+          }
         }
+
         throw err;
-      })
-      .then( () => {
-        if (instruction.status === INSTRUCTION_ROLLBACK_INITATED_STATUS) {
-          return updateInstructionStatus(instruction, 'rollbackDone');
-        } else {
-          return updateInstructionStatus(instruction, 'executed');
-        }
       })
       .catch(function(e) {
         logger.error('Move book record error', helper.instruction2string(instruction), e);
