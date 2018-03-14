@@ -19,7 +19,7 @@ network.sh -m update-sign-policy -o $THIS_ORG -k common
 
 echo -e $separateLine
 read -n1 -r -p "Org 'nsd' is up and joined to channel 'common'. Now on node 'megafon' generate crypto material (start script ./org-start-node.sh ) and press any key to register 'megafon' channel 'common'"
-network.sh -m register-new-org -o megafon -i ${IP2} -k common
+network.sh -m register-new-org -o megafon -M nsd -i ${IP2} -k common
 
 echo -e $separateLine
 echo "Megafon is registered in channel common. Now chaincode 'chaincode_example02' will be installed and instantiated "
