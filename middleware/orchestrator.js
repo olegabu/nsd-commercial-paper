@@ -92,7 +92,7 @@ module.exports = function (require) {
             }
 
 
-            logger.log('Event not processed:', event.event_name);
+            logger.trace('Event not processed:', event.event_name);
           }); // thru action elements
 
 
