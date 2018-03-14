@@ -24,7 +24,7 @@ const authenticationIndex = `Authentication`
 // TODO: think about making these constants public in nsd.go
 // args base lengths
 const (
-	fopArgsLength = 9
+	fopArgsLength = 10
 	dvpArgsLength = 16
 )
 
@@ -499,11 +499,22 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		return pb.Response{Status: 404, Message: "Instruction not found."}
 	}
 
+	var expectedArgsLength int
+	if instruction.Key.Type == nsd.InstructionTypeFOP {
+		expectedArgsLength = fopArgsLength + 1
+	} else { // nsd.InstructionTypeDVP
+		expectedArgsLength = dvpArgsLength + 1
+	}
+
+	if len(args) > expectedArgsLength {
+		instruction.Value.StatusInfo = args[len(args) - 2]
+	}
+
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
 		 callerIsNSD && status == nsd.InstructionExecuted,
 		 callerIsNSD && status == nsd.InstructionDownloaded,
-		 callerIsNSD && status == nsd.InstructionRollbackInitialized,
+		 callerIsNSD && status == nsd.InstructionRollbackInitiated,
 		 callerIsNSD && status == nsd.InstructionRollbackDone,
 		 callerIsNSD && status == nsd.InstructionRollbackDeclined:
 		instruction.Value.Status = status
@@ -603,7 +614,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == nsd.InstructionExecuted) ||
 			(instruction.Value.Status == nsd.InstructionDownloaded) ||
 			(instruction.Value.Status == nsd.InstructionDeclined) ||
-			(instruction.Value.Status == nsd.InstructionRollbackInitialized) ||
+			(instruction.Value.Status == nsd.InstructionRollbackInitiated) ||
 			(instruction.Value.Status == nsd.InstructionRollbackDone) ||
 			(instruction.Value.Status == nsd.InstructionRollbackDeclined) ||
 			callerIsNSD {
@@ -766,7 +777,7 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		instruction.Value.Status = nsd.InstructionRollbackInitialized
+		instruction.Value.Status = nsd.InstructionRollbackInitiated
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
