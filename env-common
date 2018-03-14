@@ -1,0 +1,11 @@
+export DOMAIN=nsd.ru
+export MAIN_ORG=nsd
+
+export IP1=91.208.232.164
+export IP2=83.149.14.164
+export IP3=195.238.73.147
+
+
+
+: ${SECURITY_INIT:='{"Args":["init","RU000A0JWGG3","active","MZ130605006C","22000000000000000"]}'}
+export SECURITY_INIT=$SECURITY_INIT
