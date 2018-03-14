@@ -603,6 +603,9 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == nsd.InstructionExecuted) ||
 			(instruction.Value.Status == nsd.InstructionDownloaded) ||
 			(instruction.Value.Status == nsd.InstructionDeclined) ||
+			(instruction.Value.Status == nsd.InstructionRollbackInitialized) ||
+			(instruction.Value.Status == nsd.InstructionRollbackDone) ||
+			(instruction.Value.Status == nsd.InstructionRollbackDeclined) ||
 			callerIsNSD {
 			instructions = append(instructions, instruction)
 		}
