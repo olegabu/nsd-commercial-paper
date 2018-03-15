@@ -3,6 +3,6 @@ export THIS_ORG=nsd
 
 BOOK_INIT_JSON=$(cat ./chaincode/book_init.json |sed 's/"/\\"/g' |tr -d '\n ')
 
-: ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'}
+: ${BOOK_INIT:='{"Args":["init","'$BOOK_INIT_JSON'"]}'}
 
 export BOOK_INIT=$BOOK_INIT

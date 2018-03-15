@@ -1,6 +1,6 @@
 [
   {
-    "organization": "megafon.nsd.ru",
+    "organization": "org2.nsd.ru",
     "deponent": "MCXXXXX00000",
     "balances": [
       {
@@ -18,7 +18,7 @@
     ]
   },
   {
-    "organization": "raiffeisen.nsd.ru",
+    "organization": "org3.nsd.ru",
     "deponent": "MSYYYYY00000",
     "balances": [
       {
@@ -30,5 +30,33 @@
         "division": "044525505"
       }
     ]
-  }
+  },
+  {
+    "organization": "org4.nsd.ru",
+    "deponent": "MSZZZZZ00000",
+    "balances": [
+      {
+        "account": "TL2000000000",
+        "division": "70000000000000DVP"
+      },
+      {
+        "account": "40701810000000002000",
+        "division": "044525505"
+      }
+    ]
+  },
+  {
+    "organization": "org5.nsd.ru",
+    "deponent": "MSRRRRR00000",
+    "balances": [
+      {
+        "account": "TL3000000000",
+        "division": "70000000000000DVP"
+      },
+      {
+        "account": "40701810000000003000",
+        "division": "044525505"
+      }
+    ]
+  },
 ]

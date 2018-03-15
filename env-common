@@ -9,7 +9,7 @@ export IP3=195.238.73.147
 INSTRUCTION_INIT_JSON=$(cat ./chaincode/instruction_init.json |sed 's/"/\\"/g' |tr -d '\n ')
 
 : ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
-: ${SECURITY_INIT:='{"Args":["init","RU000A0JWGG3","active","MZ130605006C","22000000000000000"]}'}
+: ${SECURITY_INIT:='{"Args":["init","RU000A0JVVB5","active","MZ0987654321","22000000000000000"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
 
 export INSTRUCTION_INIT=$INSTRUCTION_INIT
