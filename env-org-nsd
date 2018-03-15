@@ -1,2 +1,8 @@
 export IP_ORDERER=
 export THIS_ORG=nsd
+
+BOOK_INIT_JSON=$(cat ./chaincode/book_init.json |sed 's/"/\\"/g' |tr -d '\n ')
+
+: ${BOOK_INIT:='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'}
+
+export BOOK_INIT=$BOOK_INIT

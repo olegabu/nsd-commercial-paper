@@ -17,11 +17,18 @@ network.sh -m up-orderer
 network.sh -m up-one-org -o $THIS_ORG -M $THIS_ORG -k common
 network.sh -m update-sign-policy -o $THIS_ORG -k common
 
+network.sh -m create-channel $MAIN_ORG  "depository" $THIS_ORG
+
 
 echo -e $separateLine
 echo "Megafon is registered in channel common. Now chaincode 'chaincode_example02' will be installed and instantiated "
-network.sh -m install-chaincode -o $THIS_ORG -v 1.0 -n security
+
+./install-cc.sh
+
 network.sh -m instantiate-chaincode -o $THIS_ORG -k common -n security -I "${SECURITY_INIT}"
+network.sh -m instantiate-chaincode -o $THIS_ORG -k depository -n book -I "${BOOK_INIT}"
+
+
 
 echo -e $separateLine
 read -n1 -r -p "Org 'nsd' is up and joined to channel 'common'. Now on node 'megafon' generate crypto material (start script ./org-start-node.sh ) and press any key to register 'megafon' channel 'common'"
