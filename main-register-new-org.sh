@@ -1,28 +1,34 @@
 #!/usr/bin/env bash
 
 : ${FABRIC_STARTER_HOME:=../..}
-source $FABRIC_STARTER_HOME/common.sh $1 $6
+source $FABRIC_STARTER_HOME/common.sh $1 $4
 
 newOrg=$2
 newOrgIp=$3
-channel=$4
-chaincode=$5
 
 
 ###########################################################################
 # Start
 ###########################################################################
+channels="common"
 
-echo "Not Implemented" && exit 1;
+#bilateral
+biChannel="${MAIN_ORG}-${newOrg}"
+channels="$channels ${biChannel}"
+network.sh -m create-channel $MAIN_ORG "$biChannel" ${newOrg}
 
-#install cc
+network.sh -m instantiate-chaincode -o $THIS_ORG -k $biChannel -n position -I "${POSITION_INIT}"
 
-for channel in ${@:4}; do
-  echo "Create channel $channel"
-  network.sh -m create-channel $MAIN_ORG "$channel" ${newOrg}
-#    instantiateWarmUp instruction ${CHANNEL_NAME} ${INSTRUCTION_INIT}
-#    instantiateWarmUp position ${CHANNEL_NAME} ${POSITION_INIT}
+#threelateral
+for org in ${ORGS}; do
+  if [[ "$org" != "$newOrg" ]]; then
+    sortedChannelName=`echo "${org} ${newOrg}" | tr " " "\n" | sort |tr "\n" " " | sed 's/ /-/'`
+    echo "Create channel: $sortedChannelName"
+    channels="$channels ${sortedChannelName}"
+    network.sh -m create-channel $MAIN_ORG "$sortedChannelName" ${org} ${newOrg}
+    network.sh -m instantiate-chaincode -o $THIS_ORG -k $sortedChannelName -n instruction -I "${INSTRUCTION_INIT}"
+  fi
 done
 
-network.sh -m register-new-org -o ${newOrg} -M $MAIN_ORG -i ${newOrgIp} -k common
+network.sh -m register-new-org -o ${newOrg} -M $MAIN_ORG -i ${newOrgIp} -k "$channels"
 

@@ -1,7 +1,7 @@
 export IP_ORDERER=
 export THIS_ORG=nsd
 
-BOOK_INIT_JSON=$(cat ./chaincode/book_init.json |sed 's/"/\\"/g' |tr -d '\n ')
+BOOK_INIT_JSON=$(cat ./book_init.json |sed 's/"/\\"/g' |tr -d '\n\r ' | envsubst )
 
 : ${BOOK_INIT:='{"Args":["init","'$BOOK_INIT_JSON'"]}'}
 

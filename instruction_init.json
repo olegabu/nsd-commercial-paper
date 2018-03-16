@@ -1,6 +1,6 @@
 [
   {
-    "organization": "org2.nsd.ru",
+    "organization": "$ORG_2.nsd.ru",
     "deponent": "MCXXXXX00000",
     "balances": [
       {
@@ -18,7 +18,7 @@
     ]
   },
   {
-    "organization": "org3.nsd.ru",
+    "organization": "$ORG__3.nsd.ru",
     "deponent": "MSYYYYY00000",
     "balances": [
       {
@@ -32,7 +32,7 @@
     ]
   },
   {
-    "organization": "org4.nsd.ru",
+    "organization": "$ORG_4.nsd.ru",
     "deponent": "MSZZZZZ00000",
     "balances": [
       {
@@ -46,7 +46,7 @@
     ]
   },
   {
-    "organization": "org5.nsd.ru",
+    "organization": "$ORG_5.nsd.ru",
     "deponent": "MSRRRRR00000",
     "balances": [
       {
@@ -58,5 +58,5 @@
         "division": "044525505"
       }
     ]
-  },
+  }
 ]
