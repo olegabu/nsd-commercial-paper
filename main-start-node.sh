@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-: ${FABRIC_STARTER_HOME:=../..}
-source $FABRIC_STARTER_HOME/common.sh $1 $2
-
 network.sh -m down
 docker rm -f $(docker ps -aq)
 docker ps -a
@@ -27,7 +24,7 @@ network.sh -m create-channel $MAIN_ORG  "depository"
 echo -e $separateLine
 echo "Megafon is registered in channel common. Now chaincode 'security, book' will be installed and instantiated "
 
-./install-cc.sh $1 $2
+./install-cc.sh
 
 network.sh -m instantiate-chaincode -o $THIS_ORG -k common -n security -I "${SECURITY_INIT}"
 network.sh -m instantiate-chaincode -o $THIS_ORG -k depository -n book -I "${BOOK_INIT}"
@@ -36,3 +33,5 @@ network.sh -m instantiate-chaincode -o $THIS_ORG -k depository -n book -I "${BOO
 echo -e $separateLine
 echo "Org 'nsd' is up. Channels 'common', 'depository' are created. New organizations may be added by using 'main-register-new-org.sh'"
 
+export ORGS=""
+echo "export ORGS=\"\"" > ./env-external-orgs-list
