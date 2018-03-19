@@ -17,10 +17,6 @@ read -n1 -r -p "Peer material is generated. Now on node $MAIN_ORG  add org  $THI
 network.sh -m add-org-connectivity -o $THIS_ORG -M $MAIN_ORG -i ${IP1}
 network.sh -m up-one-org -o $THIS_ORG -M $MAIN_ORG
 
-echo -e $separateLine
-echo "Installing Chaincode 'security' "
-network.sh -m install-chaincode -o $THIS_ORG -v 1.0 -n security
-
 
 echo -e $separateLine
 echo "Joining org $THIS_ORG to channel common"
