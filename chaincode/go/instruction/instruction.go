@@ -357,6 +357,37 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	return shim.Error(err)
 }
 
+func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (isUnique bool, err error) {
+	isUnique, err = true, nil
+
+	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
+	if err != nil {
+		return
+	}
+	defer it.Close()
+
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return
+		}
+
+		ledgerInstruction := nsd.Instruction{}
+
+		if err := ledgerInstruction.FillFromLedgerValue(response.Value); err != nil {
+			return
+		}
+
+		if ledgerInstruction.Key.Reference == instruction.Key.Reference &&
+			ledgerInstruction.Key.InstructionDate == instruction.Key.InstructionDate {
+			isUnique = false
+			break
+		}
+	}
+
+	return
+}
+
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
@@ -414,6 +445,14 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			}
 		}
 
+		isUnique, err := isInstructionUnique(stub, instruction)
+		if err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+		if !isUnique {
+			return pb.Response{Status: 400, Message: "Instruction is not unique."}
+		}
+
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
@@ -458,6 +497,15 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonFrom); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
+
+		isUnique, err := isInstructionUnique(stub, instruction)
+		if err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+		if !isUnique {
+			return pb.Response{Status: 400, Message: "Instruction is not unique."}
+		}
+
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
