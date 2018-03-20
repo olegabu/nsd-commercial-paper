@@ -149,6 +149,10 @@ input.locked:disabled{
   min-height: 250px;
 }
 
+.modal.modal-dialog.modal-prompt{
+  min-height: 300px;
+}
+
 .modal.modal-70{
   width: 70%;
 }
@@ -263,6 +267,10 @@ textarea.ng-dirty.ng-invalid-required:not(:focus) + label:after,
 }
 
 
+.switch-block{
+  height: 38px;
+}
+
 
 /* compaction fix */
 html {
@@ -279,4 +287,8 @@ td, th, .clock, .endpoint {
 }
 td, th{
   padding: 5px 3px;
+}
+
+.gray{
+  color: gray;
 }

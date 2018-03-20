@@ -276,7 +276,7 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 		}
 
 		if instruction.Value.Status == nsd.InstructionExecuted {
-			return pb.Response{Status: 409, Message: "Already executed."}
+			return pb.Response{Status: 202, Message: "Already executed."}
 		}
 	}
 
@@ -339,7 +339,7 @@ func (t *BookChaincode) rollback(stub shim.ChaincodeStubInterface, args []string
 		}
 
 		if instruction.Value.Status == nsd.InstructionRollbackDone {
-			return pb.Response{Status: 409, Message: "Already rolled back."}
+			return pb.Response{Status: 202, Message: "Already rolled back."}
 		}
 	}
 

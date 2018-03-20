@@ -1,9 +1,12 @@
+/* globals angular */
+
 /**
  * @class PositionsService
  * @classdesc
  * @ngInject
  */
 function PositionsService(ApiService, ConfigLoader, $q, $log) {
+  "use strict";
 
   // jshint shadow: true
   var PositionsService = this;
@@ -48,8 +51,8 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
   PositionsService._processBookItem = function(book){
     book.org = ConfigLoader.getOrgByAccountDivision(book.balance.account, book.balance.division);
     book.deponent = (ConfigLoader.getAccount(book.org) || {}).dep;
-  }
-
+    book.type = book.security.length > 3 ? 'paper' : 'money';
+  };
 
   /**
    *
@@ -80,14 +83,14 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
           return Object.assign(singleValue.value, bookKey, {_created: parseDate(singleValue.timestamp) });
         });
       })
-      // .then(function(list){
-      //   list.forEach(BookService._processBookItem);
-      //   return list;
-      // });
+      .then(function(list){
+        list.forEach(PositionsService._processBookItem);
+        return list;
+      });
   };
 
   function parseDate(datestr){
-    return new Date((datestr||'').replace(/\s*\+.+$/,''))
+    return new Date((datestr||'').replace(/\s*\+.+$/,''));
   }
 
 

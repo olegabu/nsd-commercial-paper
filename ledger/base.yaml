@@ -51,7 +51,7 @@ services:
   api-base:
 #    build: ../server
 #    image: altoros/fabric-rest
-    image: maxxx1313/fabric-rest
+    image: maxxx1313/fabric-rest:0.11.0
     environment:
       - INSTRUCTION_INIT=${INSTRUCTION_INIT}
     volumes:

@@ -1,13 +1,16 @@
+/* globals angular */
 /**
  * @class PositionsController
  * @classdesc
  * @ngInject
  */
-function PositionsController($scope, PositionsService, ConfigLoader, DialogService) {
+function PositionsController($scope, $q, PositionsService, DialogService) {
+  "use strict";
 
   var ctrl = this;
 
-  ctrl.list = [];
+  ctrl.books = [];
+  ctrl.moneys = [];
 
   /**
    *
@@ -15,33 +18,42 @@ function PositionsController($scope, PositionsService, ConfigLoader, DialogServi
   ctrl.init = function(){
       $scope.$on('chainblock-ch-'+ PositionsService.getChannelID(), ctrl.reload);
       ctrl.reload();
-  }
+  };
 
   /**
    *
    */
   ctrl.reload = function(){
     ctrl.invokeInProgress = true;
-    return PositionsService.list()
-      .then(function(list){
-        ctrl.list = list;
-      })
+
+    return $q.all([
+
+
+      PositionsService.list()
+        .then(function(list){
+          ctrl.books = list;
+        })
+
+    ])
       .finally(function(){
         ctrl.invokeInProgress = false;
       });
-  }
+
+  };
+
 
 
   /**
-   * @param {Instruction} instruction
+   * @param {Book} book
+   * @param {'paper'|'money'} type
    */
-  ctrl.showHistory = function(book){
+  ctrl.showHistory = function(book, type){
     return PositionsService.history(book)
       .then(function(result){
-        var scope = {history: result};
+        var scope = {history: result, type: type};
         return DialogService.dialog('book-history.html', scope);
       });
-  }
+  };
 
 
   ctrl.init();

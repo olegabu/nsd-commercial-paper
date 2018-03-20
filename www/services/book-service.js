@@ -1,11 +1,33 @@
+/* globals angular */
+
 /**
+ * @typedef {object} Book
+ * @property {object} balance
+ * @property {string} balance.account
+ * @property {string} balance.division
+ * @property {string} security
+ * @property {'money'|'paper'} type
+ */
+
+
+
+/**
+ * @param {ApiService} ApiService
+ * @param {ConfigLoader} ConfigLoader
+ * @param {UserService} UserService
+ * @param {InstructionService} InstructionService
+ * @param $q
+ * @param $log
+ *
+ * @return {BookService}
+ * @constructor
+ *
  * @class BookService
- * @classdesc
  * @ngInject
  */
 function BookService(ApiService, ConfigLoader, UserService, InstructionService, $q, $log) {
+  "use strict";
 
-  // jshint shadow: true
   var BookService = this;
 
   /**
@@ -44,7 +66,8 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
   BookService._processBookItem = function(book){
     book.org = ConfigLoader.getOrgByAccountDivision(book.balance.account, book.balance.division);
     book.deponent = (ConfigLoader.getAccount(book.org) || {}).dep;
-  }
+    book.type = book.security.length > 3 ? 'paper' : 'money';
+  };
 
 
   /**
@@ -72,7 +95,7 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
     // We can safely use here the result of _getQueryPeer() fn.
     return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'put', args);
 
-  }
+  };
 
 
   BookService.redeem = function(redemption){
@@ -88,7 +111,7 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
 
     // We can safely use here the result of _getQueryPeer() fn.
     return ApiService.sc.invoke(channelID, chaincodeID, [peer], 'redeem', args);
-  }
+  };
 
 
   /**
@@ -116,8 +139,12 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
       });
   };
 
-  function parseDate(datestr){
-    return new Date((datestr||'').replace(/\s*\+.+$/,''))
+  /**
+   * parse "2018-03-13 13:30:46.909727155 +0000 UTC" to date
+   * @param datestr
+   */
+  function parseDate(datestr) {
+    return new Date((datestr||'').replace(/\s*\+.+$/,'').replace(' ','T'));
   }
 
   /**
@@ -127,7 +154,7 @@ function BookService(ApiService, ConfigLoader, UserService, InstructionService, 
     $log.debug('BookService.redeemHistory');
 
     if( UserService.getOrgRole() !== 'nsd'){
-      withRedeem = false;
+      // withRedeem = false;
       $log.warn('Role %s cannot fetch redeem history', UserService.getOrgRole());
       return $q.resolve(null);
     }

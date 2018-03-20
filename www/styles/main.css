@@ -5327,7 +5327,7 @@ input:not([type]),input[type=text],input[type=password],input[type=email],input[
     outline: none;
     height: 3rem;
     width: 100%;
-    font-size: 1rem;
+    /*font-size: 1rem;*/
     margin: 0 0 15px 0;
     padding: 0;
     box-shadow: none;
