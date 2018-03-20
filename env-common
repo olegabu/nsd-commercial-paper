@@ -5,21 +5,10 @@ export ORG1=nsd
 export ORG2=megafon
 export ORG3=raffeisen
 
-#grep -P 'ORG\d+'
-
 export IP1=91.208.232.164
 export IP2=83.149.14.164
 export IP3=195.238.73.147
 
+: ${FABRIC_STARTER_HOME:=../fabric-starter}
+export FABRIC_STARTER_HOME
 export PATH=$FABRIC_STARTER_HOME/:$PATH
-#------------------ init args depend on orgs
-
-INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' | envsubst )
-
-: ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
-: ${SECURITY_INIT:='{"Args":["init","RU000A0JVVB5","active","MZ0987654321","22000000000000000"]}'}
-: ${POSITION_INIT:='{"Args":["init"]}'}
-
-export INSTRUCTION_INIT=$INSTRUCTION_INIT
-export SECURITY_INIT=$SECURITY_INIT
-export POSITION_INIT=$POSITION_INIT

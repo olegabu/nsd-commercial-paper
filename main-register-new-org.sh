@@ -5,12 +5,23 @@ newOrgIp=$2
 
 
 ###########################################################################
-# Start
+# Load chaincode inits
 ###########################################################################
 
-network.sh -m add-org-connectivity -o $THIS_ORG -M $newOrg -i $newOrgIp
+# load ORGS var
+if [[ -f ./env-external-orgs-list ]]; then
+  source ./env-external-orgs-list;
+else
+  ORGS=""
+fi
+#------------------ init args depend on ORGS -----------------------
+INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' | envsubst )
+: ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
+: ${POSITION_INIT:='{"Args":["init"]}'}
 
-
+###########################################################################
+# Start
+###########################################################################
 channels="common"
 
 #bilateral
@@ -21,18 +32,10 @@ network.sh -m create-channel $MAIN_ORG "$biChannel"
 #${newOrg}
 
 network.sh -m update-sign-policy -o $THIS_ORG -k "$biChannel"
-
 network.sh -m instantiate-chaincode -o $THIS_ORG -k $biChannel -n position -I "${POSITION_INIT}"
 
-
 #trilateral
-if [[ -f ./env-external-orgs-list ]]; then
-  source ./env-external-orgs-list;
-else
-  ORGS=""
-fi
 ORGList=($ORGS)
-
 echo "Create trilateral for orgs: $ORGS"
 
 for org in ${ORGList[@]}; do

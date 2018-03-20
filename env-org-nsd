@@ -1,8 +1,4 @@
 export IP_ORDERER=
 export THIS_ORG=nsd
+export THIS_IP=$IP1
 
-BOOK_INIT_JSON=$(cat ./book_init.json |sed 's/"/\\"/g' |tr -d '\n\r ' | envsubst )
-
-: ${BOOK_INIT:='{"Args":["init","'$BOOK_INIT_JSON'"]}'}
-
-export BOOK_INIT=$BOOK_INIT

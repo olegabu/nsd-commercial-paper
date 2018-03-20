@@ -26,6 +26,12 @@ echo "Megafon is registered in channel common. Now chaincode 'security, book' wi
 
 ./install-cc.sh
 
+BOOK_INIT_JSON=$(cat ./book_init.json |sed 's/"/\\"/g' |tr -d '\n\r ' | envsubst )
+: ${BOOK_INIT:='{"Args":["init","'$BOOK_INIT_JSON'"]}'}
+
+: ${SECURITY_INIT:='{"Args":["init","RU000A0JVVB5","active","MZ0987654321","22000000000000000"]}'}
+
+
 network.sh -m instantiate-chaincode -o $THIS_ORG -k common -n security -I "${SECURITY_INIT}"
 network.sh -m instantiate-chaincode -o $THIS_ORG -k depository -n book -I "${BOOK_INIT}"
 
