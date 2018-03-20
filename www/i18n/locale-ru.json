@@ -29,7 +29,7 @@
   "STATUS_receiver-signed":"подписано получателем",
   "STATUS_signed":"подписано участниками",
   "STATUS_downloaded":"скачано в депозитарий",
-  "STATUS_declined":"отвергнуто",
+  "STATUS_declined":"отклонено",
   "STATUS_canceled":"отменено",
   "STATUS_rollbackInitiated":"возврат инициирован",
   "STATUS_rollbackDone":"отклонено депозитарием",
