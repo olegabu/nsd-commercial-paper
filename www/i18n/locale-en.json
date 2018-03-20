@@ -127,6 +127,7 @@
   "REASON_LABEL": "Reason",
   "DEPONENT_LABEL": "Deponent",
   "DIVISION_LABEL": "Division",
+  "9_CHARACTERS_LABEL":  "Should be exactly 9 characters",
   "12_CHARACTERS_LABEL": "Should be exactly 12 characters",
   "17_CHARACTERS_LABEL": "Should be exactly 17 characters",
   "20_CHARACTERS_LABEL": "Should be exactly 20 characters",
@@ -139,8 +140,10 @@
   "NO_ITEMS_LABEL": "No Items",
 
   "PAYMENT_LABEL": "Payment",
-  "PAYMENT_ACCOUNT_SENDER_LABEL": "Sender Account",
-  "PAYMENT_ACCOUNT_RECEIVER_LABEL": "Receiver Account",
+  "PAYMENT_SENDER":"Sender",
+  "PAYMENT_RECEIVER":"Receiver",
+  "PAYMENT_ACCOUNT_LABEL": "Account",
+  "PAYMENT_BIC_LABEL": "BIC",
   "PAYMENT_AMOUNT_LABEL": "Transfer value",
   "PAYMENT_CURRENCY": "Currency",
 

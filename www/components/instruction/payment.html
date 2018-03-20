@@ -1,0 +1,24 @@
+
+
+<!-- transferer/From -->
+<div class="input-field col s2">
+    <h5 translate>{{label}}</h5>
+</div>
+
+
+<!-- account -->
+<div class="input-field col s6">
+    <select ng-model="requsite.account"
+            name="pay_account_select_{{::componentId}}" id="pay_account_select_{{::componentId}}"
+            material-select watch class=""
+            ng-options="n as n for (n, o) in allAccounts[deponent].bic" placeholder="Account" required></select>
+    <label for="pay_account_select_{{::componentId}}" translate>PAYMENT_ACCOUNT_LABEL</label>
+</div>
+
+
+<div class="input-field col s4">
+    <input name="pay_bic_input_{{::componentId}}" id="pay_bic_input_{{::componentId}}"
+           type="text" class="uppercase" ng-model="requsite.bic" required ng-length="9">
+    <label for="pay_bic_input_{{::componentId}}" translate>PAYMENT_BIC_LABEL</label>
+    <span class="input-error-message" ng-show="form['pay_bic_input_'+componentId].$error.length" translate>9_CHARACTERS_LABEL</span>
+</div>

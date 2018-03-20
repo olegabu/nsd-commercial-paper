@@ -127,6 +127,7 @@
   "REASON_LABEL": "Основание",
   "DEPONENT_LABEL": "Депонент",
   "DIVISION_LABEL": "Раздел",
+  "9_CHARACTERS_LABEL":  "Должно быть ровно 9 символов",
   "12_CHARACTERS_LABEL": "Должно быть ровно 12 символов",
   "17_CHARACTERS_LABEL": "Должно быть ровно 17 символов",
   "20_CHARACTERS_LABEL": "Должно быть ровно 20 символов",
@@ -139,13 +140,14 @@
   "NO_ITEMS_LABEL": "Нет записей",
 
   "PAYMENT_LABEL": "Платежные реквизиты",
-  "PAYMENT_ACCOUNT_SENDER_LABEL": "БИК банка отправителя",
-  "PAYMENT_ACCOUNT_RECEIVER_LABEL": "БИК банка получателя",
+  "PAYMENT_SENDER":"Плательщик",
+  "PAYMENT_RECEIVER":"Получатель",
+  "PAYMENT_ACCOUNT_LABEL": "Счет",
+  "PAYMENT_BIC_LABEL": "БИК",
   "PAYMENT_AMOUNT_LABEL": "Cумма платежа",
   "PAYMENT_CURRENCY": "Валюта",
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
   "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s -> %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
-
 }

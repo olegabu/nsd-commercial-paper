@@ -40,6 +40,7 @@ angular.module('nsd.app',[
    'nsd.directive.form',
    'nsd.directive.certificate',
    'nsd.directive.requsite',
+   'nsd.directive.payment',
    'nsd.directive.blockchain',
    'nsd.directive.role',
    'nsd.directive.nsd',
