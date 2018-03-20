@@ -11,9 +11,11 @@ STARTTIME=$(date +%s)
 : ${IP2:="83.149.14.164"}
 : ${IP3:="195.238.73.147"}
 
+export ORG1
+export ORG2
+export ORG3
 
-INSTRUCTION_INIT_JSON=$(cat ./chaincode/instruction_init.json |sed 's/"/\\"/g' |tr -d '\n ')
-
+INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' | envsubst )
 : ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
 : ${BOOK_INIT:='{"Args":["init","[]"]}'}
 : ${SECURITY_INIT:='{"Args":["init","RUB","active","",""]}'}

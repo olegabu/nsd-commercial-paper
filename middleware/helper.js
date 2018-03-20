@@ -368,7 +368,7 @@ ConfigHelper.convertAccountConfig = function(instructionInit, role){
     }, {});
 
     // HOTFIX: remove domain
-    var org = (item.organization.match(/^[\w]+/)||[])[0];
+    var org = (item.organization.match(/^[\w]+/)||[])[0] || item.organization;
 
     result[org] = {
       dep  : item.deponent,

@@ -484,6 +484,9 @@ angular.module('nsd.app',[
      */
     function getOrgPeerIds(org){
       var netConfig = _config['network-config'];
+      if (!netConfig[org]) {
+        throw new Error('Organisation not found: ' + org);
+      }
       return Object.keys(netConfig[org])
         .filter(function(key){ return key.startsWith('peer'); });
     }

@@ -17,6 +17,7 @@ if(!ROLE){
   throw new Error('ROLE environment is not set');
 }
 
+console.log('INSTRUCTION_INIT', INSTRUCTION_INIT);
 
 // part of original config function with 'account-config' is added
 module.exports = function(require, app){
@@ -43,7 +44,7 @@ module.exports = function(require, app){
       res.setHeader('X-Api-Middleware', 'Config 0.1');
       res.send(clientConfig);
   });
-}
+};
 
 
 
