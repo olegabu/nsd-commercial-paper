@@ -357,25 +357,25 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	return shim.Error(err)
 }
 
-func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (isUnique bool, err error) {
-	isUnique, err = true, nil
+func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (bool, error) {
+	isUnique := true
 
 	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
 	if err != nil {
-		return
+		return isUnique, err
 	}
 	defer it.Close()
 
 	for it.HasNext() {
 		response, err := it.Next()
 		if err != nil {
-			return
+			return isUnique, err
 		}
 
 		ledgerInstruction := nsd.Instruction{}
 
 		if err := ledgerInstruction.FillFromLedgerValue(response.Value); err != nil {
-			return
+			return isUnique, err
 		}
 
 		if ledgerInstruction.Key.Reference == instruction.Key.Reference &&
@@ -385,7 +385,7 @@ func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instr
 		}
 	}
 
-	return
+	return isUnique, err
 }
 
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
