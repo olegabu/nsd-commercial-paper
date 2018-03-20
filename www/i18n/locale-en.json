@@ -127,6 +127,7 @@
   "REASON_LABEL": "Reason",
   "DEPONENT_LABEL": "Deponent",
   "DIVISION_LABEL": "Division",
+  "INVALID_CHARACTERS":  "Invalid characters",
   "9_CHARACTERS_LABEL":  "Should be exactly 9 characters",
   "12_CHARACTERS_LABEL": "Should be exactly 12 characters",
   "17_CHARACTERS_LABEL": "Should be exactly 17 characters",

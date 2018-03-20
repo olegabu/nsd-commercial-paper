@@ -127,6 +127,7 @@
   "REASON_LABEL": "Основание",
   "DEPONENT_LABEL": "Депонент",
   "DIVISION_LABEL": "Раздел",
+  "INVALID_CHARACTERS":  "Содержит недопустимые символы",
   "9_CHARACTERS_LABEL":  "Должно быть ровно 9 символов",
   "12_CHARACTERS_LABEL": "Должно быть ровно 12 символов",
   "17_CHARACTERS_LABEL": "Должно быть ровно 17 символов",

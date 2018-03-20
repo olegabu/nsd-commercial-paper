@@ -128,7 +128,7 @@ function SecurityService(ApiService, ConfigLoader, BookService, $q, $log) {
     var channelID = SecurityService.getChannelID();
     var peer = SecurityService._getQueryPeer();
     var args = [
-      security.security,
+      security.security.toUpperCase(),
       SecurityService.STATUS_ACTIVE,
       security.redeem.account,
       security.redeem.division
