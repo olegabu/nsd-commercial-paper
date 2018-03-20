@@ -55,7 +55,14 @@ func (t *SecurityChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  
 
 	_, args := stub.GetFunctionAndParameters()
 
-	return t.put(stub, args)
+	var securities []Security
+	if err := json.Unmarshal([]byte(args[0]), &securities); err == nil && len(securities) != 0 {
+		for _, entry := range securities {
+			t.put(stub, []string{entry.Security, entry.Status, entry.Redeem.Account, entry.Redeem.Division})
+		}
+	}
+
+	return shim.Success(nil)
 }
 
 func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
