@@ -357,8 +357,7 @@ ConfigHelper.prototype.getDepcodeByAccount = function(account, division){
 
 ConfigHelper.convertAccountConfig = function(instructionInit, role){
   role = role || 'investor';
-  var obj = JSON.parse(instructionInit);
-  var accData = JSON.parse(obj.Args[1]);
+  var accData = instructionInit;
   return accData.reduce(function(result, item){
 
     var account = item.balances.reduce(function(res, it){

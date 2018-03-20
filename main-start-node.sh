@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-network.sh -m down
+#network.sh -m down
 docker rm -f $(docker ps -aq)
 docker ps -a
 

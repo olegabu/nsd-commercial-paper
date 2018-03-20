@@ -8,5 +8,5 @@ docker ps -a
 # Start
 ###########################################################################
 network.sh -m removeArtifacts
-network.sh -m generate-peer -o $THIS_ORG
+network.sh -m generate-peer -o $THIS_ORG -R true
 

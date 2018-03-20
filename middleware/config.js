@@ -5,9 +5,9 @@
 var ConfigHelper = require('./helper.js').ConfigHelper;
 
 
-var INSTRUCTION_INIT = process.env.INSTRUCTION_INIT;
-var ROLE = process.env.ROLE;
-var ORG  = process.env.ORG;
+var INSTRUCTION_INIT = require('../instruction_init.json');
+var ROLE = process.env.ROLE || 'investor';
+var ORG  = process.env.ORG || process.env.THIS_ORG;
 
 if(!INSTRUCTION_INIT){
   throw new Error('INSTRUCTION_INIT environment is not set');
