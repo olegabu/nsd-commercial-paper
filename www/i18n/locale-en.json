@@ -139,6 +139,7 @@
   "EVENT_TYPE_LABEL": "Event type",
   "NO_ITEMS_LABEL": "No Items",
 
+  "PAYMENT":"Payment",
   "PAYMENT_LABEL": "Payment",
   "PAYMENT_SENDER":"Sender",
   "PAYMENT_RECEIVER":"Receiver",

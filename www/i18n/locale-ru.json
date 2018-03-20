@@ -139,6 +139,7 @@
   "EVENT_TYPE_LABEL": "Тип события",
   "NO_ITEMS_LABEL": "Нет записей",
 
+  "PAYMENT":"Платеж",
   "PAYMENT_LABEL": "Платежные реквизиты",
   "PAYMENT_SENDER":"Плательщик",
   "PAYMENT_RECEIVER":"Получатель",
