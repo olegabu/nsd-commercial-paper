@@ -7,6 +7,8 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
 
   var config;
 
+  var _refreshTokenTimer;
+
   ConfigLoader.ready().then(function(){
 
     config = ConfigLoader.get();
@@ -23,13 +25,22 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
    * @param {{username:string, orgName:string}} user
    */
   UserService.signUp = function(user) {
+    $log.debug('UserService.signUp', user);
     return ApiService.user.signUp(user.username, user.orgName)
       .then(function(/** @type {TokenInfo} */tokenInfo){
+        $log.debug('UserService.signUp result', tokenInfo);
         $rootScope._tokenInfo = tokenInfo; // used in http provider
         UserService.saveAuthorization(tokenInfo);
         return tokenInfo;
       });
   };
+
+  UserService.refreshToken = function(tokenInfo){
+    $log.debug('UserService.refreshToken', tokenInfo.tokenData);
+    // TODO: now we use sign up method =(
+    // return UserService.signUp({username: tokenData.username, orgName: tokenData.orgName});
+    return UserService.signUp(tokenInfo.tokenData);
+  }
 
 
   UserService.logout = function() {
@@ -53,10 +64,13 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
     return config ? config.org : null;
   }
 
-
+  /** 
+   * @param {TokenInfo} user - actually tokenInfo
+   */
   UserService.saveAuthorization = function(user){
     if(user){
-      user.tokenData = parseTokenData(user.token);
+      user.tokenData = parseTokenData(user.token) || {};
+      UserService._setTokenExpTimeout(user);
     }
     localStorageService.set('user', user);
     $rootScope._tokenInfo = user;
@@ -67,18 +81,45 @@ function UserService($log, $rootScope, ApiService, localStorageService, ConfigLo
 
     if(tokenInfo){
       // {"exp":1500343472,"username":"test22","orgName":"org2","iat":1500307472}
-      tokenInfo.tokenData = parseTokenData(tokenInfo.token);
-      // TODO: check expire time
+      tokenInfo.tokenData = parseTokenData(tokenInfo.token) || {};
 
       if( (tokenInfo.tokenData.exp||0)*1000 <= Date.now() ){
         // token expired
         tokenInfo = null;
+      }
+
+      if(tokenInfo){
+        UserService._setTokenExpTimeout(tokenInfo);
       }
     }
 
     $log.info('UserService.restoreAuthorization', !!tokenInfo);
     $rootScope._tokenInfo = tokenInfo;
   };
+
+
+  /**
+   *
+   */
+  UserService._setTokenExpTimeout = function(tokenInfo){
+    var expiration = tokenInfo.tokenData.exp;
+    $log.debug('UserService._setTokenExpTimeout', expiration);
+    var timeout = expiration - Math.floor(Date.now() / 1000);
+    if(timeout>0){
+      timeout = Math.ceil(timeout * 0.9); // just a bit of time (10%) to update token
+      $log.debug('UserService._setTokenExpTimeout set timeout for %s sec', timeout);
+
+      if(_refreshTokenTimer){
+        clearTimeout(_refreshTokenTimer);
+      }
+      _refreshTokenTimer = setTimeout(function(){
+        _refreshTokenTimer = null;
+        UserService.refreshToken(tokenInfo);
+      }, timeout * 1000);
+    } else {
+      $log.warn('UserService._setTokenExpTimeout timeout has invalid value:', timeout);
+    }
+  }
 
 
   /**
