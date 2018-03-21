@@ -5,16 +5,17 @@ newOrgIp=$2
 
 
 ###########################################################################
-# Load chaincode inits
+# Load list of existing ORGS
 ###########################################################################
-
-# load ORGS var
+# ORGS variable
 if [[ -f ./env-external-orgs-list ]]; then
   source ./env-external-orgs-list;
 else
   ORGS=""
 fi
-#------------------ init args depend on ORGS -----------------------
+# #########################################################################
+# Load chaincode init args (depend on ORGS)
+###########################################################################
 INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' | envsubst )
 : ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
