@@ -82,8 +82,8 @@
 
                 <!-- DVP -->
                 <td class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}</td>
                 <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}</td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}</td>
                 <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
 
                 <td class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='receiver'">{{::o.additionalInformation.description}}</td>

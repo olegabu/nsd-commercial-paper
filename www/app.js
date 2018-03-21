@@ -503,7 +503,8 @@ angular.module('nsd.app',[
         if( accountConfig[orgID].acc[account] && accountConfig[orgID].acc[account].indexOf(division)>=0 ) {
           return orgID;
         }
-        if( accountConfig[orgID].bic[account] && accountConfig[orgID].bic[account].indexOf(division)>=0 ) {
+        // ignore division for bic
+        if( accountConfig[orgID].bic[account] ) {
           return orgID;
         }
       }

@@ -329,12 +329,24 @@ ConfigHelper.prototype.getOrgByDepcode = function(depCode){
  */
 ConfigHelper.prototype.getOrgByAccount = function(account, division){
  // looking for second participant
-  for(var org in this.accountConfig){
-    if(this.accountConfig.hasOwnProperty(org)){
-      if( this.accountConfig[org].acc[account] && this.accountConfig[org].acc[account].indexOf(division)>=0 ){
-        return org;
+  for(var orgID in this.accountConfig){
+    if(this.accountConfig.hasOwnProperty(orgID)){
+
+      if( this.accountConfig[orgID].acc[account] && this.accountConfig[orgID].acc[account].indexOf(division)>=0 ){
+        return orgID;
         // break;
       }
+
+      if (account.length > 12) {
+        // assume it's bic
+
+        // ignore division for bic
+        if( this.accountConfig[orgID].acc[account] ) {
+          return orgID;
+          // break;
+        }
+      }
+
     }
   }
   return null;
