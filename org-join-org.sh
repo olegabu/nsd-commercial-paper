@@ -17,5 +17,5 @@ for org in ${externalOrgs[@]}; do
 done
 
 #add IP to api's hosts
-network.sh -m add-org-connectivity -o $THIS_ORG -M $externalOrg -i $externalOrgIp
+network.sh -m add-org-connectivity -o $THIS_ORG -M $MAIN_ORG -R $externalOrg -i $externalOrgIp
 

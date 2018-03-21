@@ -3,7 +3,7 @@
 ###########################################################################
 # Start
 ###########################################################################
-network.sh -m add-org-connectivity -o $THIS_ORG -M $MAIN_ORG -i ${IP1}
+network.sh -m add-org-connectivity -o $THIS_ORG -M $MAIN_ORG -R $MAIN_ORG -i ${IP1}
 network.sh -m up-one-org -o $THIS_ORG -M $MAIN_ORG
 
 

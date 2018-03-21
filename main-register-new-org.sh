@@ -44,10 +44,9 @@ for org in ${ORGList[@]}; do
     echo "Create channel: $sortedChannelName"
     channels="$channels ${sortedChannelName}"
     network.sh -m create-channel $MAIN_ORG "$sortedChannelName"
-    #${org}
-#    ${newOrg}
 
     network.sh -m update-sign-policy -o $THIS_ORG -k "$sortedChannelName"
+    network.sh -m register-org-in-channel $MAIN_ORG "$sortedChannelName" ${org}
     network.sh -m instantiate-chaincode -o $THIS_ORG -k $sortedChannelName -n instruction -I "${INSTRUCTION_INIT}"
   fi
 done

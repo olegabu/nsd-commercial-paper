@@ -2,12 +2,17 @@ export DOMAIN=nsd.ru
 export MAIN_ORG=nsd
 
 export ORG1=nsd
+#export ORG2=sberbank
+#export ORG3=mts
 export ORG2=megafon
-export ORG3=raffeisen
+export ORG3=raiffeisen
 
 export IP1=91.208.232.164
-export IP2=83.149.14.164
-export IP3=195.238.73.147
+export IP2=193.232.123.109
+export IP3=213.87.44.178
+
+#export IP2=83.149.14.164
+#export IP3=195.238.73.147
 
 : ${FABRIC_STARTER_HOME:=../fabric-starter}
 export FABRIC_STARTER_HOME
