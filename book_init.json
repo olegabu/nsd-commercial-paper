@@ -4,5 +4,15 @@
     "division": "19000000000000000",
     "security": "RU000A0JVVB5",
     "quantity": "1000000"
+  },{
+    "account": "MZ0987654321",
+    "division": "19000000000000000",
+    "security": "RU000A0JVVB5",
+    "quantity": "50000"
+  },{
+   "account": "30109810000000000000",
+   "division": "",
+   "security": "RUB",
+   "quantity": "10000"
   }
 ]
