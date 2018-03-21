@@ -1,0 +1,17 @@
+{
+	"contracts":{
+	"instruction":"instruction",
+	"book":"book",
+	"securityMaster":"securityMaster"
+	},
+
+	"endorsers": [
+		"ORG1"
+	],
+
+	"network-config": {
+		"orderer": {
+			"url": "grpcs://orderer.DOMAIN:7050",
+			"server-hostname": "orderer.DOMAIN",
+			"tls_cacerts": "crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/tls/ca.crt"
+		},}}
