@@ -58,6 +58,7 @@ services:
      - ../artifacts:/usr/src/artifacts
      - ../middleware:/usr/src/app/middleware
      - ../www:/usr/src/app/www
+     - ../instruction_init.json:/usr/src/app/instruction_init.json
      - ../www/images:/usr/src/app/www-admin/images
     command: npm start
 
