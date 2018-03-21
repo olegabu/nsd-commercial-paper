@@ -358,34 +358,38 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 }
 
 func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (bool, error) {
-	isUnique := true
+	const instructionUnique = true
 
 	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
 	if err != nil {
-		return isUnique, err
+		return instructionUnique, err
 	}
 	defer it.Close()
 
 	for it.HasNext() {
 		response, err := it.Next()
 		if err != nil {
-			return isUnique, err
+			return instructionUnique, err
+		}
+
+		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
+		if err != nil {
+			return instructionUnique, err
 		}
 
 		ledgerInstruction := nsd.Instruction{}
 
-		if err := ledgerInstruction.FillFromLedgerValue(response.Value); err != nil {
-			return isUnique, err
+		if err := ledgerInstruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
+			return instructionUnique, err
 		}
 
 		if ledgerInstruction.Key.Reference == instruction.Key.Reference &&
 			ledgerInstruction.Key.InstructionDate == instruction.Key.InstructionDate {
-			isUnique = false
-			break
+			return !instructionUnique, nil
 		}
 	}
 
-	return isUnique, err
+	return instructionUnique, nil
 }
 
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
