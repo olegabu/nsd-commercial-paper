@@ -75,7 +75,7 @@ function BookController($scope, $q, BookService, ConfigLoader, DialogService, Se
     $scope.book.type = type;
     if ($scope.book.type === 'money') {
       $scope.book.balance = $scope.book.balance || {};
-      $scope.book.balance.division = '044525505';
+      $scope.book.balance.division = '';
       $scope.book.security = 'RUB';
     }
   };
