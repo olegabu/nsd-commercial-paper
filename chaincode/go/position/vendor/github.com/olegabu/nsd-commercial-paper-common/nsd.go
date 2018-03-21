@@ -9,10 +9,14 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
+// Instruction initiators
 const (
 	InitiatorIsTransferer = "transferer"
 	InitiatorIsReceiver   = "receiver"
+)
 
+// Instruction statuses
+const (
 	InstructionInitiated  = "initiated"
 	InstructionMatched    = "matched"
 	InstructionSigned     = "signed"
@@ -20,7 +24,21 @@ const (
 	InstructionDownloaded = "downloaded"
 	InstructionDeclined   = "declined"
 	InstructionCanceled   = "canceled"
+
+	InstructionRollbackInitiated = "rollbackInitiated"
+	InstructionRollbackDone      = "rollbackDone"
+	InstructionRollbackDeclined  = "rollbackDeclined"
 )
+
+// Instruction types
+const (
+	InstructionTypeFOP = "fop"
+	InstructionTypeDVP = "dvp"
+)
+
+// Args lengths
+const fopArgsLength = 10
+const dvpArgsLength = 16
 
 // TODO: make this private
 const InstructionIndex = `Instruction`
@@ -50,9 +68,10 @@ type InstructionKey struct {
 	InstructionDate string `json:"instructionDate"`
 	TradeDate       string `json:"tradeDate"`
 
-	Type string `json:"type"`// only valid values are "fop" and "dvp"
+	// valid types are described by "Instruction types" constants
+	Type string `json:"type"`
 
-	// block below is used only if Type == "dvp"
+	// block below is used only if Type == InstructionTypeDVP
 	TransfererRequisites Requisites `json:"transfererRequisites"`
 	ReceiverRequisites   Requisites `json:"receiverRequisites"`
 	// TODO: amount should be float
@@ -64,6 +83,7 @@ type InstructionValue struct {
 	DeponentFrom            string `json:"deponentFrom"`
 	DeponentTo              string `json:"deponentTo"`
 	Status                  string `json:"status"`
+	StatusInfo              string `json:"statusInfo"`
 	Initiator               string `json:"initiator"`
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
@@ -73,7 +93,7 @@ type InstructionValue struct {
 	AlamedaTo               string `json:"alamedaTo"`
 	AlamedaSignatureFrom    string `json:"alamedaSignatureFrom"`
 	AlamedaSignatureTo      string `json:"alamedaSignatureTo"`
-	AdditionalInformation   string `json:"additionalInformation"`
+	AdditionalInformation   Reason `json:"additionalInformation"`
 }
 
 type Balance struct {
@@ -123,22 +143,33 @@ func (this *Instruction) ToCompositeKey(stub shim.ChaincodeStubInterface) (strin
 }
 
 func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) error {
-	if len(compositeKeyParts) < 16 {
-		return errors.New("Composite key parts array length must be at least 16.")
+	if len(compositeKeyParts) < fopArgsLength {
+		return errors.New("Composite key parts array length must be at least 9.")
 	}
 
 	if _, err := strconv.Atoi(compositeKeyParts[5]); err != nil {
 		return errors.New("Quantity must be int.")
 	}
 
-	if compositeKeyParts[9] != "fop" && compositeKeyParts[9] != "dvp" {
+	if compositeKeyParts[9] != InstructionTypeFOP && compositeKeyParts[9] != InstructionTypeDVP {
 		return errors.New("Type of instruction must be either \"fop\" or \"dvp\".")
 	}
 
-	if compositeKeyParts[9] == "dvp" {
-		if _, err := strconv.ParseFloat(compositeKeyParts[14], 64); err != nil {
-			return errors.New("Payment amount must be float.")
+	if compositeKeyParts[9] == InstructionTypeDVP {
+		if len(compositeKeyParts) < dvpArgsLength {
+			return errors.New("Composite key parts array length for \"dvp\" option must be at least 16.")
 		}
+
+		if _, err := strconv.ParseFloat(compositeKeyParts[14], 64); err != nil {
+			return errors.New("Payment amount must be float (dvp).")
+		}
+
+		this.Key.TransfererRequisites.Account = compositeKeyParts[10]
+		this.Key.TransfererRequisites.Bic = compositeKeyParts[11]
+		this.Key.ReceiverRequisites.Account = compositeKeyParts[12]
+		this.Key.ReceiverRequisites.Bic = compositeKeyParts[13]
+		this.Key.PaymentAmount = compositeKeyParts[14]
+		this.Key.PaymentCurrency = compositeKeyParts[15]
 	}
 
 	this.Key.Transferer.Account = compositeKeyParts[0]
@@ -151,12 +182,6 @@ func (this *Instruction) FillFromCompositeKeyParts(compositeKeyParts []string) e
 	this.Key.InstructionDate = compositeKeyParts[7]
 	this.Key.TradeDate = compositeKeyParts[8]
 	this.Key.Type = compositeKeyParts[9]
-	this.Key.TransfererRequisites.Account = compositeKeyParts[10]
-	this.Key.TransfererRequisites.Bic = compositeKeyParts[11]
-	this.Key.ReceiverRequisites.Account = compositeKeyParts[12]
-	this.Key.ReceiverRequisites.Bic = compositeKeyParts[13]
-	this.Key.PaymentAmount = compositeKeyParts[14]
-	this.Key.PaymentCurrency = compositeKeyParts[15]
 
 	return nil
 }

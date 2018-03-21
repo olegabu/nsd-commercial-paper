@@ -296,11 +296,13 @@ func (t *BookChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb
 	if instruction.Key.Type == nsd.InstructionTypeDVP {
 		// Money transaction
 		accountFrom = instruction.Key.ReceiverRequisites.Account
-		divisionFrom = instruction.Key.ReceiverRequisites.Bic
+		// divisionFrom = instruction.Key.ReceiverRequisites.Bic
+		divisionFrom = ""
 		security = instruction.Key.PaymentCurrency
 		quantity, _ = strconv.Atoi(instruction.Key.PaymentAmount)
 		accountTo = instruction.Key.TransfererRequisites.Account
-		divisionTo = instruction.Key.TransfererRequisites.Bic
+		// divisionTo = instruction.Key.TransfererRequisites.Bic
+		divisionTo = ""
 
 		if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
 			response.GetStatus() != shim.OK {
@@ -357,11 +359,13 @@ func (t *BookChaincode) rollback(stub shim.ChaincodeStubInterface, args []string
 	if instruction.Key.Type == nsd.InstructionTypeDVP {
 		// returning money from Transferer to Receiver
 		accountFrom = instruction.Key.TransfererRequisites.Account
-		divisionFrom = instruction.Key.TransfererRequisites.Bic
+		// divisionFrom = instruction.Key.TransfererRequisites.Bic
+		divisionFrom = ""
 		security = instruction.Key.PaymentCurrency
 		quantity, _ = strconv.Atoi(instruction.Key.PaymentAmount)
 		accountTo = instruction.Key.ReceiverRequisites.Account
-		divisionTo = instruction.Key.ReceiverRequisites.Bic
+		// divisionTo = instruction.Key.ReceiverRequisites.Bic
+		divisionTo = ""
 
 		if response := moveSecurity(stub, accountFrom, divisionFrom, security, quantity, accountTo, divisionTo);
 			response.GetStatus() != shim.OK {

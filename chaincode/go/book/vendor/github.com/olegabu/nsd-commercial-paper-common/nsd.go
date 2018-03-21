@@ -25,9 +25,9 @@ const (
 	InstructionDeclined   = "declined"
 	InstructionCanceled   = "canceled"
 
-	InstructionRollbackInitialized = "rollbackInitiated"
-	InstructionRollbackDone        = "rollbackDone"
-	InstructionRollbackDeclined    = "rollbackDeclined"
+	InstructionRollbackInitiated = "rollbackInitiated"
+	InstructionRollbackDone      = "rollbackDone"
+	InstructionRollbackDeclined  = "rollbackDeclined"
 )
 
 // Instruction types
@@ -83,6 +83,7 @@ type InstructionValue struct {
 	DeponentFrom            string `json:"deponentFrom"`
 	DeponentTo              string `json:"deponentTo"`
 	Status                  string `json:"status"`
+	StatusInfo              string `json:"statusInfo"`
 	Initiator               string `json:"initiator"`
 	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
 	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`

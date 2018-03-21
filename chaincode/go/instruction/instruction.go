@@ -24,7 +24,7 @@ const authenticationIndex = `Authentication`
 // TODO: think about making these constants public in nsd.go
 // args base lengths
 const (
-	fopArgsLength = 9
+	fopArgsLength = 10
 	dvpArgsLength = 16
 )
 
@@ -357,6 +357,37 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	return shim.Error(err)
 }
 
+func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (bool, error) {
+	isUnique := true
+
+	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
+	if err != nil {
+		return isUnique, err
+	}
+	defer it.Close()
+
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return isUnique, err
+		}
+
+		ledgerInstruction := nsd.Instruction{}
+
+		if err := ledgerInstruction.FillFromLedgerValue(response.Value); err != nil {
+			return isUnique, err
+		}
+
+		if ledgerInstruction.Key.Reference == instruction.Key.Reference &&
+			ledgerInstruction.Key.InstructionDate == instruction.Key.InstructionDate {
+			isUnique = false
+			break
+		}
+	}
+
+	return isUnique, err
+}
+
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
@@ -414,6 +445,14 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			}
 		}
 
+		isUnique, err := isInstructionUnique(stub, instruction)
+		if err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+		if !isUnique {
+			return pb.Response{Status: 400, Message: "Instruction is not unique."}
+		}
+
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
@@ -458,6 +497,15 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		if err := json.Unmarshal([]byte(args[argsOffset + 3]), &instruction.Value.ReasonFrom); err != nil {
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
+
+		isUnique, err := isInstructionUnique(stub, instruction)
+		if err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+		if !isUnique {
+			return pb.Response{Status: 400, Message: "Instruction is not unique."}
+		}
+
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 
@@ -499,11 +547,22 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 		return pb.Response{Status: 404, Message: "Instruction not found."}
 	}
 
+	var expectedArgsLength int
+	if instruction.Key.Type == nsd.InstructionTypeFOP {
+		expectedArgsLength = fopArgsLength + 1
+	} else { // nsd.InstructionTypeDVP
+		expectedArgsLength = dvpArgsLength + 1
+	}
+
+	if len(args) > expectedArgsLength {
+		instruction.Value.StatusInfo = args[len(args) - 2]
+	}
+
 	switch {
 	case callerIsNSD && status == nsd.InstructionDeclined,
 		 callerIsNSD && status == nsd.InstructionExecuted,
 		 callerIsNSD && status == nsd.InstructionDownloaded,
-		 callerIsNSD && status == nsd.InstructionRollbackInitialized,
+		 callerIsNSD && status == nsd.InstructionRollbackInitiated,
 		 callerIsNSD && status == nsd.InstructionRollbackDone,
 		 callerIsNSD && status == nsd.InstructionRollbackDeclined:
 		instruction.Value.Status = status
@@ -603,7 +662,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == nsd.InstructionExecuted) ||
 			(instruction.Value.Status == nsd.InstructionDownloaded) ||
 			(instruction.Value.Status == nsd.InstructionDeclined) ||
-			(instruction.Value.Status == nsd.InstructionRollbackInitialized) ||
+			(instruction.Value.Status == nsd.InstructionRollbackInitiated) ||
 			(instruction.Value.Status == nsd.InstructionRollbackDone) ||
 			(instruction.Value.Status == nsd.InstructionRollbackDeclined) ||
 			callerIsNSD {
@@ -766,7 +825,7 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 404, Message: "Instruction not found."}
 		}
 
-		instruction.Value.Status = nsd.InstructionRollbackInitialized
+		instruction.Value.Status = nsd.InstructionRollbackInitiated
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
