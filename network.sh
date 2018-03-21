@@ -17,10 +17,11 @@ export ORG3
 
 INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' | envsubst )
 SECURITY_INIT_JSON=$(cat ./security_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' | envsubst )
+BOOK_INIT_JSON=$(cat ./book_init.json |sed 's/"/\\"/g' |tr -d '\n\r ' | envsubst )
 
 : ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
-: ${BOOK_INIT:='{"Args":["init","[]"]}'}
 : ${SECURITY_INIT:='{"Args":["init","'$SECURITY_INIT_JSON'"]}'}
+: ${BOOK_INIT:='{"Args":["init","'$BOOK_INIT_JSON'"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
 
 #fix sublime syntax hightlight'
