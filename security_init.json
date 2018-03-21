@@ -1,0 +1,18 @@
+[
+  {
+    "security":"RU000A0JVVB5",
+    "status":"active",
+    "redeem": {
+      "account":  "MZ0987654321",
+      "division": "22000000000000000"
+    }
+  },
+  {
+    "security":"RUB",
+    "status":"active",
+    "redeem": {
+      "account":  "",
+      "division": ""
+    }
+  }
+]
