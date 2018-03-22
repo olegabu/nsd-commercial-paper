@@ -25,7 +25,7 @@ network.sh -m create-channel $MAIN_ORG  "depository"
 
 
 echo -e $separateLine
-echo "Megafon is registered in channel common. Now chaincode 'security, book' will be installed and instantiated "
+echo " >> Org $THIS_ORG is registered in channel common. Now chaincode 'security, book' will be installed and instantiated "
 
 ./install-cc.sh
 
@@ -41,7 +41,7 @@ network.sh -m instantiate-chaincode -o $THIS_ORG -k depository -n book -I "${BOO
 
 
 echo -e $separateLine
-echo "Org 'nsd' is up. Channels 'common', 'depository' are created. New organizations may be added by using 'main-register-new-org.sh'"
+echo " >> Org 'nsd' is up. Channels 'common', 'depository' are created. New organizations may be added by using 'main-register-new-org.sh'"
 
 export ORGS=""
 echo "export ORGS=\"\"" > ./env-external-orgs-list

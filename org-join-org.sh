@@ -11,7 +11,7 @@ externalOrgs=("$externalOrg")
 for org in ${externalOrgs[@]}; do
   if [[ "$org" != "$THIS_ORG" ]]; then
     sortedChannelName=`echo "${org} ${THIS_ORG}" | tr " " "\n" | sort |tr "\n" " " | sed 's/ /-/'`
-    echo "Join channel: $sortedChannelName"
+    echo " >> Join channel: $sortedChannelName"
     network.sh -m  join-channel $THIS_ORG $MAIN_ORG "$sortedChannelName"
   fi
 done
