@@ -60,6 +60,8 @@ func (t *SecurityChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  
 		for _, entry := range securities {
 			t.put(stub, []string{entry.Security, entry.Status, entry.Redeem.Account, entry.Redeem.Division})
 		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
 	}
 
 	return shim.Success(nil)
@@ -91,6 +93,7 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 }
 
 func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// comment if block below to run tests without checking permissions
 	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
 		return shim.Error("Insufficient privileges. Only NSD can change Securities information.")
 	}
@@ -136,7 +139,7 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 }
 
 func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
+	// comment if block below to run tests without checking permissions
 	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
 		return shim.Error("Insufficient privileges. Only NSD can add Calendar Entry")
 	}
