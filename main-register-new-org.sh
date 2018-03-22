@@ -62,7 +62,7 @@ network.sh -m warmup-chaincode -o $THIS_ORG -k "$biChannel" -n position -I '{"Ar
 if [ -n "$trilateralChannels" ]; then
   echo "Instantiate chaincode instruction in : $trilateralChannels"
   network.sh -m instantiate-chaincode -o $THIS_ORG -k "$trilateralChannels" -n instruction -I "${INSTRUCTION_INIT}"
-  network.sh -m warmup-chaincode -o $THIS_ORG -k "$trilateralChannels" -n instruction -I '{"Args":["query", ""]}'
+  network.sh -m warmup-chaincode -o $THIS_ORG -k "$trilateralChannels" -n instruction -I '{"Args":["query",""]}'
 fi
 
 export ORGS="$ORGS $newOrg"
