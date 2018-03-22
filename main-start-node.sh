@@ -7,7 +7,10 @@ docker ps -a
 ###########################################################################
 # Start
 ###########################################################################
-network.sh -m removeArtifacts
+if [ "$DEBUG_NOT_REMOVE_OLD_ARTIFACTS" == "" ]; then #sometimes in debug need not to remove old artifacts
+    echo "Removinf old artifacts"
+    network.sh -m removeArtifacts
+fi
 
 echo "THIS_ORG: $THIS_ORG"
 network.sh -m generate-peer -o $THIS_ORG -a 4000 -w 8081

@@ -1,4 +1,9 @@
+source ./env-common
+
 export IP_ORDERER=
 export THIS_ORG=nsd
 export ROLE=nsd
+
+echo -e "This org:$THIS_ORG\nOrderer IP:$IP_ORDERER"
+
 

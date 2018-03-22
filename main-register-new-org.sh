@@ -23,38 +23,47 @@ INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\
 ###########################################################################
 # Start
 ###########################################################################
-channels="common"
 
 #bilateral
 biChannel="${MAIN_ORG}-${newOrg}"
-channels="$channels ${biChannel}"
 echo "Creating bilateral channel $biChannel, $channels"
 network.sh -m create-channel $MAIN_ORG "$biChannel"
-#${newOrg}
-
 network.sh -m update-sign-policy -o $THIS_ORG -k "$biChannel"
-network.sh -m instantiate-chaincode -o $THIS_ORG -k $biChannel -n position -I "${POSITION_INIT}"
+#network.sh -m instantiate-chaincode -o $THIS_ORG -k $biChannel -n position -I "${POSITION_INIT}"
 
 #trilateral
 ORGList=($ORGS)
 echo "Create trilateral for orgs: $ORGS"
 
+
+trilateralChannels=""
 for org in ${ORGList[@]}; do
   if [[ "$org" != "$newOrg" ]]; then
     sortedChannelName=`echo "${org} ${newOrg}" | tr " " "\n" | sort |tr "\n" " " | sed 's/ /-/'`
     echo "Create channel: $sortedChannelName"
-    channels="$channels ${sortedChannelName}"
     network.sh -m create-channel $MAIN_ORG "$sortedChannelName"
-
     network.sh -m update-sign-policy -o $THIS_ORG -k "$sortedChannelName"
     network.sh -m register-org-in-channel $MAIN_ORG "$sortedChannelName" ${org}
-    network.sh -m instantiate-chaincode -o $THIS_ORG -k $sortedChannelName -n instruction -I "${INSTRUCTION_INIT}"
+#    network.sh -m instantiate-chaincode -o $THIS_ORG -k $sortedChannelName -n instruction -I "${INSTRUCTION_INIT}"
+
+    #track trilateral channels list
+    trilateralChannels="$trilateralChannels ${sortedChannelName}"
   fi
 done
 
 echo "***************************************************************************"
 echo "Register new org in channels: $channels"
-network.sh -m register-new-org -o ${newOrg} -M $MAIN_ORG -i ${newOrgIp} -k "$channels"
+network.sh -m register-new-org -o ${newOrg} -M $MAIN_ORG -i ${newOrgIp} -k "common $biChannel $trilateralChannels"
+
+echo "Instantiate chaincode position in : $biChannel"
+network.sh -m instantiate-chaincode -o $THIS_ORG -k "$biChannel" -n position -I "${POSITION_INIT}"
+network.sh -m warmup-chaincode -o $THIS_ORG -k "$biChannel" -n position -I '{"Args":["query",""]}'
+
+if [ -n "$trilateralChannels" ]; then
+  echo "Instantiate chaincode instruction in : $trilateralChannels"
+  network.sh -m instantiate-chaincode -o $THIS_ORG -k "$trilateralChannels" -n instruction -I "${INSTRUCTION_INIT}"
+  network.sh -m warmup-chaincode -o $THIS_ORG -k "$trilateralChannels" -n instruction -I '{"Args":["query", ""]}'
+fi
 
 export ORGS="$ORGS $newOrg"
 echo "export ORGS=\"$ORGS\"" > ./env-external-orgs-list
