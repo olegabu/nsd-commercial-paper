@@ -126,6 +126,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       || instruction.status=='downloaded';
   }
 
+
+
   ctrl.getInstructionXmlLink = function(instruction, side, inverse) {
     var data;
     switch ( side ) {
@@ -133,9 +135,29 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       case 'receiver':   data = inverse ? instruction.alamedaFrom : instruction.alamedaTo; break;
       default: throw new Error('Unknown side: ' + side);
     }
-    return 'data:application/octet-stream;base64,' + btoa( data );
+    var base64data = data;
+    try {
+      base64data = windows1251.encode(base64data);
+    } catch(e) {
+      console.warn('Fail to encode in windows-1251', base64data);
+    }
+
+    var isBase64 = true;
+    try {
+      base64data = btoa(base64data);
+    } catch(e) {
+      console.warn('Fail to encode in base64', base64data);
+      isBase64 = false;
+    }
+
+    return 'data:application/xml' + (isBase64 ? ';base64' : '' ) + ',' + base64data;
+    // return 'data:application/octet-stream;base64,' + base64data;
   }
 
+
+  /**
+   *
+   */
   ctrl.getInstructionFilename = function(instruction, side, inverse) {
     if (inverse) {
       if(side == 'transferer'){
