@@ -60,15 +60,8 @@
                 <td>{{::o.initiator=='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
-                <td class="center">
+                <td class="center btn-group-vertical">
                     <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
-
-                    <a ng-show="::ctl.isInstructionXmlAvailable(o)"
-                       type="button" class="btn btn-small waves-effect waves-light darken-2"
-                       ng-click="$event.stopPropagation();"
-                       download="{{::ctl.getInstructionFilename(o, o.initiator)}}"
-                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}" translate>DOWNLOAD_XML</a>
-
 
                     <!-- specific for initiator/admin -->
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
@@ -78,6 +71,14 @@
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="ROLLBACK_LABEL" translate-attr="{value:'ROLLBACK_LABEL'}"
                            ng-show="::ctl.canRollback(o)" role-show="nsd" ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
+
+
+                    <!-- common stuff -->
+                    <a ng-show="::ctl.isInstructionXmlAvailable(o)"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getInstructionFilename(o, o.initiator)}}"
+                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}" translate>DOWNLOAD_XML</a>
 
                 </td>
                 <td ng-if="::o.initiator=='transferer'">
