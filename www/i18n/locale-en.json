@@ -18,6 +18,7 @@
     "CONFIRM_ACTION":"Confirm",
     "DECLINE_ACTION":"Decline"
   },
+  "DOWNLOAD_XML":"Download xml file",
 
 
   "STATUS_active":"active",

@@ -1,16 +1,11 @@
 [
   {
-    "account": "MZ0987654321",
-    "division": "19000000000000000",
+    "account": "TL3000000000",
+    "division": "70000000000000DVP",
     "security": "RU000A0JVVB5",
     "quantity": "1000000"
   },{
-    "account": "MZ0987654321",
-    "division": "22000000000000000",
-    "security": "RU000A0JVVB5",
-    "quantity": "50000"
-  },{
-   "account": "40701810000000001000",
+   "account": "40701810000000002000",
    "division": "",
    "security": "RUB",
    "quantity": "10000"

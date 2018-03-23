@@ -168,7 +168,13 @@ input.locked:disabled{
 }
 
 
+.btn {
+  white-space: nowrap;
+}
 
+.btn-group-vertical .btn+.btn {
+  margin-top: 4px;
+}
 
 /*
 .ng-invalid{ outline: 1px solid red !important; }

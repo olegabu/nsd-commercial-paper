@@ -18,6 +18,7 @@
     "CONFIRM_ACTION":"Подтвердить",
     "DECLINE_ACTION":"Отменить"
   },
+  "DOWNLOAD_XML":"Скачать xml",
 
   "STATUS_active":"Активен",
   "STATUS_matured":"Погашено",

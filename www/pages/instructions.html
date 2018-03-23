@@ -51,7 +51,7 @@
 
             <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || ctl.isInitiator(o)">
                 <!-- initiator -->
-                <th translate>{{:: ctl.getInstructionID(o) }}</th>
+                <th translate>{{:: ctl.getInstructionID(o, false) }}</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -60,9 +60,10 @@
                 <td>{{::o.initiator=='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
-                <td class="center">
+                <td class="center btn-group-vertical">
                     <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
 
+                    <!-- specific for initiator/admin -->
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
                            ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
@@ -70,6 +71,15 @@
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="ROLLBACK_LABEL" translate-attr="{value:'ROLLBACK_LABEL'}"
                            ng-show="::ctl.canRollback(o)" role-show="nsd" ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
+
+
+                    <!-- common stuff -->
+                    <a ng-show="::ctl.isInstructionXmlAvailable(o)"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getInstructionFilename(o, o.initiator)}}"
+                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}" translate>DOWNLOAD_XML</a>
+
                 </td>
                 <td ng-if="::o.initiator=='transferer'">
                   <span>{{::o.reasonFrom.description}}</span>
@@ -103,7 +113,15 @@
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
                 <td class="center">
-                  <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
+                    <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
+
+                    <a ng-show="::ctl.isInstructionXmlAvailable(o)"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getInstructionFilename(o, o.initiator, !!'inverse')}}"
+                       href="{{::ctl.getInstructionXmlLink(o, o.initiator, !!'inverse')}}" translate>DOWNLOAD_XML</a>
+
+
                 </td>
                 <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
                 <td ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
