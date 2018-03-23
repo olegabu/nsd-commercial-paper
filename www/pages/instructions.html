@@ -51,7 +51,7 @@
 
             <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || ctl.isInitiator(o)">
                 <!-- initiator -->
-                <th translate>{{:: ctl.getInstructionID(o) }}</th>
+                <th translate>{{:: ctl.getInstructionID(o, false) }}</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
@@ -102,7 +102,7 @@
 
             <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && (ctl.isAdmin() || !ctl.isInitiator(o))">
                 <!-- second member -->
-                <th translate>{{:: ctl.getInstructionID(o, !!'inverse') }}</th>
+                <th translate>{{:: ctl.getInstructionID(o, true) }}</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
                 <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
                 <td>{{::o.security}}</td>
