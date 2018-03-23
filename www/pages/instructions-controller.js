@@ -377,8 +377,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   ctrl.isShowABPrefill = function(transferSide){
       var orglc = (''+UserService.getOrg()).toLowerCase();
-      return ( orglc === 'megafon' && transferSide === 'transferer')
-          || ( orglc === 'raiffeisen' && transferSide === 'receiver');
+      return ( orglc === 'sberbank' && transferSide === 'transferer')
+          || ( orglc === 'mts' && transferSide === 'receiver');
   };
 
   /**
@@ -387,17 +387,17 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    */
   ctrl.getABStub = function(transferSide){
     var accountConfig = ConfigLoader.get()['account-config'];
-    var orgFrom = 'megafon';
-    var orgTo   = 'raiffeisen';
+    var orgFrom = 'sberbank';
+    var orgTo   = 'mts';
     return {
       type:'dvp',
 
       transfererRequisites:{
-        account: "30109810000000000000",
+        account: "40701810000000003000",
         bic: "044525505"
       },
       receiverRequisites:{
-        account: "40701810000000001000",
+        account: "40701810000000002000",
         bic: "044525505"
       },
       paymentAmount: 30000000,
