@@ -16,3 +16,5 @@ export PATH=$FABRIC_STARTER_HOME/:$PATH
 
 
 echo -e "Set environment for blockchain deployment:\nFABRIC_STARTER_HOME:$FABRIC_STARTER_HOME\nMain org:$MAIN_ORG"
+
+#export AUTOSIGN=1 #debug mode
