@@ -46,6 +46,12 @@ angular.module('nsd.app',[
    'nsd.directive.nsd',
    'pascalprecht.translate'
 ])
+.config( function( $compileProvider ) {
+  // https://stackoverflow.com/a/15769779/1269984
+
+  $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|data):/);
+  // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+})
 .config(function($stateProvider) {
   // jshint: -W033
 

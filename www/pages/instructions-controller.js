@@ -117,6 +117,86 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   };
 
 
+
+  ctrl.isInstructionXmlAvailable = function(instruction) {
+    return instruction.status=='executed'
+      || instruction.status=='receiver-signed'
+      || instruction.status=='transferer-signed'
+      || instruction.status=='downloaded';
+  }
+
+  ctrl.getInstructionXmlLink = function(instruction, side, inverse) {
+    var data;
+    switch ( side ) {
+      case 'transferer': data = inverse ? instruction.alamedaTo : instruction.alamedaFrom; break;
+      case 'receiver':   data = inverse ? instruction.alamedaFrom : instruction.alamedaTo; break;
+      default: throw new Error('Unknown side: ' + side);
+    }
+    return 'data:application/octet-stream;base64,' + btoa( data );
+  }
+
+  ctrl.getInstructionFilename = function(instruction, side, inverse) {
+    if (inverse) {
+      if(side == 'transferer'){
+         side = 'receiver'
+      } else if(side == 'receiver'){
+         side = 'transferer'
+      }
+    }
+    return side + '-' + instructionFilename(instruction) + '.xml';
+  }
+
+  /**
+   *
+   */
+  function instructionFilename(instruction) {
+    var filenameTemplate = '%s-%s-%s-%s-%s-%s-%s-%s-%s';
+
+    var args = [
+      instruction.type,
+      instruction.security,
+
+      instruction.transferer.account,
+      instruction.transferer.division,
+
+      instruction.receiver.account,
+      instruction.receiver.division,
+
+      instruction.quantity,
+      instruction.reference,
+      instruction.instructionDate.replace(/-/g, ''),
+      instruction.tradeDate.replace(/-/g, '')
+    ];
+
+    if (instruction.type === 'dvp') {
+      var filenameTemplate = '%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s';
+      args.push.apply(args, [
+        instruction.transfererRequisites.account,
+        instruction.transfererRequisites.bic,
+        instruction.receiverRequisites.account,
+        instruction.receiverRequisites.bic,
+        instruction.paymentAmount,
+        instruction.paymentCurrency
+      ]);
+    }
+
+    args.unshift(filenameTemplate);
+    return format.apply(null, args);
+
+  }
+
+  /**
+   *
+   */
+  function format(/*args*/) {
+    var args = Array.prototype.slice.call(arguments);
+    var str = args[0];
+    for (var i = 1; i < args.length; i++) {
+      str = str.replace('%s', args[i]);
+    }
+    return str;
+  }
+
   /**
    *
    * @param inst instruction
