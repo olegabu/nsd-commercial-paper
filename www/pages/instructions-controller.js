@@ -122,6 +122,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return instruction.status=='executed'
       || instruction.status=='receiver-signed'
       || instruction.status=='transferer-signed'
+      || instruction.status=='signed'
       || instruction.status=='downloaded';
   }
 
