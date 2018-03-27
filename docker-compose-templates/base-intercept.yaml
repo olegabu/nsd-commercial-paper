@@ -1,0 +1,34 @@
+# Copyright Altoros. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+services:
+  peer-base:
+     extends:
+       file: base.yaml
+       service: peer-base
+
+  cli-base:
+    extends:
+      file: base.yaml
+      service: cli-base
+
+  api-base:
+    extends:
+      file: base.yaml
+      service: api-base
+    volumes:
+     - ../middleware:/usr/src/app/middleware
+     - ../www:/usr/src/app/www
+     - ../www/images:/usr/src/app/www-admin/images
+     - ../instruction_init.json:/usr/src/app/instruction_init.json
+
+  www-base:
+    extends:
+      file: base.yaml
+      service: www-base
+
+
+
