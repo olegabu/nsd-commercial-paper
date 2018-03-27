@@ -15,7 +15,7 @@ fi
 echo "THIS_ORG: $THIS_ORG"
 network.sh -m generate-peer -o $THIS_ORG -a 4000 -w 8081
 
-network.sh -m generate-orderer -o $THIS_ORG
+network.sh -m generate-orderer -M $THIS_ORG
 network.sh -m up-orderer
 
 network.sh -m up-one-org -o $THIS_ORG -M $THIS_ORG -k common
