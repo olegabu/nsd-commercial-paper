@@ -67,7 +67,7 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface,
 }
 
 func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
-	const xmlTemplate = `<?xml version="1.0"?>
+	const xmlTemplate = `<?xml version="1.0" encoding="Windows-1251"?>
 <Batch>
 <Documents_amount>1</Documents_amount>
 <Document DOC_ID="1" version="7">
@@ -153,6 +153,7 @@ func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
 	return alamedaFrom, alamedaTo
 }
 
+// TODO: get rid of test wrapper
 func CreateAlamedaDvpXMLsTestWrapper(this *nsd.Instruction) (string, string) {
 	return createAlamedaDvpXMLs(this)
 }
@@ -292,6 +293,8 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 				}
 			}
 		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
 	}
 
 	return shim.Success(nil)
