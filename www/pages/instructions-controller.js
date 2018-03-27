@@ -261,6 +261,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       // quantity: 0, // TODO: cause ui bug with overlapping label and input field with value
       tradeDate    : new Date(),
       instructionDate : new Date(),
+      type: 'fop',
 
 
       transfererRequisites:{
