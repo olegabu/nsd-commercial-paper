@@ -5,14 +5,18 @@ import (
 	"testing"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"encoding/json"
+	"github.com/olegabu/nsd-commercial-paper-common/testutils"
+	"github.com/olegabu/nsd-commercial-paper-common/certificates"
 )
 
 
-func getStub(t *testing.T) *shim.MockStub{
+func getStub(t *testing.T) *testutils.TestStub{
 	scc := new(SecurityChaincode)
-	return shim.NewMockStub("security", scc)
+	ts := testutils.NewTestStub("security", scc)
+	ts.SetCaller(certificates.NSD_NAME)
+	return ts
 }
-func getInitializedStub(t *testing.T) *shim.MockStub{
+func getInitializedStub(t *testing.T) *testutils.TestStub{
 	stub := getStub(t)
 	stub.MockInit("1", [][]byte{[]byte("init"), []byte(
 		`[{
@@ -26,7 +30,7 @@ func getInitializedStub(t *testing.T) *shim.MockStub{
 	return stub
 }
 
-func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
+func checkInit(t *testing.T, stub *testutils.TestStub, args [][]byte) {
 	res := stub.MockInit("1", args)
 	if res.Status != shim.OK {
 		fmt.Println("Init failed: ", string(res.Message))
@@ -34,7 +38,7 @@ func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
 	}
 }
 
-func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [][]byte) []Security {
+func checkState(t *testing.T, stub *testutils.TestStub, expectedStatus int32,  args [][]byte) []Security {
 	bytes := stub.MockInvoke("1", args)
 	if bytes.Status != expectedStatus {
 		fmt.Println("Wrong status. Current value: ", bytes.Status,", Expected value: ", expectedStatus, ".")
