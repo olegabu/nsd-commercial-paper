@@ -20,6 +20,7 @@ INSTRUCTION_INIT_JSON=$(cat ./instruction_init.json |tr -d '\n\r ' | sed 's/"/\\
 : ${INSTRUCTION_INIT:='{"Args":["init","'$INSTRUCTION_INIT_JSON'"]}'}
 : ${POSITION_INIT:='{"Args":["init"]}'}
 
+cp -f instruction_init.json www/artifacts/
 ###########################################################################
 # Start
 ###########################################################################
