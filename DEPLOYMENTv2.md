@@ -9,10 +9,9 @@ See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2
 ## Install prerequisites
 
 -   Clone Nsd Commercial Paper delivery packages from github:  
-`git clone --depth=1 https://github.com/olegabu/fabric-starter`  
 `git clone --depth=1 https://github.com/olegabu/nsd-commercial-paper -b develop`  
-`git clone --depth=1 https://github.com/olegabu/nsd-commercial-paper-client -b develop`  
-
+`cd nsd-commercial-paper`  
+`./git-dependencies.sh`
 
 -	Or download NsdCommercialPaper.zip from   
 https://drive.google.com/file/d/18VFq9qxVdZIiKII2zbTY_MBFcQWiPJQ-/view?usp=sharing 
