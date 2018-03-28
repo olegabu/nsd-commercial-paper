@@ -58,7 +58,10 @@ func (t *SecurityChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  
 	var securities []Security
 	if err := json.Unmarshal([]byte(args[0]), &securities); err == nil && len(securities) != 0 {
 		for _, entry := range securities {
-			t.put(stub, []string{entry.Security, entry.Status, entry.Redeem.Account, entry.Redeem.Division})
+			if rs := t.put(stub, []string{entry.Security, entry.Status, entry.Redeem.Account, entry.Redeem.Division});
+			   rs.Status >= 400 {
+				return rs
+			}
 		}
 	} else {
 		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}

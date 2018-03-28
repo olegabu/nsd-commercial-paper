@@ -289,7 +289,9 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 			for _, balance := range organization.Balances {
 				keyParts := []string{balance.Account, balance.Division}
 				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-					stub.PutState(key, []byte(organization.Name))
+					if err := stub.PutState(key, []byte(organization.Name)); err != nil {
+						return pb.Response{Status: 500, Message: "Persistence failure."}
+					}
 				}
 			}
 		}
@@ -372,8 +374,8 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		return t.getBalances(stub, args)
 	}
 
-	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
-		"receive, transfer, query, history, status, sign, rollback. But got: %v", args[0])
+	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, " +
+		"query, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", args[0])
 	logger.Error(err)
 	return shim.Error(err)
 }

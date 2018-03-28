@@ -65,7 +65,6 @@ func TestSecurity_Init(t *testing.T) {
 		}]`)})
 }
 
-// test cannot pass because MockStub.GetCreator() is not implemented
 func TestSecurity_Query(t *testing.T) {
 	stub := getInitializedStub(t)
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
@@ -101,7 +100,6 @@ func TestSecurity_Query(t *testing.T) {
 
 }
 
-// test cannot pass because MockStub.GetCreator() is not implemented
 func TestSecurity_Put(t *testing.T){
 	stub := getStub(t)
 
@@ -140,7 +138,6 @@ func TestSecurity_Put(t *testing.T){
 	}
 }
 
-// test cannot pass because MockStub.GetCreator() is not implemented
 func TestSecurity_AddEntry(t *testing.T){
 	stub := getInitializedStub(t)
 
@@ -180,7 +177,6 @@ func TestSecurity_AddEntry(t *testing.T){
 	}
 }
 
-// test cannot pass because MockStub.GetCreator() is not implemented
 func TestSecurity_AddMultipleEntries(t *testing.T){
 	stub := getInitializedStub(t)
 
@@ -206,7 +202,6 @@ func TestSecurity_AddMultipleEntries(t *testing.T){
 	}
 }
 
-// test cannot pass because MockStub.GetCreator() is not implemented
 func TestSecurity_EntryMaturity(t *testing.T){
 	stub := getInitializedStub(t)
 
@@ -230,7 +225,6 @@ func TestSecurity_EntryMaturity(t *testing.T){
 	}
 }
 
-// test cannot pass because MockStub.GetCreator() is not implemented
 func TestSecurity_Update(t *testing.T){
 	stub := getInitializedStub(t)
 
