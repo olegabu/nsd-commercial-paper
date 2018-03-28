@@ -41,12 +41,12 @@ if [ `command -v apt` ]; then
     echo "--------------------------------------------"
     echo "Using: init-docker.sh"
     export FABRIC_DOCKER_VERSION=docker-ce=18.03.0~ce-0~ubuntu
-    init-docker.sh
+    ./init-docker.sh
 else
     echo "--------------------------------------------"
     echo "Using: init-docker-centos.sh"
     export FABRIC_DOCKER_VERSION=docker-ce-18.03.0.ce
-    init-docker-centos.sh
+    ./init-docker-centos.sh
 fi
 
 
@@ -56,4 +56,4 @@ fi
 export FABRIC_VERSION=1.1.0
 echo "--------------------------------------------"
 echo "Init fabric: $FABRIC_VERSION"
-init-fabric.sh
+./init-fabric.sh
