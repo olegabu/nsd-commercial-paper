@@ -243,8 +243,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 		AdditionalInfoExists: false,
 		AdditionalInfo:       this.Value.AdditionalInformation,
 	}
-	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") &&
-		(instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
+	instructionWrapper.ReasonExists = instructionWrapper.Reason.Description != ""
 
 	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
 
