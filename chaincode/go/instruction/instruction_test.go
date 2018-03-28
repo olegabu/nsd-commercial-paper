@@ -7,7 +7,14 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"encoding/json"
+	"sort"
 )
+
+type queryResult struct {
+	Name    string      `json:"organization"`
+	Balance nsd.Balance `json:"balance"`
+}
 
 func toByteArray(arr []string) [][]byte {
 	var res [][]byte
@@ -32,10 +39,6 @@ func getInitializedStub(t *testing.T) *testutils.TestStub{
 				{
 					"account": "MZ0987654321",
 					"division": "19000000000000000"
-				},
-				{
-					"account": "MZ0987654321",
-					"division": "22000000000000000"
 				}
 			]
 		}, {
@@ -63,10 +66,6 @@ func TestInstructionChaincode_Init(t *testing.T) {
 				{
 					"account": "MZ0987654321",
 					"division": "19000000000000000"
-				},
-				{
-					"account": "MZ0987654321",
-					"division": "22000000000000000"
 				}
 			]
 		}, {
@@ -240,6 +239,220 @@ func TestInstructionChaincode_ReceiveTransfer(t *testing.T) {
 		t.FailNow()
 	} else {
 		fmt.Println("Receive predicted error: " + response.Message)
+	}
+}
+
+func checkBalanceQuery(results, expectedResults []queryResult) error {
+	if len(results) != len(expectedResults) {
+		return fmt.Errorf("Query result contains less elements then expected.")
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Balance.Account < results[j].Balance.Account
+	})
+
+	sort.Slice(expectedResults, func(i, j int) bool {
+		return expectedResults[i].Balance.Account < expectedResults[j].Balance.Account
+	})
+
+	for i, _ := range results {
+		if results[i].Name != expectedResults[i].Name ||
+		   results[i].Balance.Account != expectedResults[i].Balance.Account ||
+		   results[i].Balance.Division != expectedResults[i].Balance.Division {
+			return fmt.Errorf("Query result #%d is not equal the expected one.", i)
+		}
+	}
+
+	return nil
+}
+
+func TestInstructionChaincode_GetBalances(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	response := stub.MockInvoke("1", [][]byte{[]byte("getBalances")})
+	if response.Status >= 400 {
+		fmt.Println(`"getBalances" error: ` + response.Message)
+		t.FailNow()
+	}
+
+	var results []queryResult
+	if err := json.Unmarshal(response.Payload, &results); err != nil {
+		fmt.Println("JSON unmarshalling error: " + err.Error())
+		t.FailNow()
+	}
+
+	expectedResults := []queryResult{
+		queryResult{
+			Name: "org1",
+			Balance: nsd.Balance{
+				Account: "MZ0987654321",
+				Division: "19000000000000000",
+			},
+		},
+		queryResult{
+			Name: "org2",
+			Balance: nsd.Balance{
+				Account: "30109810000000000000",
+				Division: "044525505",
+			},
+		},
+	}
+
+	if err := checkBalanceQuery(results, expectedResults); err != nil {
+		fmt.Println(err)
+		t.FailNow()
+	}
+}
+
+func TestInstructionChaincode_AddBalances(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	expectedResults := []queryResult{
+		queryResult{
+			Name: "org1",
+			Balance: nsd.Balance{
+				Account: "MZ0987654321",
+				Division: "19000000000000000",
+			},
+		},
+		queryResult{
+			Name: "org1",
+			Balance: nsd.Balance{
+				Account: "MZ0987654322",
+				Division: "22000000000000000",
+			},
+		},
+		queryResult{
+			Name: "org2",
+			Balance: nsd.Balance{
+				Account: "30109810000000000000",
+				Division: "044525505",
+			},
+		},
+	}
+
+	var response pb.Response
+
+	// first time we're adding a new balance record; second time we're adding existing record
+	// the behaviour isn't expected to change
+	for i := 0; i < 2; i++ {
+		response = stub.MockInvoke("1", [][]byte{[]byte("addBalances"), []byte(`[{
+				"organization": "org1",
+				"balances": [
+					{
+						"account": "MZ0987654322",
+						"division": "22000000000000000"
+					}
+				]
+			}]`)})
+		if response.Status >= 400 {
+			fmt.Println(`"addBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		response = stub.MockInvoke("1", [][]byte{[]byte("getBalances")})
+		if response.Status >= 400 {
+			fmt.Println(`"getBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		var results []queryResult
+		if err := json.Unmarshal(response.Payload, &results); err != nil {
+			fmt.Println("JSON unmarshalling error: " + err.Error())
+			t.FailNow()
+		}
+
+		if err := checkBalanceQuery(results, expectedResults); err != nil {
+			fmt.Println(err)
+			t.FailNow()
+		}
+	}
+
+	// trying to add balances without nsd permissions must lead to an error
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", [][]byte{[]byte("addBalances"), []byte(`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654322",
+					"division": "22000000000000000"
+				}
+			]
+		}]`)})
+	if response.Status < 400 {
+		fmt.Println(`"addBalances" can be called without nsd permissions.`)
+		t.FailNow()
+	} else {
+		fmt.Println(`Predicted "addBalances" error: ` + response.Message)
+	}
+}
+
+func TestInstructionChaincode_RemoveBalances(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	expectedResults := []queryResult{
+		queryResult{
+			Name: "org2",
+			Balance: nsd.Balance{
+				Account: "30109810000000000000",
+				Division: "044525505",
+			},
+		},
+	}
+
+	var response pb.Response
+
+	// first time we're removing an existing record; second time we're removing record that doesn't exist in ledger
+	// the behaviour isn't expected to change
+	for i := 0; i < 2; i++ {
+		response = stub.MockInvoke("1", [][]byte{[]byte("removeBalances"), []byte(`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654321",
+					"division": "19000000000000000"
+				}
+			]
+		}]`)})
+		if response.Status >= 400 {
+			fmt.Println(`"removeBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		response = stub.MockInvoke("1", [][]byte{[]byte("getBalances")})
+		if response.Status >= 400 {
+			fmt.Println(`"getBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		var results []queryResult
+		if err := json.Unmarshal(response.Payload, &results); err != nil {
+			fmt.Println("JSON unmarshalling error: " + err.Error())
+			t.FailNow()
+		}
+
+		if err := checkBalanceQuery(results, expectedResults); err != nil {
+			fmt.Println(err)
+			t.FailNow()
+		}
+	}
+
+	// trying to remove balances without nsd permissions must lead to an error
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", [][]byte{[]byte("removeBalances"), []byte(`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654321",
+					"division": "19000000000000000"
+				}
+			]
+		}]`)})
+	if response.Status < 400 {
+		fmt.Println(`"removeBalances" can be called without nsd permissions.`)
+		t.FailNow()
+	} else {
+		fmt.Println(`Predicted "removeBalances" error: ` + response.Message)
 	}
 }
 

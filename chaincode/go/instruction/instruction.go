@@ -353,6 +353,24 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		}
 		return t.rollback(stub, args)
 	}
+	if function == "addBalances" {
+		if len(args) < 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.addBalances(stub, args)
+	}
+	if function == "removeBalances" {
+		if len(args) < 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.removeBalances(stub, args)
+	}
+	if function == "getBalances" {
+		if len(args) < 0 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.getBalances(stub, args)
+	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
 		"receive, transfer, query, history, status, sign, rollback. But got: %v", args[0])
@@ -845,6 +863,104 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 	} else {
 		return pb.Response{Status: 404, Message: "Instruction does not exist in ledger."}
 	}
+}
+
+func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if getCreatorOrganization(stub) != "nsd.nsd.ru" {
+		return pb.Response{Status: 403, Message: "Insufficient privileges."}
+	}
+
+	type Organization struct {
+		Name     string        `json:"organization"`
+		Balances []nsd.Balance `json:"balances"`
+	}
+
+	var organizations []Organization
+	if err := json.Unmarshal([]byte(args[0]), &organizations); err == nil && len(organizations) != 0 {
+		for _, organization := range organizations {
+			for _, balance := range organization.Balances {
+				keyParts := []string{balance.Account, balance.Division}
+				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
+					if err := stub.PutState(key, []byte(organization.Name)); err != nil {
+						return pb.Response{Status: 500, Message: "Persistence failure."}
+					}
+				}
+			}
+		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
+	}
+
+	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) removeBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if getCreatorOrganization(stub) != "nsd.nsd.ru" {
+		return pb.Response{Status: 403, Message: "Insufficient privileges."}
+	}
+
+	type Organization struct {
+		Name     string        `json:"organization"`
+		Balances []nsd.Balance `json:"balances"`
+	}
+
+	var organizations []Organization
+	if err := json.Unmarshal([]byte(args[0]), &organizations); err == nil && len(organizations) != 0 {
+		for _, organization := range organizations {
+			for _, balance := range organization.Balances {
+				keyParts := []string{balance.Account, balance.Division}
+				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
+					if err := stub.DelState(key); err != nil {
+						return pb.Response{Status: 500, Message: "Persistence failure."}
+					}
+				}
+			}
+		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
+	}
+
+	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) getBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	it, err := stub.GetStateByPartialCompositeKey(authenticationIndex, []string{})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer it.Close()
+
+	type queryResult struct {
+		Name    string      `json:"organization"`
+		Balance nsd.Balance `json:"balance"`
+	}
+
+	results := []queryResult{}
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		result := queryResult{}
+
+		result.Name = string(response.Value)
+
+		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
+		if err != nil || len(compositeKeyParts) < 2 {
+			return shim.Error(err.Error())
+		}
+
+		result.Balance.Account, result.Balance.Division = compositeKeyParts[0], compositeKeyParts[1]
+
+		results = append(results, result)
+	}
+
+	payload, err := json.Marshal(results)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(payload)
 }
 
 // **** Security Methods **** //
