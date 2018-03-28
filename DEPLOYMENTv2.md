@@ -11,7 +11,7 @@ See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2
 -   Clone Nsd Commercial Paper delivery packages from github:  
 `git clone -b 2018_03-PRE_RELEASE_01 --depth=1 https://github.com/olegabu/nsd-commercial-paper`  
 `cd nsd-commercial-paper`  
-`./git-dependencies.sh`
+`./prerequisites-deployment.sh`
 
 -	Or download NsdCommercialPaper.zip from   
 https://drive.google.com/file/d/18VFq9qxVdZIiKII2zbTY_MBFcQWiPJQ-/view?usp=sharing 
