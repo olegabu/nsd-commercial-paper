@@ -8,8 +8,8 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
-	commonCertificates "github.com/olegabu/nsd-commercial-paper-common/certificates"
+	"github.com/Altoros/nsd-commercial-paper-common"
+	commonCertificates "github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
 var logger = shim.NewLogger("SecurityChaincode")

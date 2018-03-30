@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	//"github.com/olegabu/nsd-commercial-paper/chaincode/go/security"
+	//"github.com/Altoros/nsd-commercial-paper/chaincode/go/security"
 )
 
 func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {

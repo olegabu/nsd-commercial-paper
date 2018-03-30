@@ -9,7 +9,7 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("BookChaincode")

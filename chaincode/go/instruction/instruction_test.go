@@ -2,8 +2,8 @@ package main
 
 import (
 	"testing"
-	"github.com/olegabu/nsd-commercial-paper-common"
-	"github.com/olegabu/nsd-commercial-paper-common/testutils"
+	"github.com/Altoros/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common/testutils"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"

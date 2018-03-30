@@ -5,8 +5,8 @@ import (
 	"testing"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"encoding/json"
-	"github.com/olegabu/nsd-commercial-paper-common/testutils"
-	"github.com/olegabu/nsd-commercial-paper-common/certificates"
+	"github.com/Altoros/nsd-commercial-paper-common/testutils"
+	"github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
 
