@@ -90,9 +90,9 @@ After that the main org (NSD) starts the blockchain network, adds the members on
 	`./main-register-new-org.sh $ORG2 $IP2`  
 	`./main-register-new-org.sh $ORG3 $IP3`  
 
-*Note, when new organization is registerd it's added to the list of existing organizations `env-external-orgs-list`. 
+*Note, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
 This list is used to automatically create tri-lateral channel with new organization being added.   
-This list may be adjust manually to control trilateral channels creation.*
+This list may be adjusted manually to control trilateral channels creation.*
 
 
 On next step the members start the network on their nodes:
