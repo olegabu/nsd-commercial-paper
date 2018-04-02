@@ -170,7 +170,7 @@
                 <th translate>REASON_LABEL</th>
             </tr>
         </thead>
-        <tbody ng-repeat="o in redeem.instructions|orderBy:['-instructionDate', '-reference']">
+        <tbody ng-repeat="o in redeem.instructions">
             <tr class="odd-{{::$index % 2}}">
                 <th translate>INSTRUCTION_REDEEM_ID</th>
                 <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
