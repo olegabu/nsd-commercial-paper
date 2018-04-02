@@ -86,8 +86,8 @@ func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
 <deponent_c>{{.Instruction.Value.DeponentFrom}}</deponent_c>
 <corr_acc_c>{{.Instruction.Key.Receiver.Account}}</corr_acc_c>
 <corr_sec_c>{{.Instruction.Key.Receiver.Division}}</corr_sec_c>
-<corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>{{if .ReasonExists}}{{with .Reason.Description -}}
-<based_on>{{.}}</based_on>{{end}}
+<corr_code>{{.Instruction.Value.DeponentTo}}</corr_code>
+{{if .ReasonExists}}{{with .Reason.Description -}}<based_on>{{.}}</based_on>{{end}}
 {{with .Reason.Document -}}<based_numb>{{.}}</based_numb>{{end}}
 {{with .Reason.DocumentDate -}}<based_date>{{.}}</based_date>{{end}}{{end}}
 <securities>
@@ -100,8 +100,7 @@ func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
 <date_deal>{{.Instruction.Key.TradeDate}}</date_deal>
 </MF010>
 </Document>
-</Batch>
-`
+</Batch>`
 
 	type InstructionWrapper struct {
 		Instruction     nsd.Instruction
@@ -154,8 +153,12 @@ func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
 }
 
 // TODO: get rid of test wrapper
-func CreateAlamedaDvpXMLsTestWrapper(this *nsd.Instruction) (string, string) {
-	return createAlamedaDvpXMLs(this)
+func CreateAlamedaXMLsTestWrapper(this *nsd.Instruction, instructionType string) (string, string) {
+	if instructionType == nsd.InstructionTypeDVP {
+		return createAlamedaDvpXMLs(this)
+	} else {
+		return createAlamedaFopXMLs(this)
+	}
 }
 
 func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
@@ -199,8 +202,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 </securities>
 </MF170>
 </Document>
-</Batch>
-`
+</Batch>`
 
 	type InstructionWrapper struct {
 		Instruction          nsd.Instruction

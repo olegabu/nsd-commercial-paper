@@ -456,7 +456,7 @@ func TestInstructionChaincode_RemoveBalances(t *testing.T) {
 	}
 }
 
-func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
+func TestCreateAlamedaFopXMLs(t *testing.T) {
 	instruction := nsd.Instruction{
 		Key: nsd.InstructionKey{
 			Transferer: nsd.Balance{
@@ -472,7 +472,128 @@ func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 			Reference: "SOMEREF123",
 			InstructionDate: "2018-03-29",
 			TradeDate: "2018-03-29",
-			Type: "dvp",
+			Type: nsd.InstructionTypeFOP,
+		},
+
+		Value: nsd.InstructionValue{
+			DeponentFrom: "MCXXXXX00000",
+			DeponentTo: "MSYYYYY00000",
+			Status: "matched",
+			Initiator: "tranferer",
+			MemberInstructionIdFrom: "id_from",
+			MemberInstructionIdTo: "id_to",
+			ReasonFrom: nsd.Reason{
+				Description: "Doc_from",
+				Document: "123",
+				DocumentDate: "2018-03-29",
+			},
+			ReasonTo: nsd.Reason{
+				Description: "Doc_to",
+				Document: "321",
+				DocumentDate: "2018-03-29",
+			},
+		},
+	}
+
+	from, to := CreateAlamedaXMLsTestWrapper(&instruction, nsd.InstructionTypeFOP)
+
+	const fromExpected = `<?xml version="1.0" encoding="Windows-1251"?>
+<Batch>
+<Documents_amount>1</Documents_amount>
+<Document DOC_ID="1" version="7">
+<ORDER_HEADER>
+<deposit_c>NDC000000000</deposit_c>
+<contrag_c>MCXXXXX00000</contrag_c>
+<contr_d_id>id_from</contr_d_id>
+<createdate>2018-03-29</createdate>
+<order_t_id>16</order_t_id>
+<execute_dt>2018-03-29 00:00:00</execute_dt>
+<expirat_dt>2018-04-27 23:59:59</expirat_dt>
+</ORDER_HEADER>
+<MF010>
+<dep_acc_c>transf_acc</dep_acc_c>
+<sec_c>transf_div</sec_c>
+<deponent_c>MCXXXXX00000</deponent_c>
+<corr_acc_c>recv_acc</corr_acc_c>
+<corr_sec_c>recv_div</corr_sec_c>
+<corr_code>MSYYYYY00000</corr_code>
+<based_on>Doc_from</based_on>
+<based_numb>123</based_numb>
+<based_date>2018-03-29</based_date>
+<securities>
+<security>
+<security_c>RU000A0JVVB5</security_c>
+<security_q>500</security_q>
+</security>
+</securities>
+<deal_reference>SOMEREF123</deal_reference>
+<date_deal>2018-03-29</date_deal>
+</MF010>
+</Document>
+</Batch>`
+
+	const toExpected = `<?xml version="1.0" encoding="Windows-1251"?>
+<Batch>
+<Documents_amount>1</Documents_amount>
+<Document DOC_ID="1" version="7">
+<ORDER_HEADER>
+<deposit_c>NDC000000000</deposit_c>
+<contrag_c>MSYYYYY00000</contrag_c>
+<contr_d_id>id_to</contr_d_id>
+<createdate>2018-03-29</createdate>
+<order_t_id>16/1</order_t_id>
+<execute_dt>2018-03-29 00:00:00</execute_dt>
+<expirat_dt>2018-04-27 23:59:59</expirat_dt>
+</ORDER_HEADER>
+<MF010>
+<dep_acc_c>transf_acc</dep_acc_c>
+<sec_c>transf_div</sec_c>
+<deponent_c>MCXXXXX00000</deponent_c>
+<corr_acc_c>recv_acc</corr_acc_c>
+<corr_sec_c>recv_div</corr_sec_c>
+<corr_code>MSYYYYY00000</corr_code>
+<based_on>Doc_to</based_on>
+<based_numb>321</based_numb>
+<based_date>2018-03-29</based_date>
+<securities>
+<security>
+<security_c>RU000A0JVVB5</security_c>
+<security_q>500</security_q>
+</security>
+</securities>
+<deal_reference>SOMEREF123</deal_reference>
+<date_deal>2018-03-29</date_deal>
+</MF010>
+</Document>
+</Batch>`
+
+	if from != fromExpected {
+		t.Errorf("XML \"from\"is not equal expected value")
+		fmt.Println(from)
+	}
+	if to != toExpected {
+		t.Errorf("XML \"to\"is not equal expected value")
+		fmt.Println(to)
+	}
+}
+
+func TestCreateAlamedaDvpXMLs(t *testing.T) {
+	instruction := nsd.Instruction{
+		Key: nsd.InstructionKey{
+			Transferer: nsd.Balance{
+				Account: "transf_acc",
+				Division: "transf_div",
+			},
+			Receiver: nsd.Balance{
+				Account: "recv_acc",
+				Division: "recv_div",
+			},
+			Security: "RU000A0JVVB5",
+			Quantity: "500",
+			Reference: "SOMEREF123",
+			InstructionDate: "2018-03-29",
+			TradeDate: "2018-03-29",
+			Type: nsd.InstructionTypeDVP,
 			TransfererRequisites: nsd.Requisites{
 				Account: "tr_money_acc",
 				Bic: "tr_money_bic",
@@ -508,7 +629,7 @@ func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 		},
 	}
 
-	from, to := CreateAlamedaDvpXMLsTestWrapper(&instruction)
+	from, to := CreateAlamedaXMLsTestWrapper(&instruction, nsd.InstructionTypeDVP)
 
 	const fromExpected = `<?xml version="1.0" encoding="Windows-1251"?>
 <Batch>
@@ -549,8 +670,7 @@ func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 </securities>
 </MF170>
 </Document>
-</Batch>
-`
+</Batch>`
 
 	const toExpected = `<?xml version="1.0" encoding="Windows-1251"?>
 <Batch>
@@ -592,8 +712,7 @@ func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 </securities>
 </MF170>
 </Document>
-</Batch>
-`
+</Batch>`
 
 	if from != fromExpected {
 		t.Errorf("XML \"from\"is not equal expected value")
