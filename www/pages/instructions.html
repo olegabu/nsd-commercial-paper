@@ -288,10 +288,10 @@
 
             <!-- HERE: we have swapped transferer and receiver -->
             <div class="row">
-                <instruction-payment model="inst.receiverRequisites" deponent="inst.receiver.deponent" label="PAYMENT_SENDER"></instruction-payment>
+                <instruction-payment model="inst.receiverRequisites" deponent="inst.initiator=='receiver' ? inst.receiver.deponent : null" label="PAYMENT_SENDER"></instruction-payment>
             </div>
             <div class="row">
-                <instruction-payment model="inst.transfererRequisites" deponent="inst.transferer.deponent" label="PAYMENT_RECEIVER"></instruction-payment>
+                <instruction-payment model="inst.transfererRequisites" deponent="inst.initiator=='transferer' ? inst.transferer.deponent : null" label="PAYMENT_RECEIVER"></instruction-payment>
             </div>
 
             <div class="row">
