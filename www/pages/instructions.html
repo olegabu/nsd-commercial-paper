@@ -343,9 +343,30 @@
         </div>
     </div>
     <div class="modal-footer">
-       <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getABStub(inst.initiator)"
-              ng-show="ctl.test && ctl.isShowABPrefill(inst.initiator)" value="prefill M->R "/>
-      <!-- <input type="submit" class="modal-action waves-effect btn-flat yellow" ng-click="inst = ctl.getACStub(inst.initiator)" value="prefill a->c "/> -->
+
+      <!-- Dropdown Trigger -->
+      <div class="inline-block" ng-if="ctl.test && inst.initiator == 'receiver'">
+          <span class='btn btn-flat yellow dropdown-trigger' alignment="top" dropdown data-target='dropdown9' data-activates='dropdown9'>prefill from</span>
+
+          <!-- Dropdown Structure -->
+          <ul id='dropdown9' class='dropdown-content' ng-class="{'translate100y':ctl.getOrgs().length <=3}" alignment="top" >
+            <li ng-repeat="o in ctl.getOrgs()">
+                <a href="#!" ng-click="ctl.setPrefill(inst.initiator, o, null)">{{::o}}</a>
+            </li>
+          </ul>
+      </div>
+      <!-- Dropdown Trigger -->
+      <div class="inline-block" ng-if="ctl.test && inst.initiator == 'transferer'">
+          <span class='btn btn-flat yellow dropdown-trigger' alignment="top" dropdown data-target='dropdown10' data-activates='dropdown10'>prefill to</span>
+
+          <!-- Dropdown Structure -->
+          <ul id='dropdown10' class='dropdown-content' ng-class="{'translate100y':ctl.getOrgs().length <=3}" alignment="top" >
+            <li ng-repeat="o in ctl.getOrgs()">
+                <a href="#!" ng-click="ctl.setPrefill(inst.initiator, null, o)">{{::o}}</a>
+            </li>
+          </ul>
+      </div>
+
 
       <input type="submit" class="modal-action modal-close waves-effect waves-green btn-flat"
              ng-click="ctl.sendInstruction(inst)"

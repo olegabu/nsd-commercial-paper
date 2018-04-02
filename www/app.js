@@ -576,6 +576,6 @@ function globalErrorHandler(e){
   e.data = e.data || {};
 
   var statusMsg = e.status ? 'Error' + (e.status != -1?' '+e.status:'') + ': ' + (e.statusText||(e.status==-1?"Connection refused":null)||"Unknown") : null;
-  var reason = e.data.message || e.reason || e.message || statusMsg || e || 'Unknown error';
+  var reason = (e.data ? e.data.message : null) || e.reason || e.message || statusMsg || e || 'Unknown error';
   Materialize.toast(reason, 4000, 'mytoast red') // 4000 is the duration of the toast
 }
