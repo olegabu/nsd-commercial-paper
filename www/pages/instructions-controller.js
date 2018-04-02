@@ -313,8 +313,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    */
   ctrl.rollbackInstruction = function(instruction){
     var cancelInstructionMessage = $filter('translate')('ROLLBACK_INSTRUCTION_PROMPT')
-      .replace('%s', instruction.deponentFrom)
-      .replace('%s', instruction.deponentTo);
+      .replace('%s', instruction.memberInstructionIdFrom)
+      .replace('%s', instruction.memberInstructionIdTo);
 
     return DialogService.confirmReason(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(result){
@@ -330,8 +330,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   ctrl.cancelInstruction = function(instruction){
     var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT')
-      .replace('%s', instruction.deponentFrom)
-      .replace('%s', instruction.deponentTo);
+      .replace('%s', instruction.memberInstructionIdFrom)
+      .replace('%s', instruction.memberInstructionIdTo);
 
     return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(isConfirmed){
