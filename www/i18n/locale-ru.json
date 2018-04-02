@@ -150,7 +150,7 @@
   "PAYMENT_AMOUNT_LABEL": "Cумма платежа",
   "PAYMENT_CURRENCY": "Валюта",
 
-  "CANCEL_INSTRUCTION_PROMPT":"Отменить сделку %s ?",
-  "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s -> %s ?",
+  "CANCEL_INSTRUCTION_PROMPT":"Отменить сделку %s от %s?",
+  "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s от %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
 }

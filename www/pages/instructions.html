@@ -118,7 +118,7 @@
                     <a ng-show="::ctl.isInstructionXmlAvailable(o)"
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
                        ng-click="$event.stopPropagation();"
-                       download="{{::ctl.getInstructionFilename(o, o.initiator, !!'inverse')}}"
+                       download="{{::ctl.getInstructionFilename(o, ctl.oppositeSide(o.initiator))}}"
                        href="{{::ctl.getInstructionXmlLink(o, o.initiator, !!'inverse')}}" translate>DOWNLOAD_XML</a>
 
 
