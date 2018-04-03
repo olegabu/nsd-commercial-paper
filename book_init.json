@@ -2,12 +2,12 @@
   "mainOrg": "nsd.nsd.ru",
   "initEntries": [
     {
-      "account": "TL3000000000",
-      "division": "70000000000000DVP",
+      "account": "TL2000000000",
+      "division": "19000000000000000",
       "security": "RU000A0JVVB5",
       "quantity": "1000000"
     },{
-     "account": "40701810000000002000",
+     "account": "40701810000000003000",
      "division": "",
      "security": "RUB",
      "quantity": "10000"
