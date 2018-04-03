@@ -34,41 +34,5 @@
         "division": "044525505"
       }
     ]
-  },
-  {
-    "organization": "megafon.nsd.ru",
-    "deponent": "MSXXXXX00000",
-    "balances": [
-      {
-        "account": "TL1000000000",
-        "division": "70000000000000DVP"
-      },
-      {
-        "account": "TL1000000000",
-        "division": "22000000000000000"
-      },
-      {
-        "account": "40701810000000001000",
-        "division": "044525505"
-      }
-    ]
-  },
-  {
-    "organization": "raiffeisen.nsd.ru",
-    "deponent": "MSYYYYY00000",
-    "balances": [
-      {
-        "account": "TL5000000000",
-        "division": "70000000000000DVP"
-      },
-      {
-        "account": "TL5000000000",
-        "division": "22000000000000000"
-      },
-      {
-        "account": "40701810000000005000",
-        "division": "044525505"
-      }
-    ]
   }
 ]
