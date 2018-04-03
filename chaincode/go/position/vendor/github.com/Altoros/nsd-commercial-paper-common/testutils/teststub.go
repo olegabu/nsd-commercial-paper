@@ -21,6 +21,8 @@ type TestStub struct {
 	cc shim.Chaincode
 
 	caller string
+
+	mainOrg string
 }
 
 func (stub *TestStub) GetArgs() [][]byte {
@@ -49,6 +51,10 @@ func (stub *TestStub) GetFunctionAndParameters() (function string, params []stri
 
 func (stub *TestStub) SetCaller(org string) {
 	stub.caller = org
+}
+
+func (stub *TestStub) SetMainOrganization(name string) {
+	stub.mainOrg = name
 }
 
 // Implemented to have a possibility to test privileges
@@ -93,6 +99,19 @@ func (ts *TestStub) GetCreator() ([]byte, error) {
 	result := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 
 	return result, nil
+}
+
+// Reimplemented to have a possibility to test privileges
+// NOTE: you should set caller and mainOrg to emulate call of book cc from depositary channel
+func (stub *TestStub) InvokeChaincode(chaincodeName string, args [][]byte, channel string) pb.Response {
+	if chaincodeName == "book" && channel == "depositary" {
+		if stub.caller != stub.mainOrg {
+			return pb.Response{Status: 403, Message: "Insufficient privileges."}
+		}
+		return shim.Success([]byte(stub.mainOrg))
+	}
+
+	return shim.Success(nil)
 }
 
 // Initialise this chaincode,  also starts and ends a transaction.

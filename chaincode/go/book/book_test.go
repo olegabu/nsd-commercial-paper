@@ -27,7 +27,7 @@ func TestBook_Init(t *testing.T) {
 	scc := new(BookChaincode)
 	stub := shim.NewMockStub("bookChaincode", scc)
 
-	checkInit(t, stub, [][]byte{[]byte("init"), []byte("[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]")})
+	checkInit(t, stub, [][]byte{[]byte("init"), []byte("{\"mainOrg\":\"nsd.nsd.ru\", \"initEntries\":[{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0001\",\"quantity\":\"100\"},{\"account\":\"AC0689654902\",\"division\":\"87680000045800005\",\"security\":\"RU000ABC0002\",\"quantity\":\"42\"}]}")})
 
 	//Correct transaction
 	checkState(t, stub, 200, [][]byte{[]byte("check"), []byte("AC0689654902"), []byte("87680000045800005"), []byte("RU000ABC0001"), []byte("90")})

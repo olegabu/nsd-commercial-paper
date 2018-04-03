@@ -15,10 +15,10 @@
 			"revisionTime": "2018-03-27T15:15:41Z"
 		},
 		{
-			"checksumSHA1": "Ry+FZnshqnjc9vblwz+twQ2BF94=",
+			"checksumSHA1": "Id4Fm1TSPlqRozCrURpNpw8jeDA=",
 			"path": "github.com/Altoros/nsd-commercial-paper-common/testutils",
-			"revision": "439f7d88a382aee425cf4ccd5015a1c8c7ad5881",
-			"revisionTime": "2018-03-27T15:15:41Z"
+			"revision": "b537b4be78e4513af6e9a65233fbb0fafe336118",
+			"revisionTime": "2018-04-03T12:28:32Z"
 		}
 	],
 	"rootPath": "github.com/Altoros/nsd-commercial-paper/chaincode/go/position"
