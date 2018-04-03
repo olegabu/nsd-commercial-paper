@@ -154,54 +154,43 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     // return 'data:application/octet-stream;base64,' + base64data;
   }
 
-
-  /**
-   *
-   */
-  ctrl.getInstructionFilename = function(instruction, side, inverse) {
-    if (inverse) {
-      if(side == 'transferer'){
-         side = 'receiver'
-      } else if(side == 'receiver'){
-         side = 'transferer'
-      }
+  ctrl.oppositeSide = function(side) {
+    if(side == 'transferer'){
+       return 'receiver'
+    } else if(side == 'receiver'){
+       return 'transferer'
+    } else {
+      throw new Error('Unknown instruction side: ' + side);
     }
-    return side + '-' + instructionFilename(instruction) + '.xml';
   }
 
   /**
    *
    */
-  function instructionFilename(instruction) {
-    var filenameTemplate = '%s-%s-%s-%s-%s-%s-%s-%s-%s';
+  ctrl.getInstructionFilename = function(instruction, side) {
+    return instructionFilename(instruction, side) + '.xml';
+  }
 
+  /**
+   *
+   */
+  function instructionFilename(instruction, side) {
+
+    var instructionCodeId = (side + '-' + instruction.type);
+
+    var codes = {
+      'transferer-fop'  : '16',
+      'receiver-fop'    : '16.1',
+      'transferer-dvp'  : '16.2',
+      'receiver-dvp'    : '16.3'
+    };
+
+    var filenameTemplate = '%s-%s-%s';
     var args = [
-      instruction.type,
-      instruction.security,
-
-      instruction.transferer.account,
-      instruction.transferer.division,
-
-      instruction.receiver.account,
-      instruction.receiver.division,
-
-      instruction.quantity,
+      codes[instructionCodeId] || '00',
       instruction.reference,
-      instruction.instructionDate.replace(/-/g, ''),
       instruction.tradeDate.replace(/-/g, '')
     ];
-
-    if (instruction.type === 'dvp') {
-      var filenameTemplate = '%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s';
-      args.push.apply(args, [
-        instruction.transfererRequisites.account,
-        instruction.transfererRequisites.bic,
-        instruction.receiverRequisites.account,
-        instruction.receiverRequisites.bic,
-        instruction.paymentAmount,
-        instruction.paymentCurrency
-      ]);
-    }
 
     args.unshift(filenameTemplate);
     return format.apply(null, args);
@@ -313,8 +302,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    */
   ctrl.rollbackInstruction = function(instruction){
     var cancelInstructionMessage = $filter('translate')('ROLLBACK_INSTRUCTION_PROMPT')
-      .replace('%s', instruction.deponentFrom)
-      .replace('%s', instruction.deponentTo);
+      .replace('%s', instruction.reference)
+      .replace('%s', instruction.tradeDate);
 
     return DialogService.confirmReason(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(result){
@@ -330,8 +319,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   ctrl.cancelInstruction = function(instruction){
     var cancelInstructionMessage = $filter('translate')('CANCEL_INSTRUCTION_PROMPT')
-      .replace('%s', instruction.deponentFrom)
-      .replace('%s', instruction.deponentTo);
+      .replace('%s', instruction.reference)
+      .replace('%s', instruction.tradeDate);
 
     return DialogService.confirm(cancelInstructionMessage, {yesKlass:'red white-text'})
       .then(function(isConfirmed){
@@ -479,30 +468,50 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       });
   };
 
-  ctrl.isShowABPrefill = function(transferSide){
-      var orglc = (''+UserService.getOrg()).toLowerCase();
-      return ( orglc === 'sberbank' && transferSide === 'transferer')
-          || ( orglc === 'mts' && transferSide === 'receiver');
-  };
 
+  // For prefill!
+  ctrl.getOrgs = function(){
+    var org = ConfigLoader.get().org;
+    var accountConfig = ConfigLoader.get()['account-config'];
+    var orgList = Object.keys(accountConfig)
+      .filter(function(a){ return a!=='nsd'})
+      .filter(function(a){ return a!==org})
+      .sort(function(a, b){ return a.localeCompare(b); })
+    return orgList;
+  }
+
+
+
+  ctrl.setPrefill = function(transferSide, from, to) {
+    var org = ConfigLoader.get().org;
+
+    var _prefillFrom = from || ctrl._prefillFrom || (transferSide == 'transferer' ? org : null);
+    var _prefillTo = to || ctrl._prefillTo || (transferSide == 'receiver' ? org : null);
+
+    if (_prefillFrom && _prefillTo) {
+      $scope.inst = ctrl.getABStub(transferSide, _prefillFrom, _prefillTo)
+    }
+  }
   /**
    * @param transferSide
    * @return {Instruction}
    */
-  ctrl.getABStub = function(transferSide){
+  ctrl.getABStub = function(transferSide, orgFrom, orgTo) {
     var accountConfig = ConfigLoader.get()['account-config'];
-    var orgFrom = 'sberbank';
-    var orgTo   = 'mts';
+
+    var bicTransferer = Object.keys(accountConfig[orgFrom].bic)[0];
+    var bicReceiver = Object.keys(accountConfig[orgTo].bic)[0];
+
     return {
       type:'dvp',
 
       transfererRequisites:{
-        account: "40701810000000003000",
-        bic: "044525505"
+        account: bicTransferer,
+        bic: accountConfig[orgFrom].bic[bicTransferer] || "044525505"
       },
       receiverRequisites:{
-        account: "40701810000000002000",
-        bic: "044525505"
+        account: bicReceiver,
+        bic: accountConfig[orgTo].bic[bicReceiver] || "044525505"
       },
       paymentAmount: 30000000,
       paymentCurrency: 'RUB',

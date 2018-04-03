@@ -150,7 +150,7 @@
   "PAYMENT_AMOUNT_LABEL": "Transfer value",
   "PAYMENT_CURRENCY": "Currency",
 
-  "CANCEL_INSTRUCTION_PROMPT":"Cancel %s -> %s ?",
-  "ROLLBACK_INSTRUCTION_PROMPT":"Rollback %s -> %s ?",
+  "CANCEL_INSTRUCTION_PROMPT":"Cancel %s by %s ?",
+  "ROLLBACK_INSTRUCTION_PROMPT":"Rollback %s by %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?"
 }

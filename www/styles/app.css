@@ -1,3 +1,9 @@
+
+.inline-block{
+  display: inline-block;
+  position: relative;
+}
+
 .error{
   color: #F44336;
 }
@@ -97,6 +103,10 @@ h3{
   max-width: 400px;
 }
 
+html body.horizontal-navigation .wrapper.vertical-sidebar .dropdown-content {
+    min-width: 200px !important;
+}
+
 nav .menu-active {
   font-weight: bold;
   background-color: rgba(0,0,0,0.1);
@@ -170,6 +180,10 @@ input.locked:disabled{
 
 .btn {
   white-space: nowrap;
+}
+
+.modal .modal-footer .btn.btn-flat {
+    margin: 6px 0
 }
 
 .btn-group-vertical .btn+.btn {
@@ -297,4 +311,10 @@ td, th{
 
 .gray{
   color: gray;
+}
+
+
+/* hotfix for dropdown */
+.translate100y{
+  transform: translate(0, -110px);
 }

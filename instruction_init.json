@@ -8,6 +8,10 @@
         "division": "70000000000000DVP"
       },
       {
+        "account": "TL3000000000",
+        "division": "22000000000000000"
+      },
+      {
         "account": "40701810000000003000",
         "division": "044525505"
       }
@@ -17,6 +21,14 @@
     "organization": "mts.nsd.ru",
     "deponent": "MSZZZZZ00000",
     "balances": [
+      {
+        "account": "TL2000000000",
+        "division": "19000000000000000"
+      },
+      {
+        "account": "TL2000000000",
+        "division": "22000000000000000"
+      },
       {
         "account": "TL2000000000",
         "division": "70000000000000DVP"

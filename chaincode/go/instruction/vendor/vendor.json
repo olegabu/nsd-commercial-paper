@@ -3,17 +3,23 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "hQnkXRdozVQ3XH3dzIHbS4aMhZI=",
-			"path": "github.com/olegabu/nsd-commercial-paper-common",
-			"revision": "b57bae9947d934da0ede19ea5095eba1fe596d2c",
-			"revisionTime": "2018-03-14T08:20:32Z"
+			"checksumSHA1": "LZXuXgtSa78K/c26uWaTcsCxXLU=",
+			"path": "github.com/Altoros/nsd-commercial-paper-common",
+			"revision": "b537b4be78e4513af6e9a65233fbb0fafe336118",
+			"revisionTime": "2018-04-03T12:28:32Z"
 		},
 		{
-			"checksumSHA1": "sJnw2pvZd/SuAmbGRTuUW04ztKI=",
-			"path": "github.com/olegabu/nsd-commercial-paper-common/certificates",
-			"revision": "39b780d912e3745ff58784fc09997734a2391cff",
-			"revisionTime": "2018-03-03T15:04:27Z"
+			"checksumSHA1": "NbDJc9rao0ieG4yqnbSrL+1KV10=",
+			"path": "github.com/Altoros/nsd-commercial-paper-common/certificates",
+			"revision": "439f7d88a382aee425cf4ccd5015a1c8c7ad5881",
+			"revisionTime": "2018-03-27T15:15:41Z"
+		},
+		{
+			"checksumSHA1": "Id4Fm1TSPlqRozCrURpNpw8jeDA=",
+			"path": "github.com/Altoros/nsd-commercial-paper-common/testutils",
+			"revision": "b537b4be78e4513af6e9a65233fbb0fafe336118",
+			"revisionTime": "2018-04-03T12:28:32Z"
 		}
 	],
-	"rootPath": "github.com/olegabu/nsd-commercial-paper/chaincode/go/instruction"
+	"rootPath": "github.com/Altoros/nsd-commercial-paper/chaincode/go/instruction"
 }

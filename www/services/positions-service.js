@@ -42,6 +42,9 @@ function PositionsService(ApiService, ConfigLoader, $q, $log) {
         .then(function(list){
           list.forEach(PositionsService._processBookItem);
           return list;
+        })
+        .then(function(list){
+          return list.filter(function(book){ return book.quantity != 0; });
         });
 
   };

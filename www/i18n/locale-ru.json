@@ -44,7 +44,7 @@
   "NEW_BOOK_FOR_LABEL":"Кому",
   "LOGIN_TO_LABEL":"Кабинет ",
   "LOGIN_WELCOME_TEXT":"Авторизируйтесь в системе",
-  "SECURITY_REDEEM_TO_LABEL":"Списание на",
+  "SECURITY_REDEEM_TO_LABEL":"Счёт/Раздел",
   "ACCOUNT_INPUT_PLACEHOLDER":"Счёт",
   "DIVISION_INPUT_PLACEHOLDER":"Раздел",
   "SECURITY_INPUT_PLACEHOLDER":"Ценная бумага",
@@ -150,7 +150,7 @@
   "PAYMENT_AMOUNT_LABEL": "Cумма платежа",
   "PAYMENT_CURRENCY": "Валюта",
 
-  "CANCEL_INSTRUCTION_PROMPT":"Отменить поручение %s -> %s ?",
-  "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s -> %s ?",
+  "CANCEL_INSTRUCTION_PROMPT":"Отменить сделку %s от %s?",
+  "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s от %s ?",
   "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
 }

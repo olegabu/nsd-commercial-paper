@@ -5,28 +5,40 @@ import (
 	"testing"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"encoding/json"
+	"github.com/Altoros/nsd-commercial-paper-common/testutils"
+	"github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
 
-func getStub(t *testing.T) *shim.MockStub{
+func getStub(t *testing.T) *testutils.TestStub{
 	scc := new(SecurityChaincode)
-	return shim.NewMockStub("security", scc)
+	ts := testutils.NewTestStub("security", scc)
+	ts.SetCaller(certificates.NSD_NAME)
+	return ts
 }
-func getInitializedStub(t *testing.T) *shim.MockStub{
+func getInitializedStub(t *testing.T) *testutils.TestStub{
 	stub := getStub(t)
-	stub.MockInit("1", [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active"), []byte("AC0689654902"), []byte("87680000045800005")})
+	stub.MockInit("1", [][]byte{[]byte("init"), []byte(
+		`[{
+			"security":"RU000ABC0001",
+			"status":"active",
+			"redeem":{
+				"account":"AC0689654902",
+				"division":"87680000045800005"
+			}
+		}]`)})
 	return stub
 }
 
-func checkInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
+func checkInit(t *testing.T, stub *testutils.TestStub, args [][]byte) {
 	res := stub.MockInit("1", args)
 	if res.Status != shim.OK {
-		fmt.Println("Init failed", string(res.Message))
+		fmt.Println("Init failed: ", string(res.Message))
 		t.FailNow()
 	}
 }
 
-func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [][]byte) []Security {
+func checkState(t *testing.T, stub *testutils.TestStub, expectedStatus int32,  args [][]byte) []Security {
 	bytes := stub.MockInvoke("1", args)
 	if bytes.Status != expectedStatus {
 		fmt.Println("Wrong status. Current value: ", bytes.Status,", Expected value: ", expectedStatus, ".")
@@ -42,10 +54,18 @@ func checkState(t *testing.T, stub *shim.MockStub, expectedStatus int32,  args [
 }
 
 func TestSecurity_Init(t *testing.T) {
-	checkInit(t, getStub(t), [][]byte{[]byte("init"), []byte("RU000ABC0001"), []byte("active"), []byte("AC0689654902"), []byte("87680000045800005")})
+	checkInit(t, getStub(t), [][]byte{[]byte("init"), []byte(
+		`[{
+			"security":"RU000ABC0001",
+			"status":"active",
+			"redeem":{
+				"account":"AC0689654902",
+				"division":"87680000045800005"
+			}
+		}]`)})
 }
 
-func TestSecurity_Query(t *testing.T){
+func TestSecurity_Query(t *testing.T) {
 	stub := getInitializedStub(t)
 	securities := checkState(t, stub, 200, [][]byte{[]byte("query")})
 	securityName := "RU000ABC0001"
@@ -53,7 +73,7 @@ func TestSecurity_Query(t *testing.T){
 	redeemAccount := "AC0689654902"
 	redeemDivision:= "87680000045800005"
 
-	if len(securities) != 1{
+	if len(securities) != 1 {
 		fmt.Println("Security not found")
 		t.FailNow()
 	}
@@ -181,7 +201,6 @@ func TestSecurity_AddMultipleEntries(t *testing.T){
 		t.FailNow()
 	}
 }
-
 
 func TestSecurity_EntryMaturity(t *testing.T){
 	stub := getInitializedStub(t)

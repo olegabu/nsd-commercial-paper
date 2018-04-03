@@ -9,13 +9,14 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("BookChaincode")
 
 const bookIndex = `Book`
 const redeemIndex = `Redeem`
+const mainOrgIndex = `MainOrg`
 
 type RedeemInstruction struct {
 	Transferer      nsd.Balance `json:"transferer"`
@@ -58,18 +59,36 @@ func (t *BookChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 
 	_, args := stub.GetFunctionAndParameters()
 
-	type bookInit struct {
-		Account     string `json:"account"`
-		Division    string `json:"division"`
-		Security    string `json:"security"`
-		Quantity    string `json:"quantity"`
+	type bookInitEntry struct {
+		Account  string `json:"account"`
+		Division string `json:"division"`
+		Security string `json:"security"`
+		Quantity string `json:"quantity"`
 	}
 
-	var bookInits []bookInit
-	if err := json.Unmarshal([]byte(args[0]), &bookInits); err == nil && len(bookInits) != 0 {
-		for _, entry := range bookInits {
-			t.put(stub, []string{entry.Account, entry.Division, entry.Security, entry.Quantity})
+	type bookInit struct {
+		MainOrganization string          `json:"mainOrg"`
+		InitEntries      []bookInitEntry `json:"initEntries"`
+	}
+
+	var initInfo bookInit
+	if err := json.Unmarshal([]byte(args[0]), &initInfo); err == nil {
+		if initInfo.MainOrganization == "" {
+			return pb.Response{Status: 400, Message: "Unable to execute Init without main organization been specified."}
 		}
+
+		if err := stub.PutState(mainOrgIndex, []byte(initInfo.MainOrganization)); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		for _, entry := range initInfo.InitEntries {
+			if rs := t.put(stub, []string{entry.Account, entry.Division, entry.Security, entry.Quantity});
+			   rs.Status >= 400 {
+				return rs
+			}
+		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
 	}
 
 	return shim.Success(nil)
@@ -103,6 +122,9 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 	if function == "redeemHistory" {
 		return t.getRedeemHistory(stub, args)
+	}
+	if function == "mainOrg" {
+		return t.getMainOrg(stub, args)
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
@@ -665,6 +687,13 @@ func (t *BookChaincode) redeem(stub shim.ChaincodeStubInterface, args []string) 
 	}
 
 	return shim.Success(nil)
+}
+func (t *BookChaincode) getMainOrg(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if mainOrg, err := stub.GetState(mainOrgIndex); err != nil {
+		return pb.Response{Status: 500, Message: "Persistence failure."}
+	} else {
+		return shim.Success(mainOrg)
+	}
 }
 
 func main() {
