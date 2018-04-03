@@ -869,7 +869,12 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 }
 
 func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if getCreatorOrganization(stub) != "nsd.nsd.ru" {
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depositary")
+	if rs.Status >= 400 {
+		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
+	}
+
+	if getCreatorOrganization(stub) != string(rs.Payload) {
 		return pb.Response{Status: 403, Message: "Insufficient privileges."}
 	}
 
@@ -898,7 +903,12 @@ func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, arg
 }
 
 func (t *InstructionChaincode) removeBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if getCreatorOrganization(stub) != "nsd.nsd.ru" {
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depositary")
+	if rs.Status >= 400 {
+		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
+	}
+
+	if getCreatorOrganization(stub) != string(rs.Payload) {
 		return pb.Response{Status: 403, Message: "Insufficient privileges."}
 	}
 
