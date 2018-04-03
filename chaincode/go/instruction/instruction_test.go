@@ -52,6 +52,7 @@ func getInitializedStub(t *testing.T) *testutils.TestStub{
 		}]`)}
 
 	stub.SetCaller("nsd.nsd.ru")
+	stub.SetMainOrganization("nsd.nsd.ru")
 	stub.MockInit("1", args)
 
 	return stub
