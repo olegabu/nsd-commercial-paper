@@ -9,7 +9,7 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("BookChaincode")
@@ -68,8 +68,13 @@ func (t *BookChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	var bookInits []bookInit
 	if err := json.Unmarshal([]byte(args[0]), &bookInits); err == nil && len(bookInits) != 0 {
 		for _, entry := range bookInits {
-			t.put(stub, []string{entry.Account, entry.Division, entry.Security, entry.Quantity})
+			if rs := t.put(stub, []string{entry.Account, entry.Division, entry.Security, entry.Quantity});
+			   rs.Status >= 400 {
+				return rs
+			}
 		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
 	}
 
 	return shim.Success(nil)

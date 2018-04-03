@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
@@ -67,7 +67,7 @@ func matchIf(this *nsd.Instruction, stub shim.ChaincodeStubInterface,
 }
 
 func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
-	const xmlTemplate = `<?xml version="1.0"?>
+	const xmlTemplate = `<?xml version="1.0" encoding="Windows-1251"?>
 <Batch>
 <Documents_amount>1</Documents_amount>
 <Document DOC_ID="1" version="7">
@@ -153,6 +153,7 @@ func createAlamedaFopXMLs(this *nsd.Instruction) (string, string) {
 	return alamedaFrom, alamedaTo
 }
 
+// TODO: get rid of test wrapper
 func CreateAlamedaDvpXMLsTestWrapper(this *nsd.Instruction) (string, string) {
 	return createAlamedaDvpXMLs(this)
 }
@@ -242,8 +243,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 		AdditionalInfoExists: false,
 		AdditionalInfo:       this.Value.AdditionalInformation,
 	}
-	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") &&
-		(instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
+	instructionWrapper.ReasonExists = instructionWrapper.Reason.Description != ""
 
 	t := template.Must(template.New("xmlTemplate").Parse(xmlTemplate))
 
@@ -288,10 +288,14 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 			for _, balance := range organization.Balances {
 				keyParts := []string{balance.Account, balance.Division}
 				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-					stub.PutState(key, []byte(organization.Name))
+					if err := stub.PutState(key, []byte(organization.Name)); err != nil {
+						return pb.Response{Status: 500, Message: "Persistence failure."}
+					}
 				}
 			}
 		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
 	}
 
 	return shim.Success(nil)
@@ -350,42 +354,64 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		}
 		return t.rollback(stub, args)
 	}
+	if function == "addBalances" {
+		if len(args) < 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.addBalances(stub, args)
+	}
+	if function == "removeBalances" {
+		if len(args) < 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.removeBalances(stub, args)
+	}
+	if function == "getBalances" {
+		if len(args) < 0 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.getBalances(stub, args)
+	}
 
-	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: "+
-		"receive, transfer, query, history, status, sign, rollback. But got: %v", args[0])
+	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, " +
+		"query, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", args[0])
 	logger.Error(err)
 	return shim.Error(err)
 }
 
 func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (bool, error) {
-	isUnique := true
+	const instructionUnique = true
 
 	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
 	if err != nil {
-		return isUnique, err
+		return instructionUnique, err
 	}
 	defer it.Close()
 
 	for it.HasNext() {
 		response, err := it.Next()
 		if err != nil {
-			return isUnique, err
+			return instructionUnique, err
+		}
+
+		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
+		if err != nil {
+			return instructionUnique, err
 		}
 
 		ledgerInstruction := nsd.Instruction{}
 
-		if err := ledgerInstruction.FillFromLedgerValue(response.Value); err != nil {
-			return isUnique, err
+		if err := ledgerInstruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
+			return instructionUnique, err
 		}
 
 		if ledgerInstruction.Key.Reference == instruction.Key.Reference &&
 			ledgerInstruction.Key.InstructionDate == instruction.Key.InstructionDate {
-			isUnique = false
-			break
+			return !instructionUnique, nil
 		}
 	}
 
-	return isUnique, err
+	return instructionUnique, nil
 }
 
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -838,6 +864,104 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 	} else {
 		return pb.Response{Status: 404, Message: "Instruction does not exist in ledger."}
 	}
+}
+
+func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if getCreatorOrganization(stub) != "nsd.nsd.ru" {
+		return pb.Response{Status: 403, Message: "Insufficient privileges."}
+	}
+
+	type Organization struct {
+		Name     string        `json:"organization"`
+		Balances []nsd.Balance `json:"balances"`
+	}
+
+	var organizations []Organization
+	if err := json.Unmarshal([]byte(args[0]), &organizations); err == nil && len(organizations) != 0 {
+		for _, organization := range organizations {
+			for _, balance := range organization.Balances {
+				keyParts := []string{balance.Account, balance.Division}
+				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
+					if err := stub.PutState(key, []byte(organization.Name)); err != nil {
+						return pb.Response{Status: 500, Message: "Persistence failure."}
+					}
+				}
+			}
+		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
+	}
+
+	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) removeBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if getCreatorOrganization(stub) != "nsd.nsd.ru" {
+		return pb.Response{Status: 403, Message: "Insufficient privileges."}
+	}
+
+	type Organization struct {
+		Name     string        `json:"organization"`
+		Balances []nsd.Balance `json:"balances"`
+	}
+
+	var organizations []Organization
+	if err := json.Unmarshal([]byte(args[0]), &organizations); err == nil && len(organizations) != 0 {
+		for _, organization := range organizations {
+			for _, balance := range organization.Balances {
+				keyParts := []string{balance.Account, balance.Division}
+				if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
+					if err := stub.DelState(key); err != nil {
+						return pb.Response{Status: 500, Message: "Persistence failure."}
+					}
+				}
+			}
+		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
+	}
+
+	return shim.Success(nil)
+}
+
+func (t *InstructionChaincode) getBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	it, err := stub.GetStateByPartialCompositeKey(authenticationIndex, []string{})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer it.Close()
+
+	type queryResult struct {
+		Name    string      `json:"organization"`
+		Balance nsd.Balance `json:"balance"`
+	}
+
+	results := []queryResult{}
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		result := queryResult{}
+
+		result.Name = string(response.Value)
+
+		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
+		if err != nil || len(compositeKeyParts) < 2 {
+			return shim.Error(err.Error())
+		}
+
+		result.Balance.Account, result.Balance.Division = compositeKeyParts[0], compositeKeyParts[1]
+
+		results = append(results, result)
+	}
+
+	payload, err := json.Marshal(results)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(payload)
 }
 
 // **** Security Methods **** //

@@ -8,8 +8,8 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/olegabu/nsd-commercial-paper-common"
-	commonCertificates "github.com/olegabu/nsd-commercial-paper-common/certificates"
+	"github.com/Altoros/nsd-commercial-paper-common"
+	commonCertificates "github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
 var logger = shim.NewLogger("SecurityChaincode")
@@ -58,8 +58,13 @@ func (t *SecurityChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  
 	var securities []Security
 	if err := json.Unmarshal([]byte(args[0]), &securities); err == nil && len(securities) != 0 {
 		for _, entry := range securities {
-			t.put(stub, []string{entry.Security, entry.Status, entry.Redeem.Account, entry.Redeem.Division})
+			if rs := t.put(stub, []string{entry.Security, entry.Status, entry.Redeem.Account, entry.Redeem.Division});
+			   rs.Status >= 400 {
+				return rs
+			}
 		}
+	} else {
+		return pb.Response{Status: 400, Message: "JSON unmarshalling error."}
 	}
 
 	return shim.Success(nil)
@@ -136,7 +141,6 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 }
 
 func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
 	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
 		return shim.Error("Insufficient privileges. Only NSD can add Calendar Entry")
 	}

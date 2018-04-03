@@ -2,9 +2,459 @@ package main
 
 import (
 	"testing"
-	"github.com/olegabu/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common/testutils"
 	"fmt"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	pb "github.com/hyperledger/fabric/protos/peer"
+	"encoding/json"
+	"sort"
 )
+
+type queryResult struct {
+	Name    string      `json:"organization"`
+	Balance nsd.Balance `json:"balance"`
+}
+
+func toByteArray(arr []string) [][]byte {
+	var res [][]byte
+	for _, entry := range(arr) {
+		res = append(res, []byte(entry))
+	}
+
+	return res
+}
+
+func getStub(t *testing.T) *testutils.TestStub{
+	cc := new(InstructionChaincode)
+	return testutils.NewTestStub("instruction", cc)
+}
+
+func getInitializedStub(t *testing.T) *testutils.TestStub{
+	stub := getStub(t)
+	args := [][]byte{[]byte("init"), []byte(
+		`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654321",
+					"division": "19000000000000000"
+				}
+			]
+		}, {
+			"organization": "org2",
+			"balances": [
+				{
+					"account": "30109810000000000000",
+					"division": "044525505"
+				}
+			]
+		}]`)}
+
+	stub.SetCaller("nsd.nsd.ru")
+	stub.MockInit("1", args)
+
+	return stub
+}
+
+func TestInstructionChaincode_Init(t *testing.T) {
+	stub := getStub(t)
+	args := [][]byte{[]byte("init"), []byte(
+		`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654321",
+					"division": "19000000000000000"
+				}
+			]
+		}, {
+			"organization": "org2",
+			"balances": [
+				{
+					"account": "30109810000000000000",
+					"division": "044525505"
+				}
+			]
+		}]`)}
+
+	stub.SetCaller("nsd.nsd.ru")
+	res := stub.MockInit("1", args)
+
+	if res.Status != shim.OK {
+		fmt.Println("Init failed: ", string(res.Message))
+		t.FailNow()
+	}
+}
+
+func TestInstructionChaincode_ReceiveTransfer(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	var response pb.Response
+
+	// check invoking receive/transfer with insufficient number of arguments
+	response = stub.MockInvoke("1", [][]byte{[]byte("receive")})
+	if response.Status < 400 {
+		fmt.Println(`"Receive" has succeeded with wrong number of arguments.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Receive predicted error: " + response.Message)
+	}
+
+	response = stub.MockInvoke("1", [][]byte{[]byte("transfer")})
+	if response.Status < 400 {
+		fmt.Println(`"Transfer" has succeeded with wrong number of arguments.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Transfer predicted error: " + response.Message)
+	}
+
+	//----- FOP Instruction Flow Testing -----//
+	fmt.Println("//----- FOP Instruction Flow Testing -----//")
+
+	baseRecvArgs := []string{"receive", "MZ0987654321", "19000000000000000", "30109810000000000000", "044525505",
+	    "RU000A0JVVB5", "500", "SOMEREF123", "2018-03-29", "2018-03-29", "fop"}
+	addRecvArgs := []string{"MCXXXXX00000", "MSYYYYY00000", "id_to",
+		`{"document": "doc_to", "description": "321", "created": "2018-03-29"}`}
+
+	baseTransfArgs := []string{"transfer", "MZ0987654321", "19000000000000000", "30109810000000000000", "044525505",
+		"RU000A0JVVB5", "500", "SOMEREF123", "2018-03-29", "2018-03-29", "fop"}
+	addTransfArgs := []string{"MCXXXXX00000", "MSYYYYY00000", "id_from",
+		`{"document": "doc_from", "description": "123", "created": "2018-03-29"}`}
+
+	// check if transferer can't call receive
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Receive" has been called by the transferer.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Receive predicted error: " + response.Message)
+	}
+
+	stub.SetCaller("org2")
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status >= 400 {
+		fmt.Println("Receive error: " + response.Message)
+		t.FailNow()
+	}
+
+	// check the same instruction processing
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Receive" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Receive predicted error: " + response.Message)
+	}
+
+	// check duplication processing
+	baseRecvArgs[5], baseRecvArgs[6] = "RU111A1JVVB6", "1000"
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Receive" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Receive predicted error: " + response.Message)
+	}
+
+	// check if receiver can't call transfer
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Transfer" has been called by the receiver.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Transfer predicted error: " + response.Message)
+	}
+
+	// check matching
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status >= 400 {
+		fmt.Println("Transfer error: " + response.Message)
+		t.FailNow()
+	}
+
+	// check duplication processing
+	baseTransfArgs[5], baseTransfArgs[6] = "RU111A1JVVB6", "1000"
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Transfer" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Transfer predicted error: " + response.Message)
+	}
+
+	//----- DVP Instruction Flow Testing-----//
+	fmt.Println("//----- DVP Instruction Flow Testing -----//")
+
+	baseRecvArgs[len(baseRecvArgs) - 1] = "dvp"
+	baseRecvArgs[7] = "ANOTHERREF123"
+	baseRecvArgs = append(baseRecvArgs, "tr_money_acc", "tr_money_bic", "rc_money_acc", "rc_money_bic",
+		"10000.00", "RUB")
+	addRecvArgs = append(addRecvArgs, `{"description": "Additional info."}`)
+	baseTransfArgs[len(baseTransfArgs) - 1] = "dvp"
+	baseTransfArgs[7] = "ANOTHERREF123"
+	baseTransfArgs = append(baseTransfArgs, "tr_money_acc", "tr_money_bic", "rc_money_acc", "rc_money_bic",
+		"10000.00", "RUB")
+
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status >= 400 {
+		fmt.Println("Transfer error: " + response.Message)
+		t.FailNow()
+	}
+
+	// check the same instruction processing
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Transfer" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Transfer predicted error: " + response.Message)
+	}
+
+	// check duplication processing
+	baseTransfArgs[5], baseTransfArgs[6] = "RU222A1JVVB7", "1500"
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Transfer" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Transfer predicted error: " + response.Message)
+	}
+
+	// check matching
+	stub.SetCaller("org2")
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status >= 400 {
+		fmt.Println("Receive error: " + response.Message)
+		t.FailNow()
+	}
+
+	// check duplication processing
+	baseRecvArgs[5], baseRecvArgs[6] = "RU222A1JVVB7", "1500"
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Receive" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Receive predicted error: " + response.Message)
+	}
+}
+
+func checkBalanceQuery(results, expectedResults []queryResult) error {
+	if len(results) != len(expectedResults) {
+		return fmt.Errorf("Query result contains less elements then expected.")
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Balance.Account < results[j].Balance.Account
+	})
+
+	sort.Slice(expectedResults, func(i, j int) bool {
+		return expectedResults[i].Balance.Account < expectedResults[j].Balance.Account
+	})
+
+	for i, _ := range results {
+		if results[i].Name != expectedResults[i].Name ||
+		   results[i].Balance.Account != expectedResults[i].Balance.Account ||
+		   results[i].Balance.Division != expectedResults[i].Balance.Division {
+			return fmt.Errorf("Query result #%d is not equal the expected one.", i)
+		}
+	}
+
+	return nil
+}
+
+func TestInstructionChaincode_GetBalances(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	response := stub.MockInvoke("1", [][]byte{[]byte("getBalances")})
+	if response.Status >= 400 {
+		fmt.Println(`"getBalances" error: ` + response.Message)
+		t.FailNow()
+	}
+
+	var results []queryResult
+	if err := json.Unmarshal(response.Payload, &results); err != nil {
+		fmt.Println("JSON unmarshalling error: " + err.Error())
+		t.FailNow()
+	}
+
+	expectedResults := []queryResult{
+		queryResult{
+			Name: "org1",
+			Balance: nsd.Balance{
+				Account: "MZ0987654321",
+				Division: "19000000000000000",
+			},
+		},
+		queryResult{
+			Name: "org2",
+			Balance: nsd.Balance{
+				Account: "30109810000000000000",
+				Division: "044525505",
+			},
+		},
+	}
+
+	if err := checkBalanceQuery(results, expectedResults); err != nil {
+		fmt.Println(err)
+		t.FailNow()
+	}
+}
+
+func TestInstructionChaincode_AddBalances(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	expectedResults := []queryResult{
+		queryResult{
+			Name: "org1",
+			Balance: nsd.Balance{
+				Account: "MZ0987654321",
+				Division: "19000000000000000",
+			},
+		},
+		queryResult{
+			Name: "org1",
+			Balance: nsd.Balance{
+				Account: "MZ0987654322",
+				Division: "22000000000000000",
+			},
+		},
+		queryResult{
+			Name: "org2",
+			Balance: nsd.Balance{
+				Account: "30109810000000000000",
+				Division: "044525505",
+			},
+		},
+	}
+
+	var response pb.Response
+
+	// first time we're adding a new balance record; second time we're adding existing record
+	// the behaviour isn't expected to change
+	for i := 0; i < 2; i++ {
+		response = stub.MockInvoke("1", [][]byte{[]byte("addBalances"), []byte(`[{
+				"organization": "org1",
+				"balances": [
+					{
+						"account": "MZ0987654322",
+						"division": "22000000000000000"
+					}
+				]
+			}]`)})
+		if response.Status >= 400 {
+			fmt.Println(`"addBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		response = stub.MockInvoke("1", [][]byte{[]byte("getBalances")})
+		if response.Status >= 400 {
+			fmt.Println(`"getBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		var results []queryResult
+		if err := json.Unmarshal(response.Payload, &results); err != nil {
+			fmt.Println("JSON unmarshalling error: " + err.Error())
+			t.FailNow()
+		}
+
+		if err := checkBalanceQuery(results, expectedResults); err != nil {
+			fmt.Println(err)
+			t.FailNow()
+		}
+	}
+
+	// trying to add balances without nsd permissions must lead to an error
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", [][]byte{[]byte("addBalances"), []byte(`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654322",
+					"division": "22000000000000000"
+				}
+			]
+		}]`)})
+	if response.Status < 400 {
+		fmt.Println(`"addBalances" can be called without nsd permissions.`)
+		t.FailNow()
+	} else {
+		fmt.Println(`Predicted "addBalances" error: ` + response.Message)
+	}
+}
+
+func TestInstructionChaincode_RemoveBalances(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	expectedResults := []queryResult{
+		queryResult{
+			Name: "org2",
+			Balance: nsd.Balance{
+				Account: "30109810000000000000",
+				Division: "044525505",
+			},
+		},
+	}
+
+	var response pb.Response
+
+	// first time we're removing an existing record; second time we're removing record that doesn't exist in ledger
+	// the behaviour isn't expected to change
+	for i := 0; i < 2; i++ {
+		response = stub.MockInvoke("1", [][]byte{[]byte("removeBalances"), []byte(`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654321",
+					"division": "19000000000000000"
+				}
+			]
+		}]`)})
+		if response.Status >= 400 {
+			fmt.Println(`"removeBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		response = stub.MockInvoke("1", [][]byte{[]byte("getBalances")})
+		if response.Status >= 400 {
+			fmt.Println(`"getBalances" error: ` + response.Message)
+			t.FailNow()
+		}
+
+		var results []queryResult
+		if err := json.Unmarshal(response.Payload, &results); err != nil {
+			fmt.Println("JSON unmarshalling error: " + err.Error())
+			t.FailNow()
+		}
+
+		if err := checkBalanceQuery(results, expectedResults); err != nil {
+			fmt.Println(err)
+			t.FailNow()
+		}
+	}
+
+	// trying to remove balances without nsd permissions must lead to an error
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", [][]byte{[]byte("removeBalances"), []byte(`[{
+			"organization": "org1",
+			"balances": [
+				{
+					"account": "MZ0987654321",
+					"division": "19000000000000000"
+				}
+			]
+		}]`)})
+	if response.Status < 400 {
+		fmt.Println(`"removeBalances" can be called without nsd permissions.`)
+		t.FailNow()
+	} else {
+		fmt.Println(`Predicted "removeBalances" error: ` + response.Message)
+	}
+}
 
 func TestCreateAlamedaDvpXMLsTestWrapper(t *testing.T) {
 	instruction := nsd.Instruction{
