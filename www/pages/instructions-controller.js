@@ -60,7 +60,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return $q.all([
       InstructionService.listAll()
         .then(function(list){
-          ctrl.list = list.reverse();
+          ctrl.list = list;
         }),
 
       UserService.getOrgRole() !== NSD_ROLE
