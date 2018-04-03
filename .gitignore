@@ -2,6 +2,7 @@ node_modules
 bower_components
 npm-debug.log
 .idea
+.fuse_*
 artifacts/channel/mychannel.block
 fabric-rest-api.iml
 fabric-rest-api.ipr
