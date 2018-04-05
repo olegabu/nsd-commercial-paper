@@ -13,6 +13,7 @@ if [ -n "$TAG_SUFFIX" ]; then
   TAG="2018_03-PRE_RELEASE_${TAG_SUFFIX}"
   echo "Force using tag $TAG"
   git checkout --force $TAG
+  git pull
 fi
 
 
