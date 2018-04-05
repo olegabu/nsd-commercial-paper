@@ -402,6 +402,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     console.log('uploadSignature', $file);
 
     // ctrl._fileToString($file)
+    ctrl.invokeInProgress = true;
     Upload.base64DataUrl($file)
       .then(function(base64uri){ return base64uri.replace(/^.*base64,/, ''); }) // cut data uri header
       .then(function(base64data){
@@ -409,6 +410,9 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
         cb();
         return InstructionService.sign(ctrl.uploadSignatureInstruction, base64data);
+      })
+      .finally(function(){
+        ctrl.invokeInProgress = false;
       });
   };
 
