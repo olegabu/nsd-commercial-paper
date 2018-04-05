@@ -6,14 +6,15 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"encoding/json"
 	"github.com/Altoros/nsd-commercial-paper-common/testutils"
-	"github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
+const nsdName = "nsd.nsd.ru"
 
 func getStub(t *testing.T) *testutils.TestStub{
 	scc := new(SecurityChaincode)
 	ts := testutils.NewTestStub("security", scc)
-	ts.SetCaller(certificates.NSD_NAME)
+	ts.SetCaller(nsdName)
+	ts.SetMainOrganization(nsdName)
 	return ts
 }
 func getInitializedStub(t *testing.T) *testutils.TestStub{
