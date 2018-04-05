@@ -7,10 +7,10 @@ TAG_SUFFIX=$1
 ###############################
 echo "--------------------------------------------"
 echo "----  update nsd-commercial-paper"
-[-n "$TAG_SUFFIX"] && TAG="2018_03-PRE_RELEASE_${TAG_SUFFIX}"
 
 git pull
-if [-n "$TAG_SUFFIX"]; then
+if [ -n "$TAG_SUFFIX" ]; then
+  TAG="2018_03-PRE_RELEASE_${TAG_SUFFIX}"
   echo "Force using tag $TAG"
   git checkout --force $TAG
 fi
