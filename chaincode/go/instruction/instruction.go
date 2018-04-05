@@ -555,7 +555,14 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 
 	callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
-	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+
+	callerIsMainOrg := false
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+	if rs.Status <= 400 {
+		if getCreatorOrganization(stub) == string(rs.Payload) {
+			callerIsMainOrg = true
+		}
+	}
 
 	if callerIsTransferer {
 		logger.Info("callerIsTransferer")
@@ -563,12 +570,13 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	if callerIsReceiver {
 		logger.Info("callerIsReceiver")
 	}
-	if callerIsNSD {
-		logger.Info("callerIsNSD")
+	if callerIsMainOrg {
+		logger.Info("callerIsMainOrg")
 	}
 
-	if !(callerIsTransferer || callerIsReceiver || callerIsNSD) {
-		return pb.Response{Status: 403, Message: "Instruction status can be changed either by transferer, receiver or NSD."}
+	if !(callerIsTransferer || callerIsReceiver || callerIsMainOrg) {
+		return pb.Response{Status: 403,
+			Message: "Instruction status can be changed either by transferer, receiver or main organization."}
 	}
 
 	if err := instruction.LoadFrom(stub); err != nil {
@@ -587,12 +595,12 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	switch {
-	case callerIsNSD && status == nsd.InstructionDeclined,
-		 callerIsNSD && status == nsd.InstructionExecuted,
-		 callerIsNSD && status == nsd.InstructionDownloaded,
-		 callerIsNSD && status == nsd.InstructionRollbackInitiated,
-		 callerIsNSD && status == nsd.InstructionRollbackDone,
-		 callerIsNSD && status == nsd.InstructionRollbackDeclined:
+	case callerIsMainOrg && status == nsd.InstructionDeclined,
+		 callerIsMainOrg && status == nsd.InstructionExecuted,
+		 callerIsMainOrg && status == nsd.InstructionDownloaded,
+		 callerIsMainOrg && status == nsd.InstructionRollbackInitiated,
+		 callerIsMainOrg && status == nsd.InstructionRollbackDone,
+		 callerIsMainOrg && status == nsd.InstructionRollbackDeclined:
 		instruction.Value.Status = status
 		if err := instruction.UpsertIn(stub); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
@@ -620,10 +628,17 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
 	quantity int) bool {
 
-	myOrganization := getMyOrganization()
-	logger.Debugf("ORGANIZATION IS: " + myOrganization)
+	callerIsMainOrg := false
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+	if rs.Status <= 400 {
+		if getMyOrganization() == string(rs.Payload) {
+			callerIsMainOrg = true
+		}
+	} else {
+		return true
+	}
 
-	if myOrganization == "nsd.nsd.ru" {
+	if callerIsMainOrg {
 		byteArgs := [][]byte{}
 		byteArgs = append(byteArgs, []byte("check"))
 		byteArgs = append(byteArgs, []byte(account))
@@ -675,11 +690,18 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 
 		callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
-		callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
 
-		logger.Debug(callerIsTransferer, callerIsReceiver, callerIsNSD)
+		callerIsMainOrg := false
+		rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+		if rs.Status <= 400 {
+			if getCreatorOrganization(stub) == string(rs.Payload) {
+				callerIsMainOrg = true
+			}
+		}
 
-		if !(callerIsTransferer || callerIsReceiver || callerIsNSD) {
+		logger.Debug(callerIsTransferer, callerIsReceiver, callerIsMainOrg)
+
+		if !(callerIsTransferer || callerIsReceiver || callerIsMainOrg) {
 			continue
 		}
 
@@ -693,7 +715,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 			(instruction.Value.Status == nsd.InstructionRollbackInitiated) ||
 			(instruction.Value.Status == nsd.InstructionRollbackDone) ||
 			(instruction.Value.Status == nsd.InstructionRollbackDeclined) ||
-			callerIsNSD {
+			callerIsMainOrg {
 			instructions = append(instructions, instruction)
 		}
 	}
@@ -837,10 +859,13 @@ func (t *InstructionChaincode) sign(stub shim.ChaincodeStubInterface, args []str
 }
 
 func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	callerIsNSD := getCreatorOrganization(stub) == "nsd.nsd.ru"
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+	if rs.Status >= 400 {
+		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
+	}
 
-	if !callerIsNSD {
-		return pb.Response{Status: 403, Message: "Instruction can be rolled back only by NSD."}
+	if getCreatorOrganization(stub) != string(rs.Payload) {
+		return pb.Response{Status: 403, Message: "Instruction can be rolled back only by the main organization."}
 	}
 
 	instruction := nsd.Instruction{}
