@@ -9,7 +9,7 @@ See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2
 ## Install prerequisites
 
 -   Clone Nsd Commercial Paper delivery packages from github:  
-`git clone -b 2018_03-PRE_RELEASE_01 --depth=1 https://github.com/olegabu/nsd-commercial-paper`  
+`git clone -b 2018_03-PRE_RELEASE_02 --depth=1 https://github.com/Altoros/nsd-commercial-paper`  
 `cd nsd-commercial-paper`  
 `./prerequisites-deployment.sh`
 
@@ -60,6 +60,10 @@ Folder **nsd-commercial-paper**:
 -	*env-org-sberbank*
 -	*env-org-mts*  
 
+In these files the common variables and the current organization configuration are defined. 
+The configuration specific variables are - `THIS_ORG`, `MAIN_ORG`, `IP_ORDERER`. 
+ 
+
 as well as initialization arguments for blockhains :
 -	*instruction_init.json*
 -	*book_init.json*
@@ -67,7 +71,8 @@ as well as initialization arguments for blockhains :
 
 ##Deployment:
 
-At first each member has to generate their crypto material; it then will be exposed by http interface on port 8080 to be accessible by the other organizations: 
+At first each member has to generate their crypto material; 
+it then will be exposed by http interface on port 8080 to be accessible by the other organizations: 
 
 
 1.	Sberbank:  
@@ -79,6 +84,17 @@ At first each member has to generate their crypto material; it then will be expo
 	`cd nsd-commercial-paper`  
 	`source ./env-org-mts`  
 	`./org-generate-crypto.sh`
+
+Here the first command `source env-org-<name>` loads the environment variables into the current (terminal) session in order to subsequent 
+scripts use the necessary environment. 
+The second command `./org-generate-crypto.sh` uses the loaded environment and generates crypto material by using Hyperledger Fabric utilities 
+for current organization (which is defined by `THIS_ORG` environment variable).
+Finally this script starts a web-server (container) mapped to port 8080 which provisions the node's TLS and MSP sertificates 
+thus allowing nodes securely communicate with each other.    
+The blockchain components are not started by this script.
+
+*Note: It's not completely necessary to generate crypto-material for all organizations to start. 
+You may add organizations one by one. See section **Adding new organization** then.* 
 
 After that the main org (NSD) starts the blockchain network, adds the members one by one and creates *common*, *depository* and bilateral and trilateral channels:
 
@@ -92,8 +108,21 @@ After that the main org (NSD) starts the blockchain network, adds the members on
 
 *Note, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
 This list is used to automatically create tri-lateral channel with new organization being added.   
-This list may be adjusted manually to control trilateral channels creation.*
+This list may be adjusted manually in the file to control trilateral channels creation.*
 
+The first script `./main-start-org.sh` does several things. It's intended to be run ob a main node so it generates crypto material 
+for the main organization as well as for the orderer. Then starts orderer and the main organization's blockchain components.
+It also creates the `common`, and `depository` channels and installs\instantiates the `security` and `book` chaincodes correspondingly. 
+
+The subsequent two scripts register new organizations in the blockchain, create bilateral channels `nsd-<org>` 
+and install\instantiate the `position` chaincode there.  
+
+As it was mentioned the list of registered organizations is also adjusted. 
+It's stored in file `env-external-orgs-list` and new organization is automatically added to the list by this script. 
+If there is one ore more organizations in the list (except `nsd`) 
+the tri-lateral channels with newly registered organization are automatically created.
+
+*Note: Before register new org adjust the file `instruction_init.json` and add requisites of new org there*
 
 On next step the members start the network on their nodes:
   
@@ -103,6 +132,11 @@ On next step the members start the network on their nodes:
 5.	Mts (after Sberbank's run is finished):  
 	`./org-start-node.sh`
 
+
+The `./org-start-node.sh` script is intended to be ran on member organizations nodes; 
+it starts blockchain components (again based on the environment loaded on the previous steps) and join the organization 
+to the `common` channel as well as bilateral channel with nsd `nsd-<this_org>`   
+
 Now newly started members join each other:
 
 6.	Sberbank:  
@@ -110,6 +144,10 @@ Now newly started members join each other:
 
 7.	Mts (after Sberbank's joining is finished):  
 	`./ org-join-org.sh $ORG2 $IP2`
+
+This script join an organization to another organization which parameters (name and IP address) are specified. 
+then it joins the org to the tri-lateral channel with the `nsd` and the specified org. 
+Finally it adds the ip address and network configuration information to the connectivity components     
 
 
 Next start Commercial paper client:
@@ -119,6 +157,16 @@ Next start Commercial paper client:
 	`./network.sh –m install`  
 	`./network.sh –m up`
 
+In case you don't have access to `http://npmjs.com` the second step `./network.sh –m install` will show errors. 
+This might be reolved by manually unzipping a package of `node-modules` directory which should be placed 
+into `nsd-commercial-paper-client` directory. 
+https://drive.google.com/file/d/17hCa7yD4eHpCBEzyOqU_Mpo2N_QLNoGy/view?usp=sharing
+
+Then just execute the third command `./network.sh –m up`
+
+
+Commercial Paper client provides functionality for downloading the result xml and uploading the sign of the xml back to the system.  
+
 
 # Adding new organization
 
@@ -127,7 +175,7 @@ To add new organization into the network the following steps need to performed:
 1) Download NSD Commercial source package(s) to new org's server. See prerequisites section.
 
 2) Environment file is created on new org with environment variables adjusted:  
-    edit `env-org-neworgname`:
+    edit `env-org-<neworgname>`:
     ```
     ...  
     THIS_ORG=neworgname
@@ -135,11 +183,11 @@ To add new organization into the network the following steps need to performed:
 
 3) New organization generates crypto-material:  
     New org:  
-    `source ./env-org-neworgname`  
+    `source ./env-org-<neworgname>`  
     `./org-generate-crypto.sh`
 
 4) On NSD server configure the initialization configuration for *instruction* chaincode:  
-    edit `instruction_init.json`   (add new organization account information)
+    edit `instruction_init.json` (add new organization account information)
     
 5) Register new organization in blockchain, automatically creating bi-lateral and tri-lateral 
 channels with exisiting organizations (using organizations in `env-external-orgs-list`):  
