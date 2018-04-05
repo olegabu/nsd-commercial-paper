@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-[ -n "$1" ] && cc_version=$1 || cc_version="1.0"
+if [ -n "$1" ]; then
+ cc_version=$1
+else
+  cc_version="1.0"
+fi
+
+echo "Install chaincode with version: ${cc_version}"
 
 sleep 2
 if [ "$MAIN_ORG" == "$THIS_ORG" ]; then
