@@ -301,8 +301,8 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
   ctrl.canUploadSignature = function(instruction) {
     return instruction.status === 'executed'
-       || instruction.status === 'signed-transferer'
-       || instruction.status === 'signed-receiver'
+       || instruction.status === 'transferer-signed'
+       || instruction.status === 'receiver-signed'
        || instruction.status === 'signed';
 
   };
@@ -372,11 +372,10 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     console.log('uploadSignature', $file);
 
     ctrl._fileToString($file)
-      .then(function(urls){
-        console.log('string', urls);
+      .then(function(stringdata){
         cb();
+        return InstructionService.sign(ctrl.uploadSignatureInstruction, stringdata);
       });
-
   };
 
 

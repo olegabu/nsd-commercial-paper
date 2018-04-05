@@ -288,6 +288,24 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
   };
 
 
+  /**
+   * @param {Instruction} instruction
+   * @param {string} signature
+   */
+  InstructionService.sign = function(instruction, signature) {
+    $log.debug('InstructionService.sign', instruction, signature);
+
+    var chaincodeID = InstructionService._getChaincodeID();
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
+    var args        = InstructionService._instructionArguments(instruction);
+
+    args.push(signature);
+
+    return ApiService.sc.invoke(channelID, chaincodeID, peers, 'sign', args);
+  };
+
+
 
 
   /**
