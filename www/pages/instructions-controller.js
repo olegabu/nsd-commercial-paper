@@ -117,7 +117,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.isSignAvailable = function(instruction, side) {
     switch ( side ) {
       case 'transferer': return instruction.alamedaSignatureFrom;
-      case 'receiver':   return instruction.alamedaSignatureTo; break;
+      case 'receiver':   return instruction.alamedaSignatureTo;
       default: throw new Error('Unknown side: ' + side);
     }
   };
@@ -132,15 +132,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       default: throw new Error('Unknown side: ' + side);
     }
     var base64data = data;
-
     var isBase64 = true;
-    try {
-      base64data = btoa(base64data);
-    } catch(e) {
-      console.warn('Fail to encode in base64', base64data);
-      isBase64 = false;
-    }
-
     return 'data:application/octet-stream' + (isBase64 ? ';base64' : '' ) + ',' + base64data;
   };
 
@@ -409,17 +401,20 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.uploadSignature = function($file, cb){
     console.log('uploadSignature', $file);
 
-    ctrl._fileToString($file)
-      .then(function(stringdata){
+    // ctrl._fileToString($file)
+    Upload.base64DataUrl($file)
+      .then(function(base64uri){ return base64uri.replace(/^.*base64,/, ''); }) // cut data uri header
+      .then(function(base64data){
+        console.log('file data:', base64data);
+
         cb();
-        return InstructionService.sign(ctrl.uploadSignatureInstruction, stringdata);
+        return InstructionService.sign(ctrl.uploadSignatureInstruction, base64data);
       });
   };
 
 
   ctrl._fileToString = function(file) {
     return $q(function(resolve){
-
       var reader = new FileReader();
       reader.onload = function() {
           resolve(reader.result);
@@ -584,11 +579,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
       transfererRequisites:{
         account: bicTransferer,
-        bic: accountConfig[orgFrom].bic[bicTransferer] || "044525505"
+        bic: accountConfig[orgFrom].bic[bicTransferer] || '044525505'
       },
       receiverRequisites:{
         account: bicReceiver,
-        bic: accountConfig[orgTo].bic[bicReceiver] || "044525505"
+        bic: accountConfig[orgTo].bic[bicReceiver] || '044525505'
       },
       paymentAmount: 30000000,
       paymentCurrency: 'RUB',
