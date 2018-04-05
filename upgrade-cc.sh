@@ -63,7 +63,7 @@ subArrayStartIndex=1;
 for org in ${ORGList[@]}; do
   pairingOrgs=(${ORGList[@]:subArrayStartIndex})
   echo ""
-  echo "Pair Orgs: ${pairingOrgs[@]}"
+  echo "Orgs to Pair: ${pairingOrgs[@]}"
   for subOrg in ${pairingOrgs[@]}; do
       if [[ "$org" != "$subOrg" ]]; then
         sortedChannelName=`echo "${org} ${subOrg}" | tr " " "\n" | sort | tr "\n" " " | sed 's/ /-/'`

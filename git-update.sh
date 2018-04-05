@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 
-forceRemoveRepos=$1 # "-f"
+TAG_SUFFIX=$1
 
 ###############################
 # git clone NSD related packages
 ###############################
-cd ..
+echo "--------------------------------------------"
+echo "----  update nsd-commercial-paper"
+[-n "$TAG_SUFFIX"] && TAG="2018_03-PRE_RELEASE_${TAG_SUFFIX}"
 
-if [ "$forceRemoveRepos" == "-f" ]; then
-  rm -rf fabric-starter
-  rm -rf nsd-commercial-paper-client
+git pull
+if [-n "$TAG_SUFFIX"]; then
+  echo "Force using tag $TAG"
+  git checkout --force $TAG
 fi
+
+
+cd ..
 
 echo "--------------------------------------------"
 echo "----  Clone fabric-starter"
@@ -18,7 +24,7 @@ git clone --depth=1 --branch 2018_03-MAIN_ORG_DEPLOYMENT https://github.com/oleg
 
 echo "--------------------------------------------"
 echo "----  Clone nsd-commercial-paper-client"
-git clone --depth=1 --branch develop https://github.com/olegabu/nsd-commercial-paper-client
+git clone --depth=1 --branch develop https://github.com/Altoros/nsd-commercial-paper-client
 
 
 ###############################
@@ -34,7 +40,4 @@ echo "----  update fabric-starter"
 cd ../fabric-starter
 git pull
 
-echo "--------------------------------------------"
-echo "----  update nsd-commercial-paper"
 cd ../nsd-commercial-paper
-git pull
