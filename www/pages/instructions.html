@@ -80,13 +80,21 @@
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
                        ng-click="$event.stopPropagation();"
                        download="{{::ctl.getInstructionFilename(o, o.initiator)}}"
-                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}" translate>DOWNLOAD_XML</a>
+                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}"
+                       translate>DOWNLOAD_XML</a>
 
 
                     <input type="button" class="btn btn-small waves-effect waves-light darken-2"
                            value="UPLOAD_SIGNATURE" translate-attr="{value:'UPLOAD_SIGNATURE'}"
                            ng-show="::ctl.canUploadSignature(o)" role-hide="nsd"
                            ng-click="$event.stopPropagation(); ctl.uploadSignatureDialog(o);" />
+
+                    <a ng-show="::ctl.isSignAvailable(o, o.initiator)" role-show="nsd"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getSignFilename(o, o.initiator)}}"
+                       href="{{::ctl.getSignLink(o, o.initiator)}}"
+                       translate>DOWNLOAD_SIGNATURE</a>
 
                 </td>
                 <td ng-if="::o.initiator=='transferer'">
@@ -127,7 +135,8 @@
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
                        ng-click="$event.stopPropagation();"
                        download="{{::ctl.getInstructionFilename(o, ctl.oppositeSide(o.initiator))}}"
-                       href="{{::ctl.getInstructionXmlLink(o, o.initiator, !!'inverse')}}" translate>DOWNLOAD_XML</a>
+                       href="{{::ctl.getInstructionXmlLink(o, ctl.oppositeSide(o.initiator))}}"
+                       translate>DOWNLOAD_XML</a>
 
 
                     <input type="button" class="btn btn-small waves-effect waves-light darken-2"
@@ -135,6 +144,13 @@
                            ng-show="::ctl.canUploadSignature(o)" role-hide="nsd"
                            ng-click="$event.stopPropagation(); ctl.uploadSignatureDialog(o);" />
 
+
+                    <a ng-show="::ctl.isSignAvailable(o, ctl.oppositeSide(o.initiator))" role-show="nsd"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getSignFilename(o, ctl.oppositeSide(o.initiator))}}"
+                       href="{{::ctl.getSignLink(o, ctl.oppositeSide(o.initiator))}}"
+                       translate>DOWNLOAD_SIGNATURE</a>
 
                 </td>
                 <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>

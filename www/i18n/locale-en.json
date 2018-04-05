@@ -155,5 +155,6 @@
   "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?",
 
   "UPLOAD_SIGNATURE": "Upload signature",
-  "UPLOAD_SIGNATURE_TITLE": "Upload signature"
+  "UPLOAD_SIGNATURE_TITLE": "Upload signature",
+  "DOWNLOAD_SIGNATURE": "Download signature"
 }

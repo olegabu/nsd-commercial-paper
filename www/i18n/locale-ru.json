@@ -155,5 +155,6 @@
   "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
 
   "UPLOAD_SIGNATURE": "Загрузить подпись",
-  "UPLOAD_SIGNATURE_TITLE": "Загрузить подпись"
+  "UPLOAD_SIGNATURE_TITLE": "Загрузить подпись",
+  "DOWNLOAD_SIGNATURE": "Скачать подпись"
 }

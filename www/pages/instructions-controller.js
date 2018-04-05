@@ -113,6 +113,45 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return instruction.initiator === 'transferer' ? ctrl.isTransferer(instruction) : ctrl.isReceiver(instruction);
   };
 
+
+  ctrl.isSignAvailable = function(instruction, side) {
+    switch ( side ) {
+      case 'transferer': return instruction.alamedaSignatureFrom;
+      case 'receiver':   return instruction.alamedaSignatureTo; break;
+      default: throw new Error('Unknown side: ' + side);
+    }
+  };
+
+
+
+  ctrl.getSignLink = function(instruction, side) {
+    var data;
+    switch ( side ) {
+      case 'transferer': data = instruction.alamedaSignatureFrom; break;
+      case 'receiver':   data = instruction.alamedaSignatureTo; break;
+      default: throw new Error('Unknown side: ' + side);
+    }
+    var base64data = data;
+
+    var isBase64 = true;
+    try {
+      base64data = btoa(base64data);
+    } catch(e) {
+      console.warn('Fail to encode in base64', base64data);
+      isBase64 = false;
+    }
+
+    return 'data:application/octet-stream' + (isBase64 ? ';base64' : '' ) + ',' + base64data;
+  };
+
+
+  ctrl.getSignFilename = function(instruction, side) {
+    // return instructionFilename(instruction, side) + '.xml';
+    return instructionFilename(instruction, side) + '.sig';
+  };
+
+
+
   ctrl.isAdmin = function(){
     return ctrl.org === NSD_ROLE;
   };
@@ -195,7 +234,6 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
     args.unshift(filenameTemplate);
     return format.apply(null, args);
-
   }
 
   /**
