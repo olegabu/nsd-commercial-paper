@@ -15,10 +15,10 @@
 			"revisionTime": "2018-03-27T15:15:41Z"
 		},
 		{
-			"checksumSHA1": "Id4Fm1TSPlqRozCrURpNpw8jeDA=",
+			"checksumSHA1": "H63RnlXQtwfo8iLtDUqCk4/RZHU=",
 			"path": "github.com/Altoros/nsd-commercial-paper-common/testutils",
-			"revision": "b537b4be78e4513af6e9a65233fbb0fafe336118",
-			"revisionTime": "2018-04-03T12:28:32Z"
+			"revision": "acd3d65a66c3fedca44c2e1c39ff66643e4d6e49",
+			"revisionTime": "2018-04-05T11:44:48Z"
 		}
 	],
 	"rootPath": "github.com/Altoros/nsd-commercial-paper/chaincode/go/instruction"

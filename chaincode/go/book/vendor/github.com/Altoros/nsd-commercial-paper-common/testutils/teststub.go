@@ -104,7 +104,7 @@ func (ts *TestStub) GetCreator() ([]byte, error) {
 // Reimplemented to have a possibility to test privileges
 // NOTE: you should set caller and mainOrg to emulate call of book cc from depositary channel
 func (stub *TestStub) InvokeChaincode(chaincodeName string, args [][]byte, channel string) pb.Response {
-	if chaincodeName == "book" && channel == "depositary" {
+	if chaincodeName == "book" && channel == "depository" {
 		if stub.caller != stub.mainOrg {
 			return pb.Response{Status: 403, Message: "Insufficient privileges."}
 		}
