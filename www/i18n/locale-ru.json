@@ -115,6 +115,7 @@
   "RECEIVER_LABEL": "Получатель",
   "TRANSFERER_PAY_LABEL":"Реквизиты Плательщика",
   "RECEIVER_PAY_LABEL":"Реквизиты Получателя",
+  "REQUISITIES":"Реквизиты",
   "SECURITY_PAY_LABEL":"Платеж",
   "FREE_OF_PAYMENT":"Free of payment",
   "DVP_EXTRA":"Дополнительная информация",
