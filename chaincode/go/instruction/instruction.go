@@ -376,7 +376,7 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, " +
-		"query, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", args[0])
+		"query, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", function)
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -869,7 +869,7 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 }
 
 func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depositary")
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
 	if rs.Status >= 400 {
 		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
 	}
@@ -903,7 +903,7 @@ func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, arg
 }
 
 func (t *InstructionChaincode) removeBalances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depositary")
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
 	if rs.Status >= 400 {
 		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
 	}
