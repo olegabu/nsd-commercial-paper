@@ -1,11 +1,8 @@
 package main
 
 import (
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 	"strings"
 	"text/template"
@@ -15,6 +12,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/Altoros/nsd-commercial-paper-common"
+	"github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
@@ -277,7 +275,7 @@ func (t *InstructionChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respons
 
 	args := stub.GetStringArgs()
 	logger.Info("########### " + strings.Join(args, " ") + " ###########")
-	logger.Info("########### " + getCreatorOrganization(stub) + " ###########")
+	logger.Info("########### " + certificates.GetCreatorOrganization(stub) + " ###########")
 
 	type Organization struct {
 		Name     string        `json:"organization"`
@@ -375,8 +373,8 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		return t.getBalances(stub, args)
 	}
 
-	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, " +
-		"query, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", function)
+	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, query, " +
+		"queryByType, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", function)
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -559,7 +557,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 	callerIsMainOrg := false
 	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
 	if rs.Status <= 400 {
-		if getCreatorOrganization(stub) == string(rs.Payload) {
+		if certificates.GetCreatorOrganization(stub) == string(rs.Payload) {
 			callerIsMainOrg = true
 		}
 	}
@@ -631,7 +629,7 @@ func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account s
 	callerIsMainOrg := false
 	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
 	if rs.Status <= 400 {
-		if getMyOrganization() == string(rs.Payload) {
+		if certificates.GetMyOrganization() == string(rs.Payload) {
 			callerIsMainOrg = true
 		}
 	} else {
@@ -694,7 +692,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 		callerIsMainOrg := false
 		rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
 		if rs.Status <= 400 {
-			if getCreatorOrganization(stub) == string(rs.Payload) {
+			if certificates.GetCreatorOrganization(stub) == string(rs.Payload) {
 				callerIsMainOrg = true
 			}
 		}
@@ -864,8 +862,9 @@ func (t *InstructionChaincode) rollback(stub shim.ChaincodeStubInterface, args [
 		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
 	}
 
-	if getCreatorOrganization(stub) != string(rs.Payload) {
-		return pb.Response{Status: 403, Message: "Instruction can be rolled back only by the main organization."}
+	mainOrg := string(rs.Payload)
+	if certificates.GetCreatorOrganization(stub) != mainOrg {
+		return pb.Response{Status: 403, Message: "Instruction can be rolled back only by " + mainOrg + " ."}
 	}
 
 	instruction := nsd.Instruction{}
@@ -899,7 +898,7 @@ func (t *InstructionChaincode) addBalances(stub shim.ChaincodeStubInterface, arg
 		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
 	}
 
-	if getCreatorOrganization(stub) != string(rs.Payload) {
+	if certificates.GetCreatorOrganization(stub) != string(rs.Payload) {
 		return pb.Response{Status: 403, Message: "Insufficient privileges."}
 	}
 
@@ -933,7 +932,7 @@ func (t *InstructionChaincode) removeBalances(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
 	}
 
-	if getCreatorOrganization(stub) != string(rs.Payload) {
+	if certificates.GetCreatorOrganization(stub) != string(rs.Payload) {
 		return pb.Response{Status: 403, Message: "Insufficient privileges."}
 	}
 
@@ -1001,40 +1000,10 @@ func (t *InstructionChaincode) getBalances(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(payload)
 }
 
-// **** Security Methods **** //
-func getOrganization(certificate []byte) string {
-	logger.Info("########### InstructionChaincode getOrganization ###########")
-	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
-	block, _ := pem.Decode([]byte(data))
-	cert, _ := x509.ParseCertificate(block.Bytes)
-	organization := cert.Issuer.Organization[0]
-	logger.Info("getOrganization: " + organization)
-
-	return organization
-}
-
-func getCreatorOrganization(stub shim.ChaincodeStubInterface) string {
-	certificate, _ := stub.GetCreator()
-	return getOrganization(certificate)
-}
-
-func getMyOrganization() string {
-	// TODO get the filename from $CORE_PEER_TLS_ROOTCERT_FILE
-	// better way perhaps is to pass a flag in transient map to nsd peer to ask to check against book chaincode
-	certFilename := "/etc/hyperledger/fabric/peer.crt"
-	certificate, err := ioutil.ReadFile(certFilename)
-	if err != nil {
-		logger.Debugf("cannot read my peer's certificate file %s", certFilename)
-		return ""
-	}
-
-	return getOrganization(certificate)
-}
-
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) bool {
 	keyParts := []string{callerBalance.Account, callerBalance.Division}
 	if key, err := stub.CreateCompositeKey(authenticationIndex, keyParts); err == nil {
-		if data, err := stub.GetState(key); err == nil && getCreatorOrganization(stub) == string(data) {
+		if data, err := stub.GetState(key); err == nil && certificates.GetCreatorOrganization(stub) == string(data) {
 			return true
 		}
 	}
