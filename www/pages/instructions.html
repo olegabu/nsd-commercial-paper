@@ -66,11 +66,13 @@
                     <!-- specific for initiator/admin -->
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
-                           ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                           ng-show="::o.status=='initiated'" role-hide="nsd"
+                           ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
 
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="ROLLBACK_LABEL" translate-attr="{value:'ROLLBACK_LABEL'}"
-                           ng-show="::ctl.canRollback(o)" role-show="nsd" ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
+                           ng-show="::ctl.canRollback(o)" role-show="nsd"
+                           ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
 
 
                     <!-- common stuff -->
@@ -79,6 +81,13 @@
                        ng-click="$event.stopPropagation();"
                        download="{{::ctl.getInstructionFilename(o, o.initiator)}}"
                        href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}" translate>DOWNLOAD_XML</a>
+
+
+                    <input type="button" class="btn btn-small waves-effect waves-light darken-2"
+                           value="UPLOAD_SIGNATURE" translate-attr="{value:'UPLOAD_SIGNATURE'}"
+                           ng-show="::ctl.canUploadSignature(o)" role-hide="nsd"
+                           ng-click="$event.stopPropagation(); ctl.uploadSignatureDialog(o);"
+                           m--odal href="#uploadSignature" />
 
                 </td>
                 <td ng-if="::o.initiator=='transferer'">
@@ -112,7 +121,7 @@
                 <td>{{::o.initiator!='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
                 <td>{{::o.instructionDate|date}}</td>
                 <td>{{::o.tradeDate|date}}</td>
-                <td class="center">
+                <td class="center btn-group-vertical">
                     <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
 
                     <a ng-show="::ctl.isInstructionXmlAvailable(o)"
@@ -120,6 +129,13 @@
                        ng-click="$event.stopPropagation();"
                        download="{{::ctl.getInstructionFilename(o, ctl.oppositeSide(o.initiator))}}"
                        href="{{::ctl.getInstructionXmlLink(o, o.initiator, !!'inverse')}}" translate>DOWNLOAD_XML</a>
+
+
+                    <input type="button" class="btn btn-small waves-effect waves-light darken-2"
+                           value="UPLOAD_SIGNATURE" translate-attr="{value:'UPLOAD_SIGNATURE'}"
+                           ng-show="::ctl.canUploadSignature(o)" role-hide="nsd"
+                           ng-click="$event.stopPropagation(); ctl.uploadSignatureDialog(o);"
+                           m--odal href="#uploadSignature" />
 
 
                 </td>
@@ -507,3 +523,30 @@
   </div>
 
 </script>
+
+
+
+
+<!-- UPLOAD SIGNATURE -->
+<script type="text/ng-template" id="upload-signature.html">
+
+
+    <div id="uploadSignature" class="modal modal-tiny">
+        <div class="modal-content">
+
+            <h4 translate>UPLOAD_SIGNATURE_TITLE</h4>
+            <div class="select-box drop-box"
+            ngf-select ngf-drop ngf-drop-available="dropSupported"
+            ngf-change="$options.ctl.uploadSignature($file, $close)">
+
+                <span>Select file</span>
+                <span ng-show="dropSupported" class=""> or Drop File</span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()" translate>CLOSE_LABEL</a>
+        </div>
+    </div>
+</script>
+

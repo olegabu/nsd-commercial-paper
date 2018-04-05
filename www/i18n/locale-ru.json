@@ -152,5 +152,8 @@
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить сделку %s от %s?",
   "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s от %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
+  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
+
+  "UPLOAD_SIGNATURE": "Загрузить подпись",
+  "UPLOAD_SIGNATURE_TITLE": "Загрузить подпись"
 }

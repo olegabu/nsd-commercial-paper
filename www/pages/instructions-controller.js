@@ -16,7 +16,7 @@
  * @class InstructionsController
  * @ngInject
  */
-function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader, Upload) {
   "use strict";
 
   var ctrl = this;
@@ -33,6 +33,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.org = ConfigLoader.get().org;
   ctrl.account = ConfigLoader.getAccount(ctrl.org);
 
+  ctrl.uploadSignatureInstruction = null;
   /**
    * @type {boolean}
    */
@@ -124,7 +125,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       || instruction.status=='transferer-signed'
       || instruction.status=='signed'
       || instruction.status=='downloaded';
-  }
+  };
 
 
 
@@ -152,24 +153,24 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
     return 'data:application/xml' + (isBase64 ? ';base64' : '' ) + ',' + base64data;
     // return 'data:application/octet-stream;base64,' + base64data;
-  }
+  };
 
   ctrl.oppositeSide = function(side) {
     if(side == 'transferer'){
-       return 'receiver'
+       return 'receiver';
     } else if(side == 'receiver'){
-       return 'transferer'
+       return 'transferer';
     } else {
       throw new Error('Unknown instruction side: ' + side);
     }
-  }
+  };
 
   /**
    *
    */
   ctrl.getInstructionFilename = function(instruction, side) {
     return instructionFilename(instruction, side) + '.xml';
-  }
+  };
 
   /**
    *
@@ -253,11 +254,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       type: 'fop',
 
 
-      transfererRequisites:{
-        bic: "044525505"
+      transfererRequisites: {
+        bic: '044525505'
       },
-      receiverRequisites:{
-        bic: "044525505"
+      receiverRequisites: {
+        bic: '044525505'
       },
       paymentCurrency: 'RUB'
 
@@ -289,11 +290,20 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    * @param {Instruction} instruction
    * @return {boolean}
    */
-  ctrl.canRollback = function(instruction){
+  ctrl.canRollback = function(instruction) {
     return instruction.status === 'downloaded'
       || instruction.status === 'rollbackDeclined';
       // || instruction.status === 'executed'
       // || instruction.status === 'signed'
+
+  };
+
+
+  ctrl.canUploadSignature = function(instruction) {
+    return instruction.status === 'executed'
+       || instruction.status === 'signed-transferer'
+       || instruction.status === 'signed-receiver'
+       || instruction.status === 'signed';
 
   };
 
@@ -350,6 +360,36 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   };
 
 
+  ctrl.uploadSignatureDialog = function(instruction) {
+    ctrl.uploadSignatureInstruction = instruction;
+
+    var scope = {ctl:ctrl};
+    return DialogService.dialog('upload-signature.html', scope);
+  };
+
+
+  ctrl.uploadSignature = function($file, cb){
+    console.log('uploadSignature', $file);
+
+    ctrl._fileToString($file)
+      .then(function(urls){
+        console.log('string', urls);
+        cb();
+      });
+
+  };
+
+
+  ctrl._fileToString = function(file) {
+    return $q(function(resolve){
+
+      var reader = new FileReader();
+      reader.onload = function() {
+          resolve(reader.result);
+      };
+      reader.readAsText(file);
+    });
+  };
 
 
   /**
@@ -474,11 +514,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     var org = ConfigLoader.get().org;
     var accountConfig = ConfigLoader.get()['account-config'];
     var orgList = Object.keys(accountConfig)
-      .filter(function(a){ return a!=='nsd'})
-      .filter(function(a){ return a!==org})
-      .sort(function(a, b){ return a.localeCompare(b); })
+      .filter(function(a){ return a!=='nsd'; })
+      .filter(function(a){ return a!==org; })
+      .sort(function(a, b){ return a.localeCompare(b); });
     return orgList;
-  }
+  };
 
 
 
@@ -491,7 +531,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     if (_prefillFrom && _prefillTo) {
       $scope.inst = ctrl.getABStub(transferSide, _prefillFrom, _prefillTo)
     }
-  }
+  };
   /**
    * @param transferSide
    * @return {Instruction}
@@ -547,3 +587,4 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
 angular.module('nsd.controller.instructions', ['nsd.service.instructions'])
 .controller('InstructionsController', InstructionsController);
+
