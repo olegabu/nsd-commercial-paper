@@ -128,7 +128,7 @@ func (t *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
-		"put, move, check, query, history. But got: %v", args[0])
+		"put, move, check, query, history, rollback, mainOrg, redeem, redeemHistory. But got: %v", function)
 	logger.Error(err)
 	return shim.Error(err)
 }

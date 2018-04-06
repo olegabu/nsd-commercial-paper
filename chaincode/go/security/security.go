@@ -9,7 +9,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/Altoros/nsd-commercial-paper-common"
-	commonCertificates "github.com/Altoros/nsd-commercial-paper-common/certificates"
+	"github.com/Altoros/nsd-commercial-paper-common/certificates"
 )
 
 var logger = shim.NewLogger("SecurityChaincode")
@@ -92,12 +92,19 @@ func (t *SecurityChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response
 	}
 
 	return shim.Error(fmt.Sprintf("Unknown function, check the first argument, must be one of: " +
-		"put, query, history. But got: %v", args[0]))
+		"put, query, history, addEntry, find. But got: %v", function))
 }
 
 func (t *SecurityChaincode) put(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
-		return shim.Error("Insufficient privileges. Only NSD can change Securities information.")
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+	if rs.Status >= 400 {
+		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
+	}
+
+	mainOrg := string(rs.Payload)
+	if certificates.GetCreatorOrganization(stub) != mainOrg {
+		return pb.Response{Status: 403,
+			Message: "Insufficient privileges. Only " + mainOrg + " can change Securities information."}
 	}
 
 	if len(args) != 4 {
@@ -141,8 +148,15 @@ func (t *SecurityChaincode) save(stub shim.ChaincodeStubInterface, item Security
 }
 
 func (t *SecurityChaincode) addCalendarEntry(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if commonCertificates.GetCreatorOrganization(stub) != commonCertificates.NSD_NAME{
-		return shim.Error("Insufficient privileges. Only NSD can add Calendar Entry")
+	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+	if rs.Status >= 400 {
+		return pb.Response{Status: 400, Message: "Unable to invoke \"book\": " + rs.Message}
+	}
+
+	mainOrg := string(rs.Payload)
+	if certificates.GetCreatorOrganization(stub) != mainOrg {
+		return pb.Response{Status: 403,
+			Message: "Insufficient privileges. Only " + mainOrg + " can add Calendar Entry."}
 	}
 
 	if len(args) != 5 {

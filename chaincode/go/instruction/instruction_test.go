@@ -11,6 +11,8 @@ import (
 	"sort"
 )
 
+const nsdName = "nsd.nsd.ru"
+
 type queryResult struct {
 	Name    string      `json:"organization"`
 	Balance nsd.Balance `json:"balance"`
@@ -51,8 +53,8 @@ func getInitializedStub(t *testing.T) *testutils.TestStub{
 			]
 		}]`)}
 
-	stub.SetCaller("nsd.nsd.ru")
-	stub.SetMainOrganization("nsd.nsd.ru")
+	stub.SetCaller(nsdName)
+	stub.SetMainOrganization(nsdName)
 	stub.MockInit("1", args)
 
 	return stub
@@ -79,7 +81,7 @@ func TestInstructionChaincode_Init(t *testing.T) {
 			]
 		}]`)}
 
-	stub.SetCaller("nsd.nsd.ru")
+	stub.SetCaller(nsdName)
 	res := stub.MockInit("1", args)
 
 	if res.Status != shim.OK {
