@@ -157,5 +157,6 @@
 
   "UPLOAD_SIGNATURE": "Загрузить подпись",
   "UPLOAD_SIGNATURE_TITLE": "Загрузить подпись",
-  "DOWNLOAD_SIGNATURE": "Скачать подпись"
+  "DOWNLOAD_SIGNATURE": "Скачать подпись",
+  "CONFIRM_DOWNLOAD_SIGNATURE": "Подписи скачаны"
 }

@@ -157,5 +157,6 @@
 
   "UPLOAD_SIGNATURE": "Upload signature",
   "UPLOAD_SIGNATURE_TITLE": "Upload signature",
-  "DOWNLOAD_SIGNATURE": "Download signature"
+  "DOWNLOAD_SIGNATURE": "Download signature",
+  "CONFIRM_DOWNLOAD_SIGNATURE": "Confirm download"
 }

@@ -166,6 +166,15 @@
                        href="{{::ctl.getSignLink(o, ctl.oppositeSide(o.initiator))}}"
                        translate>DOWNLOAD_SIGNATURE</a>
 
+
+                    <a href="#" class="btn btn-small waves-effect waves-light deep-purple darken-2"
+                           ng-show="::o.status=='signed'" role-show="nsd"
+                           ng-click="$event.stopPropagation(); ctl.confirmDownloaded(o);" >
+
+                           <i class="material-icons">check</i>
+                           <span translate>CONFIRM_DOWNLOAD_SIGNATURE</span>
+                    </a>
+
                 </td>
                 <td rowspan="2" ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
                 <td rowspan="2" ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>

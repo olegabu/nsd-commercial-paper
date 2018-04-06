@@ -376,6 +376,10 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   };
 
 
+  ctrl.confirmDownloaded = function(instruction) {
+    return InstructionService.setDownloaded(instruction);
+  };
+
   /**
    *
    */

@@ -313,6 +313,10 @@ td, th{
   color: gray;
 }
 
+.btn i {
+    font-size: 1.0rem;
+}
+
 
 /* hotfix for dropdown */
 .translate100y{

@@ -96,6 +96,7 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
       DECLINED: 'declined',
       EXECUTED: 'executed',
       CANCELED: 'canceled',
+      DOWNLOADED: 'downloaded',
       ROLLBACK_INITIATED: 'rollbackInitiated',
       ROLLBACK_DONE: 'rollbackDone',
       ROLLBACK_FAILED: 'rollbackDeclined'
@@ -266,6 +267,10 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
 
   InstructionService.cancelInstruction = function(instruction) {
     return this.updateStatus(instruction, InstructionService.status.CANCELED);
+  };
+
+  InstructionService.setDownloaded = function(instruction) {
+    return this.updateStatus(instruction, InstructionService.status.DOWNLOADED);
   };
 
   /**
