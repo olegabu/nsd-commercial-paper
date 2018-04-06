@@ -8,10 +8,10 @@ fi
 
 echo "Install chaincode with version: ${cc_version}"
 
-sleep 2
-if [ "$MAIN_ORG" == "$THIS_ORG" ]; then
+sleep 3
+#if [ "$MAIN_ORG" == "$THIS_ORG" ]; then
     network.sh -m install-chaincode -o $THIS_ORG -v ${cc_version} -n book
-fi
+#fi
 sleep 1
 network.sh -m install-chaincode -o $THIS_ORG -v ${cc_version} -n security
 sleep 1
