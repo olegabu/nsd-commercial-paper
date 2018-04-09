@@ -41,7 +41,7 @@ git pull
 echo "--------------------------------------------"
 echo "----  update fabric-starter"
 cd ../fabric-starter
-git checkout $FABRIC_STARTER_TAG
-git pull
+#git checkout $FABRIC_STARTER_TAG
+#git pull
 
 cd ../nsd-commercial-paper
