@@ -553,14 +553,7 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 
 	callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 	callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
-
-	callerIsMainOrg := false
-	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
-	if rs.Status <= 400 {
-		if certificates.GetCreatorOrganization(stub) == string(rs.Payload) {
-			callerIsMainOrg = true
-		}
-	}
+	callerIsMainOrg := certificates.GetCreatorOrganization(stub) == "nsd.nsd.ru"
 
 	if callerIsTransferer {
 		logger.Info("callerIsTransferer")
@@ -626,16 +619,8 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
 	quantity int) bool {
 
-	callerIsMainOrg := false
-	rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
-	if rs.Status <= 400 {
-		if certificates.GetMyOrganization() == string(rs.Payload) {
-			callerIsMainOrg = true
-		}
-	} else {
-		return true
-	}
-
+	callerIsMainOrg := certificates.GetMyOrganization() == "nsd.nsd.ru"
+	
 	if callerIsMainOrg {
 		byteArgs := [][]byte{}
 		byteArgs = append(byteArgs, []byte("check"))
@@ -688,14 +673,7 @@ func (t *InstructionChaincode) query(stub shim.ChaincodeStubInterface, args []st
 
 		callerIsTransferer := authenticateCaller(stub, instruction.Key.Transferer)
 		callerIsReceiver := authenticateCaller(stub, instruction.Key.Receiver)
-
-		callerIsMainOrg := false
-		rs := stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
-		if rs.Status <= 400 {
-			if certificates.GetCreatorOrganization(stub) == string(rs.Payload) {
-				callerIsMainOrg = true
-			}
-		}
+		callerIsMainOrg := certificates.GetCreatorOrganization(stub) == "nsd.nsd.ru"
 
 		logger.Debug(callerIsTransferer, callerIsReceiver, callerIsMainOrg)
 
