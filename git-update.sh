@@ -23,7 +23,7 @@ cd ..
 
 echo "--------------------------------------------"
 echo "----  Clone fabric-starter"
-git clone --depth=1 --branch $FABRIC_STARTER_TAG https://github.com/olegabu/fabric-starter
+#git clone --depth=1 --branch $FABRIC_STARTER_TAG https://github.com/olegabu/fabric-starter
 
 echo "--------------------------------------------"
 echo "----  Clone nsd-commercial-paper-client"
