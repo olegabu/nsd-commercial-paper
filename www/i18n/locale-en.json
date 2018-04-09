@@ -116,6 +116,7 @@
   "TRANSFERER_PAY_LABEL":"Payment transferer",
   "RECEIVER_PAY_LABEL":"Payment receiver",
   "SECURITY_PAY_LABEL":"Payment value",
+  "REQUISITIES":"Requisities",
   "FREE_OF_PAYMENT":"Free of payment",
   "DVP_EXTRA":"Extra info",
 
@@ -152,5 +153,10 @@
 
   "CANCEL_INSTRUCTION_PROMPT":"Cancel %s by %s ?",
   "ROLLBACK_INSTRUCTION_PROMPT":"Rollback %s by %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?"
+  "REDEEM_INSTRUCTION_PROMPT":"Redeem %s ?",
+
+  "UPLOAD_SIGNATURE": "Upload signature",
+  "UPLOAD_SIGNATURE_TITLE": "Upload signature",
+  "DOWNLOAD_SIGNATURE": "Download signature",
+  "CONFIRM_DOWNLOAD_SIGNATURE": "Confirm download"
 }

@@ -29,8 +29,8 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th translate>TRANSFERER_LABEL</th>
-                <th translate>RECEIVER_LABEL</th>
+                <th translate>&nbsp;</th>
+                <th translate>REQUISITIES</th>
                 <th translate>SECURITY_LABEL</th>
                 <th translate>QUANTITY_LABEL</th>
                 <th translate>REFERENCE_LABEL</th>
@@ -41,8 +41,7 @@
                 <th translate>REASON_LABEL</th>
 
                 <!-- DVP -->
-                <th translate>TRANSFERER_PAY_LABEL</th>
-                <th translate>RECEIVER_PAY_LABEL</th>
+                <th translate>PAYMENT_LABEL</th>
                 <th translate>SECURITY_PAY_LABEL</th>
                 <th translate>DVP_EXTRA</th>
             </tr>
@@ -51,26 +50,30 @@
 
             <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || ctl.isInitiator(o)">
                 <!-- initiator -->
-                <th translate>{{:: ctl.getInstructionID(o, false) }}</th>
-                <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
-                <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
-                <td>{{::o.security}}</td>
-                <td>{{::o.quantity}}</td>
-                <td>{{::o.reference}}</td>
-                <td>{{::o.initiator=='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
-                <td>{{::o.instructionDate|date}}</td>
-                <td>{{::o.tradeDate|date}}</td>
-                <td class="center btn-group-vertical">
+                <th rowspan="2" translate>{{:: ctl.getInstructionID(o, false) }}</th>
+                <td translate>TRANSFERER_LABEL</td>
+                <td class="nowrap">
+                    {{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}
+                </td>
+                <td rowspan="2">{{::o.security}}</td>
+                <td rowspan="2">{{::o.quantity}}</td>
+                <td rowspan="2">{{::o.reference}}</td>
+                <td rowspan="2">{{::o.initiator=='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
+                <td rowspan="2" class="nowrap">{{::o.instructionDate|date}}</td>
+                <td rowspan="2" class="nowrap">{{::o.tradeDate|date}}</td>
+                <td rowspan="2" class="center btn-group-vertical">
                     <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
 
                     <!-- specific for initiator/admin -->
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="CANCEL_LABEL" translate-attr="{value:'CANCEL_LABEL'}"
-                           ng-show="::o.status=='initiated'" role-hide="nsd" ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
+                           ng-show="::o.status=='initiated'" role-hide="nsd"
+                           ng-click="$event.stopPropagation(); ctl.cancelInstruction(o);"/>
 
                     <input type="button" class="btn btn-small waves-effect waves-light red darken-2"
                            value="ROLLBACK_LABEL" translate-attr="{value:'ROLLBACK_LABEL'}"
-                           ng-show="::ctl.canRollback(o)" role-show="nsd" ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
+                           ng-show="::ctl.canRollback(o)" role-show="nsd"
+                           ng-click="$event.stopPropagation(); ctl.rollbackInstruction(o);"/>
 
 
                     <!-- common stuff -->
@@ -78,63 +81,124 @@
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
                        ng-click="$event.stopPropagation();"
                        download="{{::ctl.getInstructionFilename(o, o.initiator)}}"
-                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}" translate>DOWNLOAD_XML</a>
+                       href="{{::ctl.getInstructionXmlLink(o, o.initiator)}}"
+                       translate>DOWNLOAD_XML</a>
+
+
+                    <input type="button" class="btn btn-small waves-effect waves-light darken-2"
+                           value="UPLOAD_SIGNATURE" translate-attr="{value:'UPLOAD_SIGNATURE'}"
+                           ng-show="::ctl.canUploadSignature(o)" role-hide="nsd"
+                           ng-click="$event.stopPropagation(); ctl.uploadSignatureDialog(o);" />
+
+                    <a ng-show="::ctl.isSignAvailable(o, o.initiator)" role-show="nsd"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getSignFilename(o, o.initiator)}}"
+                       href="{{::ctl.getSignLink(o, o.initiator)}}"
+                       translate>DOWNLOAD_SIGNATURE</a>
 
                 </td>
-                <td ng-if="::o.initiator=='transferer'">
+                <td rowspan="2" ng-if="::o.initiator=='transferer'">
                   <span>{{::o.reasonFrom.description}}</span>
                   <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span>
                 </td>
-                <td ng-if="::o.initiator=='receiver'">
+                <td rowspan="2" ng-if="::o.initiator=='receiver'">
                   <span>{{::o.reasonTo.description}}</span>
                   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span>
                 </td>
 
                 <!-- DVP -->
-                <td class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}</td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}</td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
+                <td rowspan="2" class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">
+                    {{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}
+                </td>
+                <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
 
-                <td class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='receiver'">{{::o.additionalInformation.description}}</td>
-                <td class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='transferer'">-</td>
+                <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='receiver'">{{::o.additionalInformation.description}}</td>
+                <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='transferer'">-</td>
 
             </tr>
+            <tr class="odd-{{::$index % 2}}" ng-if="::ctl.isAdmin() || ctl.isInitiator(o)">
+                <td translate>RECEIVER_LABEL</td>
+                <td class="nowrap">
+                    {{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}
+                </td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">
+                    {{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}
+                </td>
+            </tr>
 
+            <!-- opponent -->
             <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && (ctl.isAdmin() || !ctl.isInitiator(o))">
                 <!-- second member -->
-                <th translate>{{:: ctl.getInstructionID(o, true) }}</th>
-                <td class="nowrap">{{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}</td>
-                <td class="nowrap">{{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}</td>
-                <td>{{::o.security}}</td>
-                <td>{{::o.quantity}}</td>
-                <td>{{::o.reference}}</td>
-                <td>{{::o.initiator!='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
-                <td>{{::o.instructionDate|date}}</td>
-                <td>{{::o.tradeDate|date}}</td>
-                <td class="center">
+                <th rowspan="2" translate>{{:: ctl.getInstructionID(o, true) }}</th>
+                <td translate>TRANSFERER_LABEL</td>
+                <td class="nowrap">
+                    {{::o.deponentFrom}} / {{::o.transferer.account}} / {{::o.transferer.division}}
+                </td>
+                <td rowspan="2">{{::o.security}}</td>
+                <td rowspan="2">{{::o.quantity}}</td>
+                <td rowspan="2">{{::o.reference}}</td>
+                <td rowspan="2">{{::o.initiator!='transferer' ? o.memberInstructionIdFrom : o.memberInstructionIdTo}}</td>
+                <td rowspan="2" class="nowrap">{{::o.instructionDate|date}}</td>
+                <td rowspan="2" class="nowrap">{{::o.tradeDate|date}}</td>
+                <td rowspan="2" class="center btn-group-vertical">
                     <div class="{{::ctl.getStatusClass(o.status)}}">{{::'STATUS_'+o.status|translate}}</div>
 
                     <a ng-show="::ctl.isInstructionXmlAvailable(o)"
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
                        ng-click="$event.stopPropagation();"
                        download="{{::ctl.getInstructionFilename(o, ctl.oppositeSide(o.initiator))}}"
-                       href="{{::ctl.getInstructionXmlLink(o, o.initiator, !!'inverse')}}" translate>DOWNLOAD_XML</a>
+                       href="{{::ctl.getInstructionXmlLink(o, ctl.oppositeSide(o.initiator))}}"
+                       translate>DOWNLOAD_XML</a>
 
+
+                    <input type="button" class="btn btn-small waves-effect waves-light darken-2"
+                           value="UPLOAD_SIGNATURE" translate-attr="{value:'UPLOAD_SIGNATURE'}"
+                           ng-show="::ctl.canUploadSignature(o)" role-hide="nsd"
+                           ng-click="$event.stopPropagation(); ctl.uploadSignatureDialog(o);" />
+
+
+                    <a ng-show="::ctl.isSignAvailable(o, ctl.oppositeSide(o.initiator))" role-show="nsd"
+                       type="button" class="btn btn-small waves-effect waves-light darken-2"
+                       ng-click="$event.stopPropagation();"
+                       download="{{::ctl.getSignFilename(o, ctl.oppositeSide(o.initiator))}}"
+                       href="{{::ctl.getSignLink(o, ctl.oppositeSide(o.initiator))}}"
+                       translate>DOWNLOAD_SIGNATURE</a>
+
+
+                    <a href="#" class="btn btn-small waves-effect waves-light deep-purple darken-2"
+                           ng-show="::o.status=='signed'" role-show="nsd"
+                           ng-click="$event.stopPropagation(); ctl.confirmDownloaded(o);" >
+
+                           <i class="material-icons">check</i>
+                           <span translate>CONFIRM_DOWNLOAD_SIGNATURE</span>
+                    </a>
 
                 </td>
-                <td ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
-                <td ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
+                <td rowspan="2" ng-if="::o.initiator=='receiver'">   {{::o.reasonFrom.description}} <span ng-if="::o.reasonFrom.document">{{::o.reasonFrom.document}}/{{::o.reasonFrom.created}}</span></td>
+                <td rowspan="2" ng-if="::o.initiator=='transferer'"> {{::o.reasonTo.description}}   <span ng-if="::o.reasonTo.document">{{::o.reasonTo.document}}/{{::o.reasonTo.created}}</span></td>
 
                 <!-- DVP -->
-                <td class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}</td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}</td>
-                <td class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
+                <td rowspan="2" class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">
+                    {{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}
+                </td>
+                <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
 
-                <td class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='transferer'">{{::o.additionalInformation.description}}</td>
-                <td class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='receiver'">-</td>
+                <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='transferer'">{{::o.additionalInformation.description}}</td>
+                <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp' && o.initiator=='receiver'">-</td>
 
+            </tr>
+
+            <tr class="odd-{{::$index % 2}}" ng-if="::(o.status!='initiated' && o.status!='canceled') && (ctl.isAdmin() || !ctl.isInitiator(o))">
+                <td translate>RECEIVER_LABEL</td>
+                <td class="nowrap">
+                    {{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}
+                </td>
+                <td class="nowrap" ng-if=":: o.type=='dvp'">
+                    {{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}
+                </td>
             </tr>
 
         </tbody>
@@ -507,3 +571,30 @@
   </div>
 
 </script>
+
+
+
+
+<!-- UPLOAD SIGNATURE -->
+<script type="text/ng-template" id="upload-signature.html">
+
+
+    <div id="uploadSignature" class="modal modal-tiny">
+        <div class="modal-content">
+
+            <h4 translate>UPLOAD_SIGNATURE_TITLE</h4>
+            <div class="select-box drop-box"
+            ngf-select ngf-drop ngf-drop-available="dropSupported"
+            ngf-change="$options.ctl.uploadSignature($file, $close)">
+
+                <span>Select file</span>
+                <span ng-show="dropSupported" class=""> or Drop File</span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <a href="#!" class="modal-action modal-close waves-effect btn-flat" ng-click="$close()" translate>CLOSE_LABEL</a>
+        </div>
+    </div>
+</script>
+

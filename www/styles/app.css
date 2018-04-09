@@ -313,8 +313,27 @@ td, th{
   color: gray;
 }
 
+.btn i {
+    font-size: 1.0rem;
+}
+
 
 /* hotfix for dropdown */
 .translate100y{
   transform: translate(0, -110px);
+}
+
+
+.select-box{
+  cursor: pointer;
+  font-size: 16pt;
+  color: #666;
+}
+.drop-box{
+    background: #F8F8F8;
+    border: 5px dashed #DDD;
+    min-width: 170px;
+    text-align: center;
+    padding: 50px 10px;
+    margin-left: 10px;
 }

@@ -115,6 +115,7 @@
   "RECEIVER_LABEL": "Получатель",
   "TRANSFERER_PAY_LABEL":"Реквизиты Плательщика",
   "RECEIVER_PAY_LABEL":"Реквизиты Получателя",
+  "REQUISITIES":"Реквизиты",
   "SECURITY_PAY_LABEL":"Платеж",
   "FREE_OF_PAYMENT":"Free of payment",
   "DVP_EXTRA":"Дополнительная информация",
@@ -152,5 +153,10 @@
 
   "CANCEL_INSTRUCTION_PROMPT":"Отменить сделку %s от %s?",
   "ROLLBACK_INSTRUCTION_PROMPT":"Откатить поручение %s от %s ?",
-  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?"
+  "REDEEM_INSTRUCTION_PROMPT":"Списать с балансов держателей ценной бумаги %s на счёт эмитента?",
+
+  "UPLOAD_SIGNATURE": "Загрузить подпись",
+  "UPLOAD_SIGNATURE_TITLE": "Загрузить подпись",
+  "DOWNLOAD_SIGNATURE": "Скачать подпись",
+  "CONFIRM_DOWNLOAD_SIGNATURE": "Подписи скачаны"
 }

@@ -16,7 +16,7 @@
  * @class InstructionsController
  * @ngInject
  */
-function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader) {
+function InstructionsController($scope, $q, $filter, InstructionService, BookService, UserService, DialogService, ConfigLoader, Upload) {
   "use strict";
 
   var ctrl = this;
@@ -33,6 +33,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.org = ConfigLoader.get().org;
   ctrl.account = ConfigLoader.getAccount(ctrl.org);
 
+  ctrl.uploadSignatureInstruction = null;
   /**
    * @type {boolean}
    */
@@ -112,6 +113,37 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     return instruction.initiator === 'transferer' ? ctrl.isTransferer(instruction) : ctrl.isReceiver(instruction);
   };
 
+
+  ctrl.isSignAvailable = function(instruction, side) {
+    switch ( side ) {
+      case 'transferer': return instruction.alamedaSignatureFrom;
+      case 'receiver':   return instruction.alamedaSignatureTo;
+      default: throw new Error('Unknown side: ' + side);
+    }
+  };
+
+
+
+  ctrl.getSignLink = function(instruction, side) {
+    var data;
+    switch ( side ) {
+      case 'transferer': data = instruction.alamedaSignatureFrom; break;
+      case 'receiver':   data = instruction.alamedaSignatureTo; break;
+      default: throw new Error('Unknown side: ' + side);
+    }
+    var base64data = data;
+    var isBase64 = true;
+    return 'data:application/octet-stream' + (isBase64 ? ';base64' : '' ) + ',' + base64data;
+  };
+
+
+  ctrl.getSignFilename = function(instruction, side) {
+    // return instructionFilename(instruction, side) + '.xml';
+    return instructionFilename(instruction, side) + '.sig';
+  };
+
+
+
   ctrl.isAdmin = function(){
     return ctrl.org === NSD_ROLE;
   };
@@ -124,7 +156,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       || instruction.status=='transferer-signed'
       || instruction.status=='signed'
       || instruction.status=='downloaded';
-  }
+  };
 
 
 
@@ -152,24 +184,24 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
     return 'data:application/xml' + (isBase64 ? ';base64' : '' ) + ',' + base64data;
     // return 'data:application/octet-stream;base64,' + base64data;
-  }
+  };
 
   ctrl.oppositeSide = function(side) {
     if(side == 'transferer'){
-       return 'receiver'
+       return 'receiver';
     } else if(side == 'receiver'){
-       return 'transferer'
+       return 'transferer';
     } else {
       throw new Error('Unknown instruction side: ' + side);
     }
-  }
+  };
 
   /**
    *
    */
   ctrl.getInstructionFilename = function(instruction, side) {
     return instructionFilename(instruction, side) + '.xml';
-  }
+  };
 
   /**
    *
@@ -194,7 +226,6 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
     args.unshift(filenameTemplate);
     return format.apply(null, args);
-
   }
 
   /**
@@ -253,11 +284,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
       type: 'fop',
 
 
-      transfererRequisites:{
-        bic: "044525505"
+      transfererRequisites: {
+        bic: '044525505'
       },
-      receiverRequisites:{
-        bic: "044525505"
+      receiverRequisites: {
+        bic: '044525505'
       },
       paymentCurrency: 'RUB'
 
@@ -289,11 +320,20 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
    * @param {Instruction} instruction
    * @return {boolean}
    */
-  ctrl.canRollback = function(instruction){
+  ctrl.canRollback = function(instruction) {
     return instruction.status === 'downloaded'
       || instruction.status === 'rollbackDeclined';
       // || instruction.status === 'executed'
       // || instruction.status === 'signed'
+
+  };
+
+
+  ctrl.canUploadSignature = function(instruction) {
+    return instruction.status === 'executed'
+       || instruction.status === 'transferer-signed'
+       || instruction.status === 'receiver-signed'
+       || instruction.status === 'signed';
 
   };
 
@@ -336,6 +376,10 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   };
 
 
+  ctrl.confirmDownloaded = function(instruction) {
+    return InstructionService.setDownloaded(instruction);
+  };
+
   /**
    *
    */
@@ -350,6 +394,42 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   };
 
 
+  ctrl.uploadSignatureDialog = function(instruction) {
+    ctrl.uploadSignatureInstruction = instruction;
+
+    var scope = {ctl:ctrl};
+    return DialogService.dialog('upload-signature.html', scope);
+  };
+
+
+  ctrl.uploadSignature = function($file, cb){
+    console.log('uploadSignature', $file);
+
+    // ctrl._fileToString($file)
+    ctrl.invokeInProgress = true;
+    Upload.base64DataUrl($file)
+      .then(function(base64uri){ return base64uri.replace(/^.*base64,/, ''); }) // cut data uri header
+      .then(function(base64data){
+        console.log('file data:', base64data);
+
+        cb();
+        return InstructionService.sign(ctrl.uploadSignatureInstruction, base64data);
+      })
+      .finally(function(){
+        ctrl.invokeInProgress = false;
+      });
+  };
+
+
+  ctrl._fileToString = function(file) {
+    return $q(function(resolve){
+      var reader = new FileReader();
+      reader.onload = function() {
+          resolve(reader.result);
+      };
+      reader.readAsText(file);
+    });
+  };
 
 
   /**
@@ -474,11 +554,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     var org = ConfigLoader.get().org;
     var accountConfig = ConfigLoader.get()['account-config'];
     var orgList = Object.keys(accountConfig)
-      .filter(function(a){ return a!=='nsd'})
-      .filter(function(a){ return a!==org})
-      .sort(function(a, b){ return a.localeCompare(b); })
+      .filter(function(a){ return a!=='nsd'; })
+      .filter(function(a){ return a!==org; })
+      .sort(function(a, b){ return a.localeCompare(b); });
     return orgList;
-  }
+  };
 
 
 
@@ -491,7 +571,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
     if (_prefillFrom && _prefillTo) {
       $scope.inst = ctrl.getABStub(transferSide, _prefillFrom, _prefillTo)
     }
-  }
+  };
   /**
    * @param transferSide
    * @return {Instruction}
@@ -507,11 +587,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
       transfererRequisites:{
         account: bicTransferer,
-        bic: accountConfig[orgFrom].bic[bicTransferer] || "044525505"
+        bic: accountConfig[orgFrom].bic[bicTransferer] || '044525505'
       },
       receiverRequisites:{
         account: bicReceiver,
-        bic: accountConfig[orgTo].bic[bicReceiver] || "044525505"
+        bic: accountConfig[orgTo].bic[bicReceiver] || '044525505'
       },
       paymentAmount: 30000000,
       paymentCurrency: 'RUB',
@@ -547,3 +627,4 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
 angular.module('nsd.controller.instructions', ['nsd.service.instructions'])
 .controller('InstructionsController', InstructionsController);
+

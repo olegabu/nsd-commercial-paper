@@ -32,6 +32,7 @@ angular.module('nsd.app',[
 
    'LocalStorageModule',
    'jsonFormatter',
+   'ngFileUpload',
 
    'nsd.config.env',
    'nsd.controller',

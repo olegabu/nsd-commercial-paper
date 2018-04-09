@@ -38,8 +38,8 @@ SECURITY_INIT_JSON=$(cat ./security_init.json |tr -d '\n\r ' | sed 's/"/\\"/g' |
 : ${SECURITY_INIT:='{"Args":["init","'$SECURITY_INIT_JSON'"]}'}
 
 
-network.sh -m instantiate-chaincode -o $THIS_ORG -k common -n security -I "${SECURITY_INIT}"
 network.sh -m instantiate-chaincode -o $THIS_ORG -k depository -n book -I "${BOOK_INIT}"
+network.sh -m instantiate-chaincode -o $THIS_ORG -k common -n security -I "${SECURITY_INIT}"
 
 
 echo -e $separateLine
