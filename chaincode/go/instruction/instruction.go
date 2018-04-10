@@ -256,8 +256,7 @@ func createAlamedaDvpXMLs(this *nsd.Instruction) (string, string) {
 	instructionWrapper.Initiator = this.Value.DeponentTo
 	instructionWrapper.InstructionID = this.Value.MemberInstructionIdTo
 	instructionWrapper.Reason = this.Value.ReasonTo
-	instructionWrapper.ReasonExists = (instructionWrapper.Reason.Document != "") &&
-		(instructionWrapper.Reason.Description != "") && (instructionWrapper.Reason.DocumentDate != "")
+	instructionWrapper.ReasonExists = instructionWrapper.Reason.Description != ""
 	instructionWrapper.Contragent = this.Value.DeponentFrom
 	instructionWrapper.FInstruction = "Y"
 	instructionWrapper.AdditionalInfoExists = true
