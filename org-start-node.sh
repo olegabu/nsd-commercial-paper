@@ -18,7 +18,7 @@ echo " >> Joining org $THIS_ORG to channel $biChannel"
 network.sh -m  join-channel $THIS_ORG $MAIN_ORG "$biChannel"
 
 
-./install-cc.sh
+./install-cc.sh $1
 
 
 

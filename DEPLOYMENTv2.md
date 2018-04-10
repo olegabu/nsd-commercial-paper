@@ -9,12 +9,9 @@ See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2
 ## Install prerequisites
 
 -   Clone Nsd Commercial Paper delivery packages from github:  
-`git clone -b 2018_03-PRE_RELEASE_02 --depth=1 https://github.com/Altoros/nsd-commercial-paper`  
+`git clone -b 2018_03-PRE_RELEASE_02 https://github.com/Altoros/nsd-commercial-paper`  
 `cd nsd-commercial-paper`  
 `./prerequisites-deployment.sh`
-
--	Or download NsdCommercialPaper.zip from   
-https://drive.google.com/file/d/18VFq9qxVdZIiKII2zbTY_MBFcQWiPJQ-/view?usp=sharing 
 
 
 On other Linux distros make sure these versions or higher are installed:  
@@ -219,3 +216,54 @@ channels with exisiting organizations (using organizations in `env-external-orgs
 
     ...  
     Repeat for all necessary organizations
+
+
+##Upgrade chaincode to new version
+
+Developer of blockchain (Altoros) pushes updated smart-contract code into the repository and puts the git tag of form
+`2018_03-PRE_RELEASE_XX` where may be continuous nummbering to keep a history of states which were deployed.
+
+e.g.:
+```
+git tag --force 2018_03-PRE_RELEASE_02
+git push --force origin 2018_03-PRE_RELEASE_02
+```
+Here XX equals 02.
+
+
+After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.
+
+The following step has to be done on all nodes:
+```
+cd nsd-commercial-paper
+./blockchain-upgrade.sh Y.Z XX
+```
+Here `Y.Z` defines the version new smart-contracts to be installed as. It usually has a form of "1.0", "2.0", "3.0".
+(Initial network deployment installs chaincodes with version 1.0).  
+`XX` - is the tag suffix  
+ 
+For example to upgrade network with new smart-contracts tagged with `2018_03-PRE_RELEASE_02` in github repository 
+as chaincode version 2.0 the following command have to be executed:
+   
+  - NSD:  
+       `cd nsd-commercial-paper`  
+       `source env-org-nsd` 
+       `./blockchain-upgrade.sh 2.0 02`  
+ - Sberbank:  
+       `cd nsd-commercial-paper`  
+       `source env-org-sberbank` 
+       `./blockchain-upgrade.sh 2.0 02`  
+ - MTS:  
+       `cd nsd-commercial-paper`  
+       `source env-org-mts` 
+       `./blockchain-upgrade.sh 2.0 02`  
+
+
+##Add new organization to network after smart-contracts were upgraded
+
+The starting organization script by default set the version of chaincodes to 1.0. If the whole network 
+was already upgraded to another version new organization should be upgraded to the the corrsponded version either.
+
+So after starting the organization node, and joining organization-partners the same blockchain-upgrade procedure need to be executed.
+
+Another way is to start the ./org-start-node.sh script with the parameter 
