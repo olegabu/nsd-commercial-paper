@@ -266,4 +266,6 @@ was already upgraded to another version new organization should be upgraded to t
 
 So after starting the organization node, and joining organization-partners the same blockchain-upgrade procedure need to be executed.
 
-Another way is to start the ./org-start-node.sh script with the parameter 
+(To be tested) Another way is to start the ./org-start-node.sh script with the parameter of new chaincode version, e.g:
+    `./org-start-node.sh 2.0`
+  
