@@ -17,7 +17,11 @@ import (
 
 var logger = shim.NewLogger("InstructionChaincode")
 
-const authenticationIndex = `Authentication`
+const (
+	authenticationIndex = `Authentication`
+	referenceIndex = `Reference`
+	instructionIdIndex = `InstructionId`
+)
 
 // TODO: think about making these constants public in nsd.go
 // args base lengths
@@ -378,41 +382,6 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 	return shim.Error(err)
 }
 
-func isInstructionUnique(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) (bool, error) {
-	const instructionUnique = true
-
-	it, err := stub.GetStateByPartialCompositeKey(nsd.InstructionIndex, []string{})
-	if err != nil {
-		return instructionUnique, err
-	}
-	defer it.Close()
-
-	for it.HasNext() {
-		response, err := it.Next()
-		if err != nil {
-			return instructionUnique, err
-		}
-
-		_, compositeKeyParts, err := stub.SplitCompositeKey(response.Key)
-		if err != nil {
-			return instructionUnique, err
-		}
-
-		ledgerInstruction := nsd.Instruction{}
-
-		if err := ledgerInstruction.FillFromCompositeKeyParts(compositeKeyParts); err != nil {
-			return instructionUnique, err
-		}
-
-		if ledgerInstruction.Key.Reference == instruction.Key.Reference &&
-			ledgerInstruction.Key.InstructionDate == instruction.Key.InstructionDate {
-			return !instructionUnique, nil
-		}
-	}
-
-	return instructionUnique, nil
-}
-
 func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	instruction := nsd.Instruction{}
 	if err := instruction.FillFromArgs(args); err != nil {
@@ -428,6 +397,32 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		argsOffset = len(args) - 4
 	} else { // nsd.InstructionTypeDVP
 		argsOffset = len(args) - 5
+	}
+
+	callerOrg, err := getOrganizationName(stub, instruction.Key.Receiver)
+	if err != nil {
+		return pb.Response{Status: 500, Message: "Persistence failure."}
+	}
+
+	referenceKeyParts := []string{
+		instruction.Key.Reference,
+		callerOrg,
+		instruction.Key.InstructionDate,
+		instruction.Key.TradeDate,
+	}
+	referenceKey, err := stub.CreateCompositeKey(referenceIndex, referenceKeyParts)
+	if err != nil {
+		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
+	}
+
+	instructionIdKeyParts := []string{
+		args[argsOffset + 2],
+		callerOrg,
+		instruction.Key.InstructionDate,
+	}
+	instructionIdKey, err := stub.CreateCompositeKey(instructionIdIndex, instructionIdKeyParts)
+	if err != nil {
+		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
 	}
 
 	if instruction.ExistsIn(stub) {
@@ -452,6 +447,14 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
+		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
 		return matchIf(&instruction, stub, nsd.InitiatorIsTransferer, args[argsOffset], args[argsOffset + 1])
 	} else {
 		instruction.Value.DeponentFrom = args[argsOffset]
@@ -470,18 +473,30 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			}
 		}
 
-		isUnique, err := isInstructionUnique(stub, instruction)
-		if err != nil {
+		if data, err := stub.GetState(referenceKey); err == nil && data != nil {
+			return pb.Response{Status: 400, Message: "Pair (reference, trade_date) is not unique."}
+		} else if err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
-		if !isUnique {
-			return pb.Response{Status: 400, Message: "Instruction is not unique."}
+
+		if data, err := stub.GetState(instructionIdKey); err == nil && data != nil {
+			return pb.Response{Status: 400, Message: "Instruction id is not unique."}
+		} else if err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
-
 		}
+
+		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
 		return shim.Success(nil)
 	}
 }
@@ -498,6 +513,32 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 
 	argsOffset := len(args) - 4
 
+	callerOrg, err := getOrganizationName(stub, instruction.Key.Transferer)
+	if err != nil {
+		return pb.Response{Status: 500, Message: "Persistence failure."}
+	}
+
+	referenceKeyParts := []string{
+		instruction.Key.Reference,
+		callerOrg,
+		instruction.Key.InstructionDate,
+		instruction.Key.TradeDate,
+	}
+	referenceKey, err := stub.CreateCompositeKey(referenceIndex, referenceKeyParts)
+	if err != nil {
+		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
+	}
+
+	instructionIdKeyParts := []string{
+		args[argsOffset + 2],
+		callerOrg,
+		instruction.Key.InstructionDate,
+	}
+	instructionIdKey, err := stub.CreateCompositeKey(instructionIdIndex, instructionIdKeyParts)
+	if err != nil {
+		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
+	}
+
 	if instruction.ExistsIn(stub) {
 		if err := instruction.LoadFrom(stub); err != nil {
 			return pb.Response{Status: 404, Message: "Instruction not found."}
@@ -510,8 +551,16 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
-
 		}
+
+		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
 		return matchIf(&instruction, stub, nsd.InitiatorIsReceiver, args[argsOffset], args[argsOffset + 1])
 	} else {
 		instruction.Value.DeponentFrom = args[argsOffset]
@@ -523,18 +572,30 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 400, Message: "Wrong arguments."}
 		}
 
-		isUnique, err := isInstructionUnique(stub, instruction)
-		if err != nil {
+		if data, err := stub.GetState(referenceKey); err == nil && data != nil {
+			return pb.Response{Status: 400, Message: "Pair (reference, trade_date) is not unique."}
+		} else if err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
-		if !isUnique {
-			return pb.Response{Status: 400, Message: "Instruction is not unique."}
+
+		if data, err := stub.GetState(instructionIdKey); err == nil && data != nil {
+			return pb.Response{Status: 400, Message: "Instruction id is not unique."}
+		} else if err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
 		if instruction.UpsertIn(stub) != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
-
 		}
+
+		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
 		return shim.Success(nil)
 	}
 }
@@ -602,6 +663,9 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 			instruction.Value.Status = status
 			if err := instruction.UpsertIn(stub); err != nil {
 				return pb.Response{Status: 500, Message: "Persistence failure."}
+			}
+			if err := deleteInstructionFromLedger(stub, instruction); err != nil {
+				return pb.Response{Status: 400, Message: "Deletion error: " + err.Error() + "."}
 			}
 		}
 	default:
@@ -975,6 +1039,79 @@ func (t *InstructionChaincode) getBalances(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(err.Error())
 	}
 	return shim.Success(payload)
+}
+
+func deleteInstructionFromLedger(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) error {
+	key, err := instruction.ToCompositeKey(stub)
+	if err != nil {
+		return err
+	}
+
+	if err = stub.DelState(key); err != nil {
+		return err
+	}
+
+	var initiatorBalance nsd.Balance
+	var instructionId string
+	if instruction.Value.Initiator == nsd.InitiatorIsReceiver {
+		initiatorBalance = instruction.Key.Receiver
+		instructionId = instruction.Value.MemberInstructionIdTo
+	} else { // nsd.InitiatorIsTransferer
+		initiatorBalance = instruction.Key.Transferer
+		instructionId = instruction.Value.MemberInstructionIdFrom
+	}
+
+	initiatorOrg, err := getOrganizationName(stub, initiatorBalance)
+	if err != nil {
+		return err
+	}
+
+	referenceKeyParts := []string{
+		instruction.Key.Reference,
+		initiatorOrg,
+		instruction.Key.InstructionDate,
+		instruction.Key.TradeDate,
+	}
+	referenceKey, err := stub.CreateCompositeKey(referenceIndex, referenceKeyParts)
+	if err != nil {
+		return err
+	}
+
+	if err = stub.DelState(referenceKey); err != nil {
+		return err
+	}
+
+	instructionIdKeyParts := []string{
+		instructionId,
+		initiatorOrg,
+		instruction.Key.InstructionDate,
+	}
+	instructionIdKey, err := stub.CreateCompositeKey(instructionIdIndex, instructionIdKeyParts)
+	if err != nil {
+		return err
+	}
+
+	if err = stub.DelState(instructionIdKey); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getOrganizationName(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) (string, error) {
+	keyParts := []string{callerBalance.Account, callerBalance.Division}
+
+	key, err := stub.CreateCompositeKey(authenticationIndex, keyParts)
+	if err != nil {
+		return "", err
+	}
+
+	data, err := stub.GetState(key)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
 
 func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Balance) bool {

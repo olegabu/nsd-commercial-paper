@@ -196,10 +196,12 @@ func TestInstructionChaincode_ReceiveTransfer(t *testing.T) {
 	baseRecvArgs = append(baseRecvArgs, "tr_money_acc", "tr_money_bic", "rc_money_acc", "rc_money_bic",
 		"10000.00", "RUB")
 	addRecvArgs = append(addRecvArgs, `{"description": "Additional info."}`)
+	addRecvArgs[2] = "id_to_2"
 	baseTransfArgs[len(baseTransfArgs) - 1] = "dvp"
 	baseTransfArgs[7] = "ANOTHERREF123"
 	baseTransfArgs = append(baseTransfArgs, "tr_money_acc", "tr_money_bic", "rc_money_acc", "rc_money_bic",
 		"10000.00", "RUB")
+	addTransfArgs[2] = "id_from_2"
 
 	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
 	if response.Status >= 400 {
