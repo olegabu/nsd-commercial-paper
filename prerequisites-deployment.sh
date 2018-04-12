@@ -5,6 +5,7 @@
 ###############################
 ./git-update.sh
 
+pushd ../fabric-starter
 
 ###############################
 # (re)init docker
@@ -32,3 +33,5 @@ export FABRIC_VERSION=1.1.0
 echo "--------------------------------------------"
 echo "Init fabric: $FABRIC_VERSION"
 ./init-fabric.sh
+
+popd

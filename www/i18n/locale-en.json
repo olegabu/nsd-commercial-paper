@@ -1,11 +1,11 @@
 {
   "book":{
-    "MONEY_BALANCE":"Денежные средства",
-    "PAPER_TITLE":"Ценные бумаги",
+    "MONEY_BALANCE":"Cash position",
+    "PAPER_TITLE":"Securities",
 
 
-    "NEW_BOOK_LABEL" : "Установить баланс",
-    "NEW_MONEY_LABEL" : "Установить баланс",
+    "NEW_BOOK_LABEL" : "Set Securities balance",
+    "NEW_MONEY_LABEL" : "Set Cash balance",
 
     "ACCOUNT_LABEL":"Account",
     "ACCOUNT_MONEY_LABEL":"Account"
@@ -69,6 +69,7 @@
   "ACCOUNT_LABEL": "Account",
   "SECURITY_LABEL": "Security",
   "INSTRUCTION_DETAILS": "Details",
+  "MONEY_LABEL": "Currency",
   "QUANTITY_LABEL": "Quantity",
   "CREATED_LABEL": "Created",
   "CLOSE_LABEL": "Close",
