@@ -690,7 +690,7 @@ func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account s
 	quantity int) bool {
 
 	callerIsMainOrg := certificates.GetMyOrganization() == "nsd.nsd.ru"
-	
+
 	if callerIsMainOrg {
 		byteArgs := [][]byte{}
 		byteArgs = append(byteArgs, []byte("check"))
@@ -1060,29 +1060,31 @@ func (t *InstructionChaincode) updateDownloadFlags(stub shim.ChaincodeStubInterf
 
 	party := args[len(args)-1]
 
-	if party == nsd.InitiatorIsReceiver {
-		instruction.Value.ReceiverSignatureDownloaded = true
-	} else if party == nsd.InitiatorIsTransferer {
-		instruction.Value.TransfererSignatureDownloaded = true
-	} else {
-		return pb.Response{Status: 400, Message: "Invalid party."}
-	}
 
 	if err := instruction.LoadFrom(stub); err != nil {
 		return pb.Response{Status: 404, Message: "Instruction not found."}
 	}
 
+	if party == "receiver" {
+		instruction.Value.ReceiverSignatureDownloaded = true
+	} else if party == "transferer" {
+		instruction.Value.TransfererSignatureDownloaded = true
+	} else {
+		return pb.Response{Status: 400, Message: "Invalid party."}
+	}
+
+
 	if instruction.Value.ReceiverSignatureDownloaded && instruction.Value.TransfererSignatureDownloaded &&
 		(instruction.Value.Status == nsd.InstructionSigned) {
 		instruction.Value.Status = nsd.InstructionDownloaded
+	}
 
-		if err := instruction.UpsertIn(stub); err != nil {
-			return pb.Response{Status: 500, Message: "Persistence failure."}
-		}
+	if err := instruction.UpsertIn(stub); err != nil {
+		return pb.Response{Status: 500, Message: "Persistence failure."}
+	}
 
-		if err := instruction.EmitState(stub); err != nil {
-			return pb.Response{Status: 500, Message: "Event emission failure."}
-		}
+	if err := instruction.EmitState(stub); err != nil {
+		return pb.Response{Status: 500, Message: "Event emission failure."}
 	}
 
 	return shim.Success(nil)
