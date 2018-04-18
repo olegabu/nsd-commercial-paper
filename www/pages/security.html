@@ -202,10 +202,12 @@
 
         <div class="row">
           <!-- redeem org -->
-          <div class="input-field col s2">
+          <div class="input-field col s12">
             <h5 class="nowrap" translate>SECURITY_REDEEM_TO_LABEL</h5>
           </div>
-          <div class="input-field col s5">
+        </div>
+        <div class="row">
+          <div class="input-field col s6">
             <select ng-model="security.redeem.account" name="s_r_acc" material-select watch
                     ng-options="n as n+' ('+o.org+')' for (n, o) in ctl.accounts" required></select>
             <label for="s_r_acc" translate>ACCOUNT_LABEL</label>
@@ -218,7 +220,7 @@
           </div>
           -->
 
-          <div class="input-field col s5">
+          <div class="input-field col s6">
             <select ng-model="security.redeem.division" name="s_r_div" material-select watch
                     ng-options="o for o in ctl.accounts[security.redeem.account]" required></select>
             <label for="s_r_div" translate>DIVISION_LABEL</label>
