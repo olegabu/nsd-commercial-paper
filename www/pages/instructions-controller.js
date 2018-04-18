@@ -143,6 +143,25 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   };
 
 
+  ctrl.markSignDownloaded = function(instruction, side) {
+    var defer = $q.resolve();
+    if (side == 'transferer' && !instruction.transfererSignatureDownloaded) {
+      defer = null;
+    }
+    if (side == 'receiver' && !instruction.receiverSignatureDownloaded) {
+      defer = null;
+    }
+
+    if (!defer) {
+      defer = $q.resolve()
+        .then(function(){ ctrl.invokeInProgress = false; })
+        .then(function(){
+          return InstructionService.updateDownloadFlags(instruction, side);
+        })
+        .finally(function(){ ctrl.invokeInProgress = false; })
+    }
+  };
+
 
   ctrl.isAdmin = function(){
     return ctrl.org === NSD_ROLE;

@@ -92,7 +92,7 @@
 
                     <a ng-show="::ctl.isSignAvailable(o, o.initiator)" role-show="nsd"
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
-                       ng-click="$event.stopPropagation();"
+                       ng-click="$event.stopPropagation(); ctl.markSignDownloaded(o, o.initiator)"
                        download="{{::ctl.getSignFilename(o, o.initiator)}}"
                        href="{{::ctl.getSignLink(o, o.initiator)}}"
                        translate>DOWNLOAD_SIGNATURE</a>
@@ -161,14 +161,14 @@
 
                     <a ng-show="::ctl.isSignAvailable(o, ctl.oppositeSide(o.initiator))" role-show="nsd"
                        type="button" class="btn btn-small waves-effect waves-light darken-2"
-                       ng-click="$event.stopPropagation();"
+                       ng-click="$event.stopPropagation(); ctl.markSignDownloaded(o, ctl.oppositeSide(o.initiator))"
                        download="{{::ctl.getSignFilename(o, ctl.oppositeSide(o.initiator))}}"
                        href="{{::ctl.getSignLink(o, ctl.oppositeSide(o.initiator))}}"
                        translate>DOWNLOAD_SIGNATURE</a>
 
 
                     <a href="#" class="btn btn-small waves-effect waves-light deep-purple darken-2"
-                           ng-show="::o.status=='signed'" role-show="nsd"
+                           ng-show="::o.status=='signed' && o.transfererSignatureDownloaded && o.receiverSignatureDownloaded" role-show="nsd"
                            ng-click="$event.stopPropagation(); ctl.confirmDownloaded(o);" >
 
                            <i class="material-icons">check</i>

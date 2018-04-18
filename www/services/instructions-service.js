@@ -292,6 +292,25 @@ function InstructionService(ApiService, ConfigLoader, $q, $log) {
     return ApiService.sc.invoke(channelID, chaincodeID, peers, 'status', args);
   };
 
+  /**
+   * @param {Instruction} instruction
+   * @param {'receiver'|'transferer'} transfererOrReceiver
+   */
+  InstructionService.updateDownloadFlags = function(instruction, transfererOrReceiver) {
+    $log.debug('InstructionService.updateDownloadFlags', instruction, transfererOrReceiver);
+
+    var chaincodeID = InstructionService._getChaincodeID();
+    var channelID   = InstructionService._getInstructionChannel(instruction);
+    var peers       = InstructionService._getEndorsePeers(instruction);
+    var args        = InstructionService._instructionArguments(instruction);
+
+    args.push(transfererOrReceiver);
+
+    return ApiService.sc.invoke(channelID, chaincodeID, peers, 'updateDownloadFlags', args);
+  };
+
+
+
 
   /**
    * @param {Instruction} instruction
