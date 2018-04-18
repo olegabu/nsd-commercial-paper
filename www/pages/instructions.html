@@ -304,9 +304,10 @@
         </div>
         <div class="row">
           <div class="input-field col s6">
-            <input name="i_security" type="text" class="uppercase" ng-model="inst.security" required ng-length="12">
+            <input name="i_security" type="text" class="uppercase" ng-model="inst.security" required ng-length="12" ng-pattern="/^[\w\d]*$/">
             <label for="i_security" translate>SECURITY_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_security.$error.length" translate>12_CHARACTERS_LABEL</span>
+            <span class="input-error-message" ng-show="formInstruction.i_security.$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+            <span class="input-error-message" ng-show="!formInstruction.i_security.$error.pattern && formInstruction.i_security.$error.length" translate>12_CHARACTERS_LABEL</span>
           </div>
           <div class="input-field col s6">
             <input name="i_quantity" type="number" min="0" class="" ng-model="inst.quantity" required>
@@ -319,14 +320,16 @@
         </div>
         <div class="row">
           <div class="input-field col s6">
-            <input name="i_reference" type="text" class="" ng-model="inst.reference" ng-maxlength="16" required>
+            <input name="i_reference" type="text" class="uppercase" ng-model="inst.reference" ng-maxlength="16" ng-pattern="/^[\w\d]*$/" required>
             <label for="i_reference" translate>REFERENCE_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_reference.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
+            <span class="input-error-message" ng-show="formInstruction.i_reference.$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+            <span class="input-error-message" ng-show="!formInstruction.i_reference.$error.pattern && formInstruction.i_reference.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
           </div>
           <div class="input-field col s6">
-            <input name="i_miid" id="i_miid" type="text" class="" ng-model="inst.memberInstructionId" ng-maxlength="16" required>
+            <input name="i_miid" id="i_miid" type="text" class="" ng-model="inst.memberInstructionId" ng-maxlength="16" ng-pattern="/^[\w\d ]*$/" required>
             <label for="i_miid" translate>INSTRUCTION_ID_LABEL</label>
-            <span class="input-error-message" ng-show="formInstruction.i_miid.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
+            <span class="input-error-message" ng-show="formInstruction.i_miid.$error.pattern" translate>ONLY_CHAR_DIGIT_SPACE_LABEL</span>
+            <span class="input-error-message" ng-show="!formInstruction.i_miid.$error.pattern && formInstruction.i_miid.$error.maxlength" translate>MAX_16_CHARACTERS_LABEL</span>
           </div>
         </div>
         <div class="row">
@@ -454,9 +457,10 @@
 
       <div class="row">
         <div class="input-field col s12">
-          <input name="r_security" type="text" class="" ng-model="redemption.security" required ng-length="12">
+          <input name="r_security" type="text" class="uppercase" ng-model="redemption.security" required ng-length="12" ng-pattern="/^[\w\d]*$/">
           <label for="r_security" translate>SECURITY_LABEL</label>
-          <span class="input-error-message" ng-show="formRedemption.r_security.$error.length" translate>12_CHARACTERS_LABEL</span>
+          <span class="input-error-message" ng-show="formRedemption.r_security.$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+          <span class="input-error-message" ng-show="!formRedemption.r_security.$error.pattern && formRedemption.r_security.$error.length" translate>12_CHARACTERS_LABEL</span>
         </div>
       </div>
 

@@ -156,10 +156,10 @@
 
         <div class="row">
           <div class="input-field col s12">
-            <input name="s_security" type="text" class="uppercase" ng-model="security.security" required ng-length="12" ng-pattern="'^[a-zA-Z0-9]+$'">
+            <input name="s_security" type="text" class="uppercase" ng-model="security.security" required ng-length="12" ng-pattern="/^[\w\d]*$/">
             <label for="s_security" translate>SECURITY_LABEL</label>
-            <span class="input-error-message" ng-show="securityForm.s_security.$error.length" translate>12_CHARACTERS_LABEL</span>
-            <span class="input-error-message" ng-show="securityForm.s_security.$error.pattern && !securityForm.s_security.$error.length" translate>INVALID_CHARACTERS</span>
+            <span class="input-error-message" ng-show="securityForm.s_security.$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+            <span class="input-error-message" ng-show="!securityForm.s_security.$error.pattern && securityForm.s_security.$error.length" translate>12_CHARACTERS_LABEL</span>
           </div>
         </div>
         <div class="row" hidden>

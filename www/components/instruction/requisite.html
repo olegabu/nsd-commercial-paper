@@ -8,9 +8,11 @@
 <!-- deponent -->
 <div class="input-field col s3">
     <i class="material-icons postfix" ng-if="deponentLock">lock</i>
-    <input name="deponent_{{::componentId}}" id="deponent_{{::componentId}}" type="text" class="uppercase locked" ng-model="requsite.deponent" ng-disabled="deponentLock" required ng-length="12">
+    <input name="deponent_{{::componentId}}" id="deponent_{{::componentId}}"
+        type="text" class="uppercase locked" ng-model="requsite.deponent" ng-disabled="deponentLock" required ng-length="12" ng-pattern="/^[\w\d]*$/">
     <label for="deponent_{{::componentId}}" translate>DEPONENT_LABEL</label>
-    <span class="input-error-message" ng-show="form['deponent_'+componentId].$error.length" translate>12_CHARACTERS_LABEL</span>
+    <span class="input-error-message" ng-show="form['deponent_'+componentId].$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+    <span class="input-error-message" ng-show="!form['deponent_'+componentId].$error.pattern && form['deponent_'+componentId].$error.length" translate>12_CHARACTERS_LABEL</span>
 </div>
 
 <!-- account -->
@@ -23,9 +25,10 @@
 </div>
 <div class="input-field col s3" ng-if="!deponentLock">
     <input name="account_input_{{::componentId}}" id="account_input_{{::componentId}}"
-           type="text" class="uppercase" ng-model="requsite.account" required ng-length="12">
+           type="text" class="uppercase" ng-model="requsite.account" required ng-length="12" ng-pattern="/^[\w\d]*$/">
     <label for="account_input_{{::componentId}}" translate>ACCOUNT_LABEL</label>
-    <span class="input-error-message" ng-show="form['account_input_'+componentId].$error.length" translate>12_CHARACTERS_LABEL</span>
+    <span class="input-error-message" ng-show="form['account_input_'+componentId].$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+    <span class="input-error-message" ng-show="!form['account_input_'+componentId].$error.pattern && form['account_input_'+componentId].$error.length" translate>12_CHARACTERS_LABEL</span>
 </div>
 
 <!-- division -->
@@ -37,7 +40,9 @@
     <label for="division_select_{{::componentId}}" translate>DIVISION_LABEL</label>
 </div>
 <div class="input-field col s4" ng-if="!deponentLock">
-    <input name="division_input_{{::componentId}}" id="division_input_{{::componentId}}" type="text" class="uppercase" ng-model="requsite.division" required ng-length="17">
+    <input name="division_input_{{::componentId}}" id="division_input_{{::componentId}}"
+    type="text" class="uppercase" ng-model="requsite.division" required ng-length="17" ng-pattern="/^[\w\d]*$/">
     <label for="division_input_{{::componentId}}" translate>DIVISION_LABEL</label>
-    <span class="input-error-message" ng-show="form['division_input_'+componentId].$error.length" translate>17_CHARACTERS_LABEL</span>
+    <span class="input-error-message" ng-show="form['division_input_'+componentId].$error.pattern" translate>ONLY_CHAR_DIGIT_LABEL</span>
+    <span class="input-error-message" ng-show="!form['division_input_'+componentId].$error.pattern && form['division_input_'+componentId].$error.length" translate>17_CHARACTERS_LABEL</span>
 </div>
