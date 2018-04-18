@@ -110,7 +110,7 @@
                 <!-- DVP -->
                 <td rowspan="2" class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
                 <td class="nowrap" ng-if=":: o.type=='dvp'">
-                    {{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}
+                    {{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}
                 </td>
                 <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
 
@@ -124,7 +124,7 @@
                     {{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}
                 </td>
                 <td class="nowrap" ng-if=":: o.type=='dvp'">
-                    {{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}
+                    {{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}
                 </td>
             </tr>
 
@@ -182,7 +182,7 @@
                 <!-- DVP -->
                 <td rowspan="2" class="nowrap gray" ng-if=":: o.type!='dvp'" colspan="4"><i translate>FREE_OF_PAYMENT</i></td>
                 <td class="nowrap" ng-if=":: o.type=='dvp'">
-                    {{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}
+                    {{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}
                 </td>
                 <td rowspan="2" class="nowrap" ng-if=":: o.type=='dvp'">{{::o.paymentAmount}} {{::o.paymentCurrency}}</td>
 
@@ -197,7 +197,7 @@
                     {{::o.deponentTo}}   / {{::o.receiver.account}}   / {{::o.receiver.division}}
                 </td>
                 <td class="nowrap" ng-if=":: o.type=='dvp'">
-                    {{::o.receiverRequisites.account}}   / {{::o.receiverRequisites.bic}}
+                    {{::o.transfererRequisites.account}} / {{::o.transfererRequisites.bic}}
                 </td>
             </tr>
 
@@ -591,7 +591,7 @@
             ngf-select ngf-drop ngf-drop-available="dropSupported"
             ngf-change="$options.ctl.uploadSignature($file, $close)">
 
-                <span>Select file</span>
+                <span><u>Select</u> file</span>
                 <span ng-show="dropSupported" class=""> or Drop File</span>
             </div>
         </div>
