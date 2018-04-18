@@ -3,10 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "LZXuXgtSa78K/c26uWaTcsCxXLU=",
+			"checksumSHA1": "RW7TdyDIPWNDcsOeO2D20B6kH5Q=",
 			"path": "github.com/Altoros/nsd-commercial-paper-common",
-			"revision": "b537b4be78e4513af6e9a65233fbb0fafe336118",
-			"revisionTime": "2018-04-03T12:28:32Z"
+			"revision": "7a4ce447b6d688449b49bcf17c8c9fffe4da5f85",
+			"revisionTime": "2018-04-18T13:19:55Z"
 		},
 		{
 			"checksumSHA1": "9KhZdRKNZWm0olfeNkach8AXT4g=",

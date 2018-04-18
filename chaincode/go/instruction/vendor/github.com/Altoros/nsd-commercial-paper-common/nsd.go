@@ -80,20 +80,22 @@ type InstructionKey struct {
 }
 
 type InstructionValue struct {
-	DeponentFrom            string `json:"deponentFrom"`
-	DeponentTo              string `json:"deponentTo"`
-	Status                  string `json:"status"`
-	StatusInfo              string `json:"statusInfo"`
-	Initiator               string `json:"initiator"`
-	MemberInstructionIdFrom string `json:"memberInstructionIdFrom"`
-	MemberInstructionIdTo   string `json:"memberInstructionIdTo"`
-	ReasonFrom              Reason `json:"reasonFrom"`
-	ReasonTo                Reason `json:"reasonTo"`
-	AlamedaFrom             string `json:"alamedaFrom"`
-	AlamedaTo               string `json:"alamedaTo"`
-	AlamedaSignatureFrom    string `json:"alamedaSignatureFrom"`
-	AlamedaSignatureTo      string `json:"alamedaSignatureTo"`
-	AdditionalInformation   Reason `json:"additionalInformation"`
+	DeponentFrom                  string `json:"deponentFrom"`
+	DeponentTo                    string `json:"deponentTo"`
+	Status                        string `json:"status"`
+	StatusInfo                    string `json:"statusInfo"`
+	Initiator                     string `json:"initiator"`
+	MemberInstructionIdFrom       string `json:"memberInstructionIdFrom"`
+	MemberInstructionIdTo         string `json:"memberInstructionIdTo"`
+	ReasonFrom                    Reason `json:"reasonFrom"`
+	ReasonTo                      Reason `json:"reasonTo"`
+	AlamedaFrom                   string `json:"alamedaFrom"`
+	AlamedaTo                     string `json:"alamedaTo"`
+	AlamedaSignatureFrom          string `json:"alamedaSignatureFrom"`
+	AlamedaSignatureTo            string `json:"alamedaSignatureTo"`
+	ReceiverSignatureDownloaded   bool   `json:"receiverSignatureDownloaded"`
+	TransfererSignatureDownloaded bool   `json:"transfererSignatureDownloaded"`
+	AdditionalInformation         Reason `json:"additionalInformation"`
 }
 
 type Balance struct {
