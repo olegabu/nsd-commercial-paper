@@ -115,6 +115,14 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
 
   ctrl.isSignAvailable = function(instruction, side) {
+    var showSignStatuses = instruction.status=='executed'
+      || instruction.status=='receiver-signed'
+      || instruction.status=='transferer-signed'
+      || instruction.status=='signed'
+      || instruction.status=='downloaded';
+
+    if (!showSignStatuses) { return false; }
+
     switch ( side ) {
       case 'transferer': return instruction.alamedaSignatureFrom;
       case 'receiver':   return instruction.alamedaSignatureTo;
