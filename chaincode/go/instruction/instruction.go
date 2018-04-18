@@ -375,9 +375,16 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		}
 		return t.getBalances(stub, args)
 	}
+	if function == "updateDownloadFlags" {
+		if len(args) < fopArgsLength + 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.updateDownloadFlags(stub, args)
+	}
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, query, " +
-		"queryByType, history, status, sign, rollback, addBalances, removeBalances, getBalances. But got: %v", function)
+		"queryByType, history, status, sign, rollback, addBalances, removeBalances, getBalances, updateDownloadFlags." +
+		" But got: %v", function)
 	logger.Error(err)
 	return shim.Error(err)
 }
@@ -1039,6 +1046,46 @@ func (t *InstructionChaincode) getBalances(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(err.Error())
 	}
 	return shim.Success(payload)
+}
+func (t *InstructionChaincode) updateDownloadFlags(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	callerIsMainOrg := certificates.GetCreatorOrganization(stub) == "nsd.nsd.ru"
+	if !callerIsMainOrg {
+		return pb.Response{Status: 403, Message: "Download flags can be changed only by main organization."}
+	}
+
+	instruction := nsd.Instruction{}
+	if err := instruction.FillFromArgs(args); err != nil {
+		return pb.Response{Status: 400, Message: "cannot initialize instruction from args"}
+	}
+
+	party := args[len(args)-1]
+
+	if party == nsd.InitiatorIsReceiver {
+		instruction.Value.ReceiverSignatureDownloaded = true
+	} else if party == nsd.InitiatorIsTransferer {
+		instruction.Value.TransfererSignatureDownloaded = true
+	} else {
+		return pb.Response{Status: 400, Message: "Invalid party."}
+	}
+
+	if err := instruction.LoadFrom(stub); err != nil {
+		return pb.Response{Status: 404, Message: "Instruction not found."}
+	}
+
+	if instruction.Value.ReceiverSignatureDownloaded && instruction.Value.TransfererSignatureDownloaded &&
+		(instruction.Value.Status == nsd.InstructionSigned) {
+		instruction.Value.Status = nsd.InstructionDownloaded
+
+		if err := instruction.UpsertIn(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Persistence failure."}
+		}
+
+		if err := instruction.EmitState(stub); err != nil {
+			return pb.Response{Status: 500, Message: "Event emission failure."}
+		}
+	}
+
+	return shim.Success(nil)
 }
 
 func deleteInstructionFromLedger(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) error {
