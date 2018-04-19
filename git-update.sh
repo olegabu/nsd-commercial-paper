@@ -24,7 +24,9 @@ pushd ..
 
 echo "--------------------------------------------"
 echo "----  Clone fabric-starter"
-#git clone --branch $FABRIC_STARTER_TAG https://github.com/olegabu/fabric-starter
+if [ ! -d "fabric-starter" ]; then
+    git clone --branch $FABRIC_STARTER_TAG https://github.com/olegabu/fabric-starter
+fi
 
 #echo "--------------------------------------------"
 #echo "----  Clone nsd-commercial-paper-client"
