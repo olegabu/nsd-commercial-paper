@@ -104,8 +104,13 @@ After that the main org (NSD) starts the blockchain network, adds the members on
 	`./main-register-new-org.sh $ORG3 $IP3`  
 
 *Note, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
-This list is used to automatically create tri-lateral channel with new organization being added.   
+This list is used to automatically create tri-lateral channels with the new organization which is being added.   
 This list may be adjusted manually in the file to control trilateral channels creation.*
+
+If you are going to modify\adjust the list of existing organizations make sure you created a backup copy of the file 
+while all organizations are still in list. This file is also used during the smart-contract version upgrade process and this process 
+should preferably be perfromed for all organizations, so smart-contract for all bi-lateral and tri-lateral channels are upgraded.
+In the other case the rest smart-contracts will have to be upgraded manually, which might be time-consuming process.       
 
 The first script `./main-start-org.sh` does several things. It's intended to be run ob a main node so it generates crypto material 
 for the main organization as well as for the orderer. Then starts orderer and the main organization's blockchain components.
@@ -115,9 +120,9 @@ The subsequent two scripts register new organizations in the blockchain, create 
 and install\instantiate the `position` chaincode there.  
 
 As it was mentioned the list of registered organizations is also adjusted. 
-It's stored in file `env-external-orgs-list` and new organization is automatically added to the list by this script. 
-If there is one ore more organizations in the list (except `nsd`) 
-the tri-lateral channels with newly registered organization are automatically created.
+It's stored in file `env-external-orgs-list` and new organizations are automatically added to the list by this script. 
+If the list contains one or more organizations (except `nsd`) 
+the tri-lateral channels with newly registered organization will be automatically created.
 
 *Note: Before register new org adjust the file `instruction_init.json` and add requisites of new org there*
 
@@ -134,7 +139,7 @@ The `./org-start-node.sh` script is intended to be ran on member organizations n
 it starts blockchain components (again based on the environment loaded on the previous steps) and join the organization 
 to the `common` channel as well as bilateral channel with nsd `nsd-<this_org>`   
 
-Now newly started members join each other:
+Now newly started members need to join each other:
 
 6.	Sberbank:  
 	`./org-join-org.sh $ORG3 $IP3`
@@ -145,24 +150,6 @@ Now newly started members join each other:
 This script join an organization to another organization which parameters (name and IP address) are specified. 
 then it joins the org to the tri-lateral channel with the `nsd` and the specified org. 
 Finally it adds the ip address and network configuration information to the connectivity components     
-
-
-Next start Commercial paper client:
-
-8.	On all orgs:  
-	`cd nsd-commercial-paper-client`  
-	`./network.sh –m install`  
-	`./network.sh –m up`
-
-In case you don't have access to `http://npmjs.com` the second step `./network.sh –m install` will show errors. 
-This might be reolved by manually unzipping a package of `node-modules` directory which should be placed 
-into `nsd-commercial-paper-client` directory. 
-https://drive.google.com/file/d/17hCa7yD4eHpCBEzyOqU_Mpo2N_QLNoGy/view?usp=sharing
-
-Then just execute the third command `./network.sh –m up`
-
-
-Commercial Paper client provides functionality for downloading the result xml and uploading the sign of the xml back to the system.  
 
 
 # Adding new organization
@@ -186,8 +173,11 @@ To add new organization into the network the following steps need to performed:
 4) On NSD server configure the initialization configuration for *instruction* chaincode:  
     edit `instruction_init.json` (add new organization account information)
     
-5) Register new organization in blockchain, automatically creating bi-lateral and tri-lateral 
-channels with exisiting organizations (using organizations in `env-external-orgs-list`):  
+5) Register new organization in blockchain. Note bi-lateral and tri-lateral 
+channels will be automatically created using the list of existing organizations (in the file `env-external-orgs-list`). 
+This list can be modified accordingly if no all tri-lateral channels need to be created. But make sure to have a backup 
+of the file with the complete list (see notes to the item 3 in the *Deployment* section).  
+
     Nsd:  
     `./main-register-new-org.sh neworgname <neworg_ip>`
 
@@ -218,10 +208,15 @@ channels with exisiting organizations (using organizations in `env-external-orgs
     Repeat for all necessary organizations
 
 
-##Upgrade chaincode to new version
+##Upgrade smart-contracts to new versions
 
-Developer of blockchain (Altoros) pushes updated smart-contract code into the repository and puts the git tag of form
-`2018_03-PRE_RELEASE_XX` where may be continuous nummbering to keep a history of states which were deployed.
+``` 
+    Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
+    List if channels is based on the organizations attached to the network. So before performing the upgrade it's highly 
+    recommended to restore from a backup the file `env-external-orgs-list` with the full list of organizations.      
+```
+Developer of blockchain (Altoros) pushes updated smart-contracts code into the repository and puts the git tag of form
+`2018_03-PRE_RELEASE_XX` where `XX` is a numbering sequence to keep a history of smart-contract which were deployed.
 
 e.g.:
 ```
@@ -231,14 +226,19 @@ git push --force origin 2018_03-PRE_RELEASE_02
 Here XX equals 02.
 
 
-After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.
+```
+After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.  
+To perform the upgrade network administrators select a unique label for the next version which should be identical on each 
+organization for current upgrade. It is usually versioning numbers sequence in a form of "1.0", "2.0", "3.0", but it might be 
+any label.
+```   
 
 The following step has to be done on all nodes:
 ```
 cd nsd-commercial-paper
 ./blockchain-upgrade.sh Y.Z XX
 ```
-Here `Y.Z` defines the version new smart-contracts to be installed as. It usually has a form of "1.0", "2.0", "3.0".
+Here `Y.Z` defines the version label with which new smart-contracts will be installed. 
 (Initial network deployment installs chaincodes with version 1.0).  
 `XX` - is the tag suffix  
  
@@ -262,10 +262,9 @@ as chaincode version 2.0 the following command have to be executed:
 ##Add new organization to network after smart-contracts were upgraded
 
 The starting organization script by default set the version of chaincodes to 1.0. If the whole network 
-was already upgraded to another version new organization should be upgraded to the the corrsponded version either.
+was already upgraded to another version new organization should be upgraded to the the corresponded version either.
 
 So after starting the organization node, and joining organization-partners the same blockchain-upgrade procedure need to be executed.
 
-(To be tested) Another way is to start the ./org-start-node.sh script with the parameter of new chaincode version, e.g:
-    `./org-start-node.sh 2.0`
+
   
