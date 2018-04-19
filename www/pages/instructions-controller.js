@@ -37,7 +37,7 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   /**
    * @type {boolean}
    */
-  ctrl.test = true;
+  ctrl.test = ConfigLoader.get().dev;
 
 
 
