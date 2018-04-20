@@ -383,6 +383,19 @@ func (t *InstructionChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		}
 		return t.updateDownloadFlags(stub, args)
 	}
+	if function == "checkCaller" {
+		if len(args) < 0 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.checkCaller(stub, args)
+	}
+	if function == "queryByIndex" {
+		if len(args) < 1 {
+			return pb.Response{Status: 400, Message: "Incorrect number of arguments."}
+		}
+		return t.queryByIndex(stub, args)
+	}
+
 
 	err := fmt.Sprintf("Unknown function, check the first argument, must be one of: receive, transfer, query, " +
 		"queryByType, history, status, sign, rollback, addBalances, removeBalances, getBalances, updateDownloadFlags." +
@@ -1097,6 +1110,35 @@ func (t *InstructionChaincode) updateDownloadFlags(stub shim.ChaincodeStubInterf
 	}
 
 	return shim.Success(nil)
+}
+func (t *InstructionChaincode) checkCaller(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	_, err := isCallerMainOrg(stub)
+	if err != nil {
+		return pb.Response{Status: 400, Message: err.Error()}
+	}
+
+	return shim.Success(nil)
+}
+func (t *InstructionChaincode) queryByIndex(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	index := args[0]
+
+	it, err := stub.GetStateByPartialCompositeKey(index, []string{})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer it.Close()
+
+	values := []string{}
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		values = append(values, response.Key)
+	}
+
+	return shim.Success([]byte(strings.Join(values, ", ")))
 }
 
 func deleteInstructionFromLedger(stub shim.ChaincodeStubInterface, instruction nsd.Instruction) error {
