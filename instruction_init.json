@@ -10,40 +10,9 @@
       {
         "account": "40701810800001000033",
         "division": "044583505"
-      },
-      {
-        "account": "TL3000000000",
-        "division": "70000000000000DVP"
-      },
-
-      {
-        "account": "TL3000000000",
-        "division": "22000000000000000"
-      },
-
-      {
-        "account": "TL3000000000",
-        "division": "19000000000000000"
-      },
-
-      {
-        "account": "40701810000000003000",
-        "division": "044525505"
-      },
-      {
-        "account": "40701810000000002000",
-        "division": "044525505"
-      },
-      {
-        "account": "40701810000000004000",
-        "division": "044525505"
       }
-
-
     ]
   },
-
-
   {
     "organization": "mts.nsd.ru",
     "deponent": "MS0241300000",
@@ -53,40 +22,12 @@
         "division": "00000000000000000"
       },
       {
+        "account": "MS1712180049",
+        "division": "22000000000000000"
+      },
+      {
         "account": "30109810200000000000",
         "division": "044525505"
-      },
-      {
-        "account": "TL2000000000",
-        "division": "19000000000000000"
-      },
-      {
-        "account": "TL2000000000",
-        "division": "22000000000000000"
-      }
-    ]
-  },
-  {
-    "organization": "megafon.nsd.ru",
-    "deponent": "MSMMMMM00000",
-    "balances": [
-      {
-        "account": "TL5000000000",
-        "division": "70000000000000DVP"
-      },
-      {
-        "account": "40701810000000009000",
-        "division": "044525505"
-      }
-    ]
-  },
-  {
-    "organization": "raiffeisen.nsd.ru",
-    "deponent": "MSFFFFF00000",
-    "balances": [
-      {
-        "account": "TL6000000000",
-        "division": "70000000000000DVP"
       }
     ]
   }
