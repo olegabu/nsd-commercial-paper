@@ -471,11 +471,11 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+		if err := stub.PutState(referenceKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+		if err := stub.PutState(instructionIdKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
@@ -513,11 +513,11 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+		if err := stub.PutState(referenceKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+		if err := stub.PutState(instructionIdKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
@@ -579,11 +579,11 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+		if err := stub.PutState(referenceKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+		if err := stub.PutState(instructionIdKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
@@ -614,11 +614,11 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(referenceKey, []byte{}); err != nil {
+		if err := stub.PutState(referenceKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
-		if err := stub.PutState(instructionIdKey, []byte{}); err != nil {
+		if err := stub.PutState(instructionIdKey, []byte("true")); err != nil {
 			return pb.Response{Status: 500, Message: "Persistence failure."}
 		}
 
