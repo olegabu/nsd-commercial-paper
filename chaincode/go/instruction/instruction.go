@@ -419,6 +419,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		instruction.Key.InstructionDate,
 		instruction.Key.TradeDate,
 	}
+	logger.Info("########### Reference key parts: " + strings.Join(referenceKeyParts, ", ") + " ###########")
 	referenceKey, err := stub.CreateCompositeKey(referenceIndex, referenceKeyParts)
 	if err != nil {
 		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
@@ -429,6 +430,7 @@ func (t *InstructionChaincode) receive(stub shim.ChaincodeStubInterface, args []
 		callerOrg,
 		instruction.Key.InstructionDate,
 	}
+	logger.Info("########### Instruction id key parts: " + strings.Join(instructionIdKeyParts, ", ") + " ###########")
 	instructionIdKey, err := stub.CreateCompositeKey(instructionIdIndex, instructionIdKeyParts)
 	if err != nil {
 		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
@@ -533,6 +535,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		instruction.Key.InstructionDate,
 		instruction.Key.TradeDate,
 	}
+	logger.Info("########### Reference key parts: " + strings.Join(referenceKeyParts, ", ") + " ###########")
 	referenceKey, err := stub.CreateCompositeKey(referenceIndex, referenceKeyParts)
 	if err != nil {
 		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
@@ -543,6 +546,7 @@ func (t *InstructionChaincode) transfer(stub shim.ChaincodeStubInterface, args [
 		callerOrg,
 		instruction.Key.InstructionDate,
 	}
+	logger.Info("########### Instruction id key parts: " + strings.Join(instructionIdKeyParts, ", ") + " ###########")
 	instructionIdKey, err := stub.CreateCompositeKey(instructionIdIndex, instructionIdKeyParts)
 	if err != nil {
 		return pb.Response{Status: 400, Message: "Composite referenceKey creation error."}
