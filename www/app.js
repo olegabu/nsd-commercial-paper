@@ -338,6 +338,12 @@ angular.module('nsd.app',[
     }
 
 
+    window.dev = function(isDev) {
+      _config.dev = (typeof isDev == 'undefined' ? true : isDev);
+      return _config.dev;
+    };
+
+
     /**
      * add getOrgs() to netConfig
      * add getPeers(orgId:string) to netConfig
@@ -532,8 +538,8 @@ angular.module('nsd.app',[
       getAllBics : getAllBics,
 
       getOrgByAccountDivision : getOrgByAccountDivision,
-      getOrgByDepcode:getOrgByDepcode,
-      getOrgPeerIds:getOrgPeerIds,
+      getOrgByDepcode : getOrgByDepcode,
+      getOrgPeerIds   : getOrgPeerIds,
       get:function(){ return _config; }
     };
 })
