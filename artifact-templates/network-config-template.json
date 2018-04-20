@@ -9,6 +9,8 @@
 		"ORG1"
 	],
 
+	"dev": "DEV_DEPLOYMENT",
+
 	"network-config": {
 		"orderer": {
 			"url": "grpcs://orderer.DOMAIN:7050",
