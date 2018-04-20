@@ -190,6 +190,11 @@ input.locked:disabled{
   margin-top: 4px;
 }
 
+.btn-group-vertical .btn {
+  display: block;
+  width: 100%;
+}
+
 /*
 .ng-invalid{ outline: 1px solid red !important; }
 .ng-valid{ outline: 1px solid green !important; }
