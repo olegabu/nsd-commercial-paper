@@ -19,6 +19,12 @@
 			"path": "github.com/Altoros/nsd-commercial-paper-common/testutils",
 			"revision": "acd3d65a66c3fedca44c2e1c39ff66643e4d6e49",
 			"revisionTime": "2018-04-05T11:44:48Z"
+		},
+		{
+			"checksumSHA1": "WX1+2gktHcBmE9MGwFSGs7oqexU=",
+			"path": "github.com/golang/protobuf/proto",
+			"revision": "bbd03ef6da3a115852eaf24c8a1c46aeb39aa175",
+			"revisionTime": "2018-02-02T18:43:18Z"
 		}
 	],
 	"rootPath": "github.com/Altoros/nsd-commercial-paper/chaincode/go/instruction"

@@ -13,6 +13,8 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/Altoros/nsd-commercial-paper-common"
 	"github.com/Altoros/nsd-commercial-paper-common/certificates"
+	"errors"
+	"github.com/golang/protobuf/proto"
 )
 
 var logger = shim.NewLogger("InstructionChaincode")
@@ -689,7 +691,10 @@ func (t *InstructionChaincode) status(stub shim.ChaincodeStubInterface, args []s
 func (t *InstructionChaincode) check(stub shim.ChaincodeStubInterface, account string, division string, security string,
 	quantity int) bool {
 
-	callerIsMainOrg := certificates.GetMyOrganization() == "nsd.nsd.ru"
+	callerIsMainOrg, err := isCallerMainOrg(stub)
+	if err != nil {
+		logger.Debugf("Error during \"isCallerMainOrg\" call: %s", err.Error())
+	}
 
 	if callerIsMainOrg {
 		byteArgs := [][]byte{}
@@ -1171,6 +1176,37 @@ func authenticateCaller(stub shim.ChaincodeStubInterface, callerBalance nsd.Bala
 		}
 	}
 	return false
+}
+
+func isCallerMainOrg(stub shim.ChaincodeStubInterface) (bool, error) {
+	isCallerMainOrg := false
+
+	rs := stub.InvokeChaincode("cscc", [][]byte{[]byte("GetChannels")}, "")
+	if rs.Status >= 400 {
+		return isCallerMainOrg, errors.New("Error during invocation of \"cscc\": " + rs.Message)
+	}
+
+	cqr := pb.ChannelQueryResponse{}
+	if err := proto.Unmarshal(rs.Payload, &cqr); err != nil {
+		return isCallerMainOrg, err
+	}
+
+	for _, channelInfo := range cqr.GetChannels() {
+		if channelInfo.GetChannelId() == "depository" {
+			rs = stub.InvokeChaincode("book", [][]byte{[]byte("mainOrg")}, "depository")
+			if rs.Status >= 400 {
+				return isCallerMainOrg, errors.New("Error during invocation of \"book\": " + rs.Message)
+			}
+
+			if certificates.GetCreatorOrganization(stub) == string(rs.Payload) {
+				isCallerMainOrg = true
+			}
+
+			break
+		}
+	}
+
+	return isCallerMainOrg, nil
 }
 
 // **** main method **** //
