@@ -404,7 +404,11 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
 
 
   ctrl.confirmDownloaded = function(instruction) {
-    return InstructionService.setDownloaded(instruction);
+    ctrl.invokeInProgress = true;
+    return InstructionService.setDownloaded(instruction)
+            .finally(function(){
+              ctrl.invokeInProgress = false;
+            });
   };
 
   /**
@@ -432,13 +436,25 @@ function InstructionsController($scope, $q, $filter, InstructionService, BookSer
   ctrl.uploadSignature = function($file, cb){
     console.log('uploadSignature', $file);
 
+    if (!$file) {
+      return;
+    }
+
     // ctrl._fileToString($file)
     ctrl.invokeInProgress = true;
     Upload.base64DataUrl($file)
-      .then(function(base64uri){ return base64uri.replace(/^.*base64,/, ''); }) // cut data uri header
+      .then(function(base64uri){
+        if (base64uri == 'data:') {
+          // empty file was chosen
+          throw new Error('File is empty');
+        }
+        return base64uri;
+      })
+      // remove mime type
+      // leave pure base64 data
+      .then(function(base64uri){ return base64uri.replace(/^.*base64,/, ''); })
       .then(function(base64data){
         console.log('file data:', base64data);
-
         cb();
         return InstructionService.sign(ctrl.uploadSignatureInstruction, base64data);
       })
