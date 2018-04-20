@@ -247,6 +247,49 @@ func TestInstructionChaincode_ReceiveTransfer(t *testing.T) {
 	}
 }
 
+func TestDuplicates(t *testing.T) {
+	stub := getInitializedStub(t)
+
+	var response pb.Response
+
+	baseRecvArgs := []string{"receive", "MZ0987654321", "19000000000000000", "30109810000000000000", "044525505",
+		"RU000A0JVVB5", "500", "SOMEREF123", "2018-03-29", "2018-03-29", "dvp", "tr_money_acc", "tr_money_bic",
+		"rc_money_acc", "rc_money_bic", "10000.00", "RUB"}
+	addRecvArgs := []string{"MCXXXXX00000", "MSYYYYY00000", "id_to",
+		`{"document": "doc_to", "description": "321", "created": "2018-03-29"}`, `{"description": "Additional info."}`}
+
+	baseTransfArgs := []string{"transfer", "MZ0987654321", "19000000000000000", "30109810000000000000", "044525505",
+		"RU000A0JVVB5", "500", "SOMEREF123", "2018-03-29", "2018-03-29", "dvp", "tr_money_acc", "tr_money_bic",
+		"rc_money_acc", "rc_money_bic", "10000.00", "RUB"}
+	addTransfArgs := []string{"MCXXXXX00000", "MSYYYYY00000", "id_from",
+		`{"document": "doc_from", "description": "123", "created": "2018-03-29"}`}
+
+	stub.SetCaller("org2")
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status >= 400 {
+		fmt.Println("Receive error: " + response.Message)
+		t.FailNow()
+	}
+
+	stub.SetCaller("org1")
+	response = stub.MockInvoke("1", toByteArray(append(baseTransfArgs, addTransfArgs...)))
+	if response.Status >= 400 {
+		fmt.Println("Transfer error: " + response.Message)
+		t.FailNow()
+	}
+
+	// check duplication processing
+	stub.SetCaller("org2")
+	baseRecvArgs[6], baseRecvArgs[15] = "1000", "20000.00"
+	response = stub.MockInvoke("1", toByteArray(append(baseRecvArgs, addRecvArgs...)))
+	if response.Status < 400 {
+		fmt.Println(`"Receive" has succeeded with duplicate.`)
+		t.FailNow()
+	} else {
+		fmt.Println("Receive predicted error: " + response.Message)
+	}
+}
+
 func checkBalanceQuery(results, expectedResults []queryResult) error {
 	if len(results) != len(expectedResults) {
 		return fmt.Errorf("Query result contains less elements then expected.")
