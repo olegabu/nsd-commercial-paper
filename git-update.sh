@@ -28,14 +28,10 @@ if [ ! -d "fabric-starter" ]; then
     git clone --branch $FABRIC_STARTER_TAG https://github.com/olegabu/fabric-starter
 fi
 
-#echo "--------------------------------------------"
-#echo "----  Clone nsd-commercial-paper-client"
-#git clone --branch develop https://github.com/Altoros/nsd-commercial-paper-client
-
-
 echo "--------------------------------------------"
 echo "----  update fabric-starter"
 cd fabric-starter
+git pull
 git checkout $FABRIC_STARTER_TAG --force
 #git pull
 
