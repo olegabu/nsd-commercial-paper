@@ -44,7 +44,7 @@ git pull
 echo "--------------------------------------------"
 echo "----  update fabric-starter"
 cd ../fabric-starter
-git checkout $FABRIC_STARTER_TAG
+git checkout $FABRIC_STARTER_TAG --force
 #git pull
 
 popd
