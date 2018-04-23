@@ -16,7 +16,7 @@ if [ -n "$NSD_TAG_SUFFIX" ]; then
   TAG="${NSD_TAG_PREFIX}${NSD_TAG_SUFFIX}"
   echo "Force using tag $TAG"
   git checkout --force $TAG
-  git pull
+  #git pull
 fi
 
 
