@@ -8,6 +8,14 @@
         "division": "00000000000000000"
       },
       {
+        "account": "ML9404120506",
+        "division": "19000000000000000"
+      },
+      {
+        "account": "ML9404120506",
+        "division": "22000000000000000"
+      },
+      {
         "account": "40701810800001000033",
         "division": "044583505"
       }
@@ -17,6 +25,10 @@
     "organization": "mts.nsd.ru",
     "deponent": "MS0241300000",
     "balances": [
+      {
+        "account": "MS1712180049",
+        "division": "00000000000000000"
+      },
       {
         "account": "MS1712180049",
         "division": "19000000000000000"
