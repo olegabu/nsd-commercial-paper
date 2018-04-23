@@ -32,7 +32,7 @@ fi
 echo "--------------------------------------------"
 echo "----  update fabric-starter"
 cd fabric-starter
-git git fetch --tags
+git fetch --tags
 git checkout $FABRIC_STARTER_TAG --force
 #git pull
 
