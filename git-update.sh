@@ -11,6 +11,7 @@ echo "--------------------------------------------"
 echo "----  update nsd-commercial-paper"
 
 git pull
+git fetch --tags
 
 if [ -n "$NSD_TAG_SUFFIX" ]; then
   TAG="${NSD_TAG_PREFIX}${NSD_TAG_SUFFIX}"
@@ -31,7 +32,7 @@ fi
 echo "--------------------------------------------"
 echo "----  update fabric-starter"
 cd fabric-starter
-git pull
+git git fetch --tags
 git checkout $FABRIC_STARTER_TAG --force
 #git pull
 
