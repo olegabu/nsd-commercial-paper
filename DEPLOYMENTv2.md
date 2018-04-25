@@ -34,7 +34,7 @@ Next execute in console:
 `./init-fabric.sh`    
 
 
-##Configuration
+## Configuration
 
 For initial deployment the following organizations are used:
 - ORG1 – nsd
@@ -66,7 +66,7 @@ as well as initialization arguments for blockhains :
 -	*book_init.json*
 -	*security_init.json*
 
-##Deployment:
+## Deployment:
 
 At first each member has to generate their crypto material; 
 it then will be exposed by http interface on port 8080 to be accessible by the other organizations: 
@@ -208,7 +208,7 @@ of the file with the complete list (see notes to the item 3 in the *Deployment* 
     Repeat for all necessary organizations
 
 
-##Upgrade smart-contracts to new versions
+## Upgrade smart-contracts to new versions
 
 ``` 
     Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
@@ -259,7 +259,7 @@ as chaincode version 2.0 the following command have to be executed:
        `./blockchain-upgrade.sh 2.0 02`  
 
 
-##Add new organization to network after smart-contracts were upgraded
+## Add new organization to network after smart-contracts were upgraded
 
 The starting organization script by default set the version of chaincodes to 1.0. If the whole network 
 was already upgraded to another version new organization should be upgraded to the the corresponded version either.
@@ -267,4 +267,93 @@ was already upgraded to another version new organization should be upgraded to t
 So after starting the organization node, and joining organization-partners the same blockchain-upgrade procedure need to be executed.
 
 
+# Backup and failure recovery  
+
+## Backup 
+In order to prevent loosing the network all organizations have to backup corresponded data on their nodes. These are:
+
+- modified smart-contracts parameters files (if any), full list of organizations `env-external-orgs-list`
+- generated artifacts such as Cryptographic Certification Authority's (CA) and Membership Service Provider's (MSP) keys and certificates
+- `www/artifacts` folder with copy of certificates
+- `dockercompose` folder with generated configuration files
+- Ledger directory
+
+Commands:  
+
+To copy artifacts and configuration:  
   
+```    
+    cd nsd-commercial-paper  
+    mkdir -p backup/www
+    cp book_init.json instruction_init.json security_init.json env-external-orgs-list backup/  
+    cp -r artifacts backup/  
+    cp -r www/artifacts backup/www/  
+    cp -r dockercompose backup/  
+```
+
+To copy ledgers:
+
+- NSD:
+```
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/     backup/ledger_nsd
+    sudo cp -r /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/       backup/ledger_orderer
+```
+- Sberbank:
+```
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/     backup/ledger
+```
+- Mts:
+```
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/     backup/ledger
+```
+
+
+## Recovery
+
+- Clean environment:  
+    - If new server is used - install environment as described in the `Install prerequisites` section  
+    - If old server is used - make sure to stop and remove old docker containers:
+```
+    network.sh -m down
+    docker rm -f $(docker ps -aq)
+```
+
+
+- Copy backed up artifacts back to their original locations: 
+
+```    
+    cd nsd-commercial-paper  
+    cp backup/book_init.json backup/instruction_init.json backup/security_init.json backup/env-external-orgs-list ./ 
+    cp -r backup/artifacts ./  
+    cp -r backup/www/artifacts  www/  
+    cp -r backup/dockercompose ./  
+```
+
+- Start nodes:
+
+   - NSD:  
+        `source env-org-nsd`  
+        `network.sh -m up-orderer`  
+        `network.sh -m up-one-org -o $THIS_ORG -M $THIS_ORG`  
+        
+   - Sberbank:  
+        `source env-org-sberbank`   
+        `./org-start-node`  
+   
+   - Mts:  
+         `source env-org-mts`  
+        `./org-start-node`  
+
+- Re-join to trilateral channels:
+   - Sberbank:  
+        `./org-join-org.sh $ORG3 $IP3`  
+   
+   - Mts:  
+        `./org-join-org.sh $ORG2 $IP2`  
+        
+        
+- Install latest version of smart-contracts on all three nodes (if they were updated):
+
+    `./blockchain-upgrade.sh 2.0 02`  
+    
+The parameters for script should be set according to the `Upgrade smart-contracts to new versions` section 
