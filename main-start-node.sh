@@ -10,7 +10,7 @@ docker ps -a
 # Start
 ###########################################################################
 if [ "$DEBUG_NOT_REMOVE_OLD_ARTIFACTS" == "" ]; then #sometimes in debug need not to remove old artifacts
-    echo "Removinf old artifacts"
+    echo "Removing old artifacts"
     network.sh -m removeArtifacts
 fi
 

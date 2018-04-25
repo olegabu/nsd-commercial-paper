@@ -49,7 +49,7 @@ ORGList=($ORGS)
 
 
 #bilateral channel
-echo " >> Upgrade bilatral channels for orgs: $ORGS"
+echo " >> Upgrade bilateral channels for orgs: $ORGS"
 
 for org in ${ORGList[@]}; do
   biChannel="${MAIN_ORG}-${org}"
@@ -67,8 +67,9 @@ for org in ${ORGList[@]}; do
   for subOrg in ${pairingOrgs[@]}; do
       if [[ "$org" != "$subOrg" ]]; then
         sortedChannelName=`echo "${org} ${subOrg}" | tr " " "\n" | sort | tr "\n" " " | sed 's/ /-/'`
-        echo " >> Upgrade on trilateral channel: $sortedChannelName"
-        network.sh -m upgrade-chaincode -o $THIS_ORG  -v ${cc_version} -k $sortedChannelName -n instruction -I "${INSTRUCTION_INIT}"
+        endorsementPolicy="AND('${MAIN_ORG}MSP.peer','${org}MSP.peer','${subOrg}MSP.peer')"
+        echo " >> Upgrade on trilateral channel: '${sortedChannelName}', Endorsement Policy: ${endorsementPolicy}"
+        network.sh -m upgrade-chaincode -o $THIS_ORG  -v ${cc_version} -k $sortedChannelName -n instruction -I "${INSTRUCTION_INIT}" -P "$endorsementPolicy"
       fi
   done
   subArrayStartIndex=$((subArrayStartIndex+1))
