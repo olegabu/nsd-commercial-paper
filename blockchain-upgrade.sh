@@ -12,7 +12,7 @@ TAG_SUFFIX=$2
 # #########################################################################
 # Update source codes
 ###########################################################################
-./git-update.sh $TAG_SUFFIX
+#./git-update.sh $TAG_SUFFIX
 
 
 echo "Upgrade chaincode to version: $cc_version"

@@ -285,26 +285,30 @@ To copy artifacts and configuration:
 ```    
     cd nsd-commercial-paper  
     mkdir -p backup/www
-    cp book_init.json instruction_init.json security_init.json env-external-orgs-list backup/  
-    cp -r artifacts backup/  
-    cp -r www/artifacts backup/www/  
-    cp -r dockercompose backup/  
+    cp book_init.json instruction_init.json security_init.json env-external-orgs-list       backup/  
+    cp -r artifacts         backup/  
+    cp -r www/artifacts     backup/www/  
+    cp -r dockercompose     backup/  
 ```
 
 To copy ledgers:
 
 - NSD:
 ```
-    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/     backup/ledger_nsd
-    sudo cp -r /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/       backup/ledger_orderer
+    mkdir -p backup/ledger_nsd
+    mkdir -p backup/ledger_orderer
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/.     backup/ledger_nsd
+    sudo cp -r /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/.       backup/ledger_orderer
 ```
 - Sberbank:
 ```
-    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/     backup/ledger
+    mkdir -p backup/ledger_sberbank  
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/.     backup/ledger_sberbank
 ```
 - Mts:
 ```
-    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/     backup/ledger
+    mkdir -p backup/ledger_mts  
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/.         backup/ledger_mts
 ```
 
 
@@ -323,11 +327,25 @@ To copy ledgers:
 
 ```    
     cd nsd-commercial-paper  
-    cp backup/book_init.json backup/instruction_init.json backup/security_init.json backup/env-external-orgs-list ./ 
-    cp -r backup/artifacts ./  
-    cp -r backup/www/artifacts  www/  
-    cp -r backup/dockercompose ./  
+    cp backup/book_init.json backup/instruction_init.json backup/security_init.json backup/env-external-orgs-list   ./ 
+    cp -r backup/artifacts          ./  
+    cp -r backup/www/artifacts      www/  
+    cp -r backup/dockercompose      ./  
 ```
+
+- Copy backed up ledgers back to their original locations:
+    - NSD:  
+    `sudo cp -r backup/ledger_nsd/.           /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/`     
+    `sudo cp -r backup/ledger_orderer/.       /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/`
+
+    - Sberbank:   
+    `sudo mkdir -p /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru`  
+    `sudo cp -r backup/ledger_sberbank/.      /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/`  
+
+    - Mts:
+    `sudo mkdir -p /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru`  
+    `sudo cp -r backup/ledger_mts/.           /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/`
+
 
 - Start nodes:
 
@@ -344,7 +362,11 @@ To copy ledgers:
          `source env-org-mts`  
         `./org-start-node`  
 
-- Re-join to trilateral channels:
+- Re-join to channels:
+   - NSD:  
+        ` network.sh -m  join-channel $THIS_ORG $MAIN_ORG common`  
+        ` network.sh -m  join-channel $THIS_ORG $MAIN_ORG depository`
+          
    - Sberbank:  
         `./org-join-org.sh $ORG3 $IP3`  
    
@@ -352,7 +374,7 @@ To copy ledgers:
         `./org-join-org.sh $ORG2 $IP2`  
         
         
-- Install latest version of smart-contracts on all three nodes (if they were updated):
+- Install latest version of smart-contracts on all three nodes (if they were upgraded):
 
     `./blockchain-upgrade.sh 2.0 02`  
     
