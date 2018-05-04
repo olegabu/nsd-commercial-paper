@@ -291,7 +291,7 @@ To copy artifacts and configuration:
     cp -r dockercompose     backup/  
 ```
 
-To copy ledgers:
+To backup ledgers directories:
 
 - NSD:
 ```
