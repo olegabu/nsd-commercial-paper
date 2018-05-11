@@ -1,6 +1,6 @@
 [
   {
-    "organization": "sberbank.nsd.ru",
+    "organization": "corp.nsd.ru",
     "deponent": "MC0005500000",
     "balances": [
       {
@@ -22,7 +22,7 @@
     ]
   },
   {
-    "organization": "mts.nsd.ru",
+    "organization": "newcorp.nsd.ru",
     "deponent": "MS0241300000",
     "balances": [
       {

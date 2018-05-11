@@ -60,8 +60,8 @@ Note the members' IP addresses need to be exported into env variables before inv
 config files:
 
 - IP1 nsd
-- IP2 megafon
-- IP3 raiffeisen
+- IP2 corp
+- IP3 newcorp
 
 ### NSD
 
@@ -71,20 +71,20 @@ export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
 ./network.sh -m generate-peer -o nsd
 ```
 
-### Megafon
+### corp
 
 ```bash
 export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
 
-./network.sh -m generate-peer -o megafon
+./network.sh -m generate-peer -o corp
 ```
 
-### Raiffeisen
+### newcorp
 
 ```bash
 export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
 
-./network.sh -m generate-peer -o raiffeisen
+./network.sh -m generate-peer -o newcorp
 ```
 
 Each member has generated their crypto material and is now serving their cert files to be gathered during the orderer's
@@ -112,7 +112,7 @@ the depository node:
 ### NSD
 
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"corp.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"newcorp.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
 export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
 export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
 
@@ -124,7 +124,7 @@ downloading channel `.block` files.
 
 Each member starts the ca server, peers and api servers:
 
-### Megafon
+### corp
 
 ```bash
 export INSTRUCTION_INIT='...exactly the same as for nsd...'
@@ -136,10 +136,10 @@ members:
 
 ```bash
 export INSTRUCTION_INIT='...exactly the same as for nsd...'
-./network.sh -m up -o megafon -k "megafon-raiffeisen"
+./network.sh -m up -o corp -k "corp-newcorp"
 ```
 
-### Raiffeisen
+### newcorp
 
 ```bash
 export INSTRUCTION_INIT='...exactly the same as for nsd...'
@@ -149,15 +149,15 @@ export INSTRUCTION_INIT='...exactly the same as for nsd...'
 You can tail the logs by passing your organization with `-o`:
 
 ```bash
-./network.sh -m logs -o raiffeisen
+./network.sh -m logs -o newcorp
 ```
 ## Users of each member can now access their web app and transact
 
 Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.
 
 1. [depository nsd](http://54.173.221.247:4000)
-1. [issuer megafon](http://54.161.190.237:4000)
-1. [investor raiffeisen](http://54.166.77.150:4000)
+1. [issuer corp](http://54.161.190.237:4000)
+1. [investor newcorp](http://54.166.77.150:4000)
 
 ## Restart and preserve ledger data
 
@@ -168,13 +168,13 @@ Stop dockers on any or each node; or power down or reboot servers. The order is 
 docker-compose -f ledger/docker-compose-nsd.ru.yaml stop
 docker-compose -f ledger/docker-compose-nsd.yaml stop
 ```
-### Megafon
+### corp
 ```bash
-docker-compose -f ledger/docker-compose-megafon.yaml stop
+docker-compose -f ledger/docker-compose-corp.yaml stop
 ```
-### Raiffeisen
+### newcorp
 ```bash
-docker-compose -f ledger/docker-compose-raiffeisen.yaml stop
+docker-compose -f ledger/docker-compose-newcorp.yaml stop
 ```
 
 The dockers are stopped and nodes are not running but their instances remain on the host and data are preserved 
@@ -185,27 +185,27 @@ Make sure the depository starts first.
 
 ### NSD
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"corp.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"newcorp.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
 
 docker-compose -f ledger/docker-compose-nsd.ru.yaml up -d
 docker-compose -f ledger/docker-compose-nsd.yaml up -d
 ```
-### Megafon
+### corp
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"corp.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"newcorp.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
 
-docker-compose -f ledger/docker-compose-megafon.yaml up -d
+docker-compose -f ledger/docker-compose-corp.yaml up -d
 ```
-### Raiffeisen
+### newcorp
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"corp.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"newcorp.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
 
-docker-compose -f ledger/docker-compose-raiffeisen.yaml up -d
+docker-compose -f ledger/docker-compose-newcorp.yaml up -d
 ```
 
 ## Restart with changed initialization arguments
 
-Bring down all three nodes: at NSD, Megafon, Raiffeisen do:
+Bring down all three nodes: at NSD, corp, newcorp do:
 
 ```bash
 ./network.sh -m down
@@ -218,7 +218,7 @@ Start NSD node with init args exported as env variables:
 
 ### NSD
 ```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
+export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"corp.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"newcorp.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
 export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
 export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
 
@@ -227,13 +227,13 @@ export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22
 
 After NSD node is up start other nodes in sequence:
 
-### Megafon
+### corp
 ```bash
 export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-2
 ``` 
 
-### Raiffeisen
+### newcorp
 ```bash
 export INSTRUCTION_INIT='...exactly the same as for nsd...'
 ./network.sh -m up-3
