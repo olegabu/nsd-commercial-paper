@@ -253,9 +253,9 @@ angular.module('nsd.app',[
         prefix: 'i18n/locale-',
         suffix: '.json'
     });
-    $translateProvider.preferredLanguage('ru');
-    // $translateProvider.preferredLanguage('en');
-    $translateProvider.useSanitizeValueStrategy(null); // escape|sanitize
+    //$translateProvider.preferredLanguage('ru');
+     $translateProvider.preferredLanguage('en');
+     $translateProvider.useSanitizeValueStrategy(null); // escape|sanitize
     // $translateProvider.usePostCompiling(true);
 }])
 
