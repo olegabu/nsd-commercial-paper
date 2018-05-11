@@ -5,8 +5,8 @@ STARTTIME=$(date +%s)
 # defaults; export these variables before executing this script
 : ${DOMAIN:="nsd.ru"}
 : ${ORG1:="nsd"}
-: ${ORG2:="corp"}
-: ${ORG3:="newcorp"}
+: ${ORG2:="organizationa"}
+: ${ORG3:="organizationb"}
 : ${IP1:="91.208.232.164"}
 : ${IP2:="83.149.14.164"}
 : ${IP3:="195.238.73.147"}

@@ -7,19 +7,19 @@ var ConfigHelper = require('../../middleware/helper.js').ConfigHelper;
 describe('config converter', function(){
 
 
-  var INSTRUCTION_INIT_EXAMPLE='{"Args":["init","[{\\"organization\\":\\"corp.nsd.ru\\",\\"deponent\\":\\"CA9861913023\\",\\"balances\\":[{\\"account\\":\\"MZ130605006C\\",\\"division\\":\\"19000000000000000\\"},{\\"account\\":\\"MZ130605006C\\",\\"division\\":\\"22000000000000000\\"}]},{\\"organization\\":\\"newcorp.nsd.ru\\",\\"deponent\\":\\"DE000DB7HWY7\\",\\"balances\\":[{\\"account\\":\\"MS980129006C\\",\\"division\\":\\"00000000000000000\\"}]}]"]}';
+  var INSTRUCTION_INIT_EXAMPLE='{"Args":["init","[{\\"organization\\":\\"organizationa.nsd.ru\\",\\"deponent\\":\\"CA9861913023\\",\\"balances\\":[{\\"account\\":\\"MZ130605006C\\",\\"division\\":\\"19000000000000000\\"},{\\"account\\":\\"MZ130605006C\\",\\"division\\":\\"22000000000000000\\"}]},{\\"organization\\":\\"organizationb.nsd.ru\\",\\"deponent\\":\\"DE000DB7HWY7\\",\\"balances\\":[{\\"account\\":\\"MS980129006C\\",\\"division\\":\\"00000000000000000\\"}]}]"]}';
   /*/ /**/
 
 
   var result1 = {
-    "corp":{
+    "organizationa":{
       "dep":"CA9861913023",
       "role":"investor",
       "acc":{
         "MZ130605006C":["19000000000000000", "22000000000000000"]
       }
     },
-    "newcorp":{
+    "organizationb":{
       "dep":"DE000DB7HWY7",
       "role":"investor",
       "acc":{
@@ -32,8 +32,8 @@ describe('config converter', function(){
     }
   };
   var result2 = clone(result1);
-  result2["corp"].role = 'nsd';
-  result2["newcorp"].role = 'nsd';
+  result2["organizationa"].role = 'nsd';
+  result2["organizationb"].role = 'nsd';
   // result2.role = 'nsd';
 
   it('sample', function(){
