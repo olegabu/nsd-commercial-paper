@@ -9,9 +9,11 @@ See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2
 ## Install prerequisites
 
 -   Clone Nsd Commercial Paper delivery packages from github:  
-`git clone -b 2018_03-PRE_RELEASE_02 https://github.com/Altoros/nsd-commercial-paper`  
-`cd nsd-commercial-paper`  
-`./prerequisites-deployment.sh`
+```bash
+git clone -b 2018_03-PRE_RELEASE_02 https://github.com/Altoros/nsd-commercial-paper
+cd nsd-commercial-paper
+./prerequisites-deployment.sh
+```
 
 
 On other Linux distros make sure these versions or higher are installed:  
@@ -22,29 +24,33 @@ On other Linux distros make sure these versions or higher are installed:
 
 To install them on Ubuntu 16.04 you nay use the following commands:  
 
-`cd fabric-starter`  
-`./init-docker.sh`  
+```bash
+cd fabric-starter
+./init-docker.sh
+```
 
 
 **Now re-login to have user applied into docker group.**  
 
 
 Next execute in console:   
-`cd fabric-starter`  
-`./init-fabric.sh`    
+```bash
+cd fabric-starter
+./init-fabric.sh
+```
 
 
 ## Configuration
 
 For initial deployment the following organizations are used:
-- ORG1 – nsd
-- ORG2 – sberbank 
-- ORG3 – mts
+- `ORG1` – nsd
+- `ORG2` – sberbank 
+- `ORG3` – mts
 
 and the corresponded IP addresses:
-- IP1=91.208.232.164 - NSD node's IP
-- IP2=193.232.123.109 - Sberbank node's IP
-- IP3=213.87.44.178 - MTS node's IP
+- `IP1=91.208.232.164` - NSD node's IP
+- `IP2=193.232.123.109` - Sberbank node's IP
+- `IP3=213.87.44.178` - MTS node's IP
  
 
 In Commercial Paper v2 installation NSD serves as MAIN_NODE which is configured as environment variable exported in files *env-common*.
@@ -73,14 +79,19 @@ it then will be exposed by http interface on port 8080 to be accessible by the o
 
 
 1.	Sberbank:  
-	`cd nsd-commercial-paper`  
-	`source ./env-org-sberbank`  
-	`./org-generate-crypto.sh`
+```bash
+	cd nsd-commercial-paper
+	source ./env-org-sberbank
+	./org-generate-crypto.sh
+```
 
 2.	Mts:
-	`cd nsd-commercial-paper`  
-	`source ./env-org-mts`  
-	`./org-generate-crypto.sh`
+
+```bash
+	cd nsd-commercial-paper
+	source ./env-org-mts
+	./org-generate-crypto.sh
+```
 
 Here the first command `source env-org-<name>` loads the environment variables into the current (terminal) session in order to subsequent 
 scripts use the necessary environment. 
@@ -97,11 +108,13 @@ After that the main org (NSD) starts the blockchain network, adds the members on
 
 
 3.	Nsd:  
-	`cd nsd-commercial-paper`  
-	`source ./env-org-nsd`  
-	`./main-start-org.sh`  
-	`./main-register-new-org.sh $ORG2 $IP2`  
-	`./main-register-new-org.sh $ORG3 $IP3`  
+```bash
+	cd nsd-commercial-paper
+	source ./env-org-nsd
+	./main-start-org.sh
+	./main-register-new-org.sh $ORG2 $IP2
+	./main-register-new-org.sh $ORG3 $IP3
+```
 
 *Note, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
 This list is used to automatically create tri-lateral channels with the new organization which is being added.   
@@ -210,31 +223,32 @@ of the file with the complete list (see notes to the item 3 in the *Deployment* 
 
 ## Upgrade smart-contracts to new versions
 
-``` 
+ 
     Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
     List if channels is based on the organizations attached to the network. So before performing the upgrade it's highly 
     recommended to restore from a backup the file `env-external-orgs-list` with the full list of organizations.      
-```
+
+
 Developer of blockchain (Altoros) pushes updated smart-contracts code into the repository and puts the git tag of form
 `2018_03-PRE_RELEASE_XX` where `XX` is a numbering sequence to keep a history of smart-contract which were deployed.
 
 e.g.:
-```
+```bash
 git tag --force 2018_03-PRE_RELEASE_02
 git push --force origin 2018_03-PRE_RELEASE_02
 ```
 Here XX equals 02.
 
 
-```
+```bash
 After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.  
 To perform the upgrade network administrators select a unique label for the next version which should be identical on each 
 organization for current upgrade. It is usually versioning numbers sequence in a form of "1.0", "2.0", "3.0", but it might be 
 any label.
-```   
+```
 
 The following step has to be done on all nodes:
-```
+```bash
 cd nsd-commercial-paper
 ./blockchain-upgrade.sh Y.Z XX
 ```
@@ -282,7 +296,7 @@ Commands:
 
 To copy artifacts and configuration:  
   
-```    
+```bash   
     cd nsd-commercial-paper  
     mkdir -p backup/www
     cp book_init.json instruction_init.json security_init.json env-external-orgs-list       backup/  
@@ -294,19 +308,19 @@ To copy artifacts and configuration:
 To backup ledgers directories:
 
 - NSD:
-```
+```bash
     mkdir -p backup/ledger_nsd
     mkdir -p backup/ledger_orderer
     sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/.     backup/ledger_nsd
     sudo cp -r /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/.       backup/ledger_orderer
 ```
 - Sberbank:
-```
+```bash
     mkdir -p backup/ledger_sberbank  
     sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/.     backup/ledger_sberbank
 ```
 - Mts:
-```
+```bash
     mkdir -p backup/ledger_mts  
     sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/.         backup/ledger_mts
 ```
@@ -317,7 +331,7 @@ To backup ledgers directories:
 - Clean environment:  
     - If new server is used - install environment as described in the `Install prerequisites` section  
     - If old server is used - make sure to stop and remove old docker containers:
-```
+```bash
     network.sh -m down
     docker rm -f $(docker ps -aq)
 ```
@@ -325,7 +339,7 @@ To backup ledgers directories:
 
 - Copy backed up artifacts back to their original locations: 
 
-```    
+```bash
     cd nsd-commercial-paper  
     cp backup/book_init.json backup/instruction_init.json backup/security_init.json backup/env-external-orgs-list   ./ 
     cp -r backup/artifacts          ./  
