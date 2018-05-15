@@ -1,409 +1,381 @@
-# Commercial Paper on Blockchain Pilot for NSD
+# Commercial Paper on Blockchain for NSD v2 
 
 Decentralized application manages instructions to transfer securities between members of NSD.
 See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2PjBoSN_M2hXXtBFyUv9HACu0Q-6WWqCv_TRcdIS8Y/edit?usp=sharing).
 
 # Deployment with dockers run on separate hosts
 
-Real world deployment scenario with members deploying their CA server, peer, api and web servers as docker instances on
-one host. Members' host servers connect to each other over internet. 
 
 ## Install prerequisites
 
-```bash
-sudo apt update && sudo apt -y install docker docker-compose git jq enca
-```
+-   Clone Nsd Commercial Paper delivery packages from github:  
+`git clone -b 2018_03-PRE_RELEASE_02 https://github.com/Altoros/nsd-commercial-paper`  
+`cd nsd-commercial-paper`  
+`./prerequisites-deployment.sh`
 
-On other Linux distros make sure these versions or higher are installed:
 
-- docker-compose version 1.8.0
-- Docker version 1.12.6
+On other Linux distros make sure these versions or higher are installed:  
 
-Add yourself to the group and re-login to be able to run docker.
+*Docker version 17.12.1*  
+*docker-compose version 1.8.0*  
+*jq*  
 
-```bash
-sudo gpasswd -a $USER docker
-exit
-```
+To install them on Ubuntu 16.04 you nay use the following commands:  
 
-## Each member downloads software, generates crypto material and config files
+`cd fabric-starter`  
+`./init-docker.sh`  
 
-Each member clones the repository to download source code:
+
+**Now re-login to have user applied into docker group.**  
+
+
+Next execute in console:   
+`cd fabric-starter`  
+`./init-fabric.sh`    
+
+
+## Configuration
+
+For initial deployment the following organizations are used:
+- ORG1 – nsd
+- ORG2 – sberbank 
+- ORG3 – mts
+
+and the corresponded IP addresses:
+- IP1=91.208.232.164 - NSD node's IP
+- IP2=193.232.123.109 - Sberbank node's IP
+- IP3=213.87.44.178 - MTS node's IP
  
- ```bash
- git clone https://github.com/olegabu/nsd-commercial-paper
- cd nsd-commercial-paper
- ```
+
+In Commercial Paper v2 installation NSD serves as MAIN_NODE which is configured as environment variable exported in files *env-common*.
+Other memebers are defined as THIS_ORG variable set correspondingly in *env-org-<org-name>* files.
+
+Check initial configuration or reconfigure organization names, and IP-addresses in configuration files: 
+
+Folder **nsd-commercial-paper**:
+-	*env-common*
+-	*env-org-sberbank*
+-	*env-org-mts*  
+
+In these files the common variables and the current organization configuration are defined. 
+The configuration specific variables are - `THIS_ORG`, `MAIN_ORG`, `IP_ORDERER`. 
  
-(optional) Each member can pull docker images in advance in order to follow the next steps in private network (without access to docker hub):
 
-```bash
-docker pull hyperledger/fabric-ca:x86_64-1.0.0
-docker pull hyperledger/fabric-orderer:x86_64-1.0.0
-docker pull hyperledger/fabric-peer:x86_64-1.0.0
-docker pull hyperledger/fabric-tools:x86_64-1.0.0
-docker pull maxxx1313/fabric-rest
-docker pull nginx
-docker pull node:6-alpine
-```
+as well as initialization arguments for blockhains :
+-	*instruction_init.json*
+-	*book_init.json*
+-	*security_init.json*
+
+## Deployment:
+
+At first each member has to generate their crypto material; 
+it then will be exposed by http interface on port 8080 to be accessible by the other organizations: 
 
 
-Then each member generates artifacts. Pass organization name with `-o`.
+1.	Sberbank:  
+	`cd nsd-commercial-paper`  
+	`source ./env-org-sberbank`  
+	`./org-generate-crypto.sh`
 
-You can pass ports as args
-`-a`, `-w`, `-c`, `-0`, `-1`, `-2`, `-3` for the api, web, ca and peer ports. If omitted, default ones are used. 
+2.	Mts:
+	`cd nsd-commercial-paper`  
+	`source ./env-org-mts`  
+	`./org-generate-crypto.sh`
 
-These commands create docker-compose files with default mapped ports that don't have to be different for each member 
-as they run on separate hosts: `4000 8080 7054 7051 7053 7056 7058`.
+Here the first command `source env-org-<name>` loads the environment variables into the current (terminal) session in order to subsequent 
+scripts use the necessary environment. 
+The second command `./org-generate-crypto.sh` uses the loaded environment and generates crypto material by using Hyperledger Fabric utilities 
+for current organization (which is defined by `THIS_ORG` environment variable).
+Finally this script starts a web-server (container) mapped to port 8080 which provisions the node's TLS and MSP sertificates 
+thus allowing nodes securely communicate with each other.    
+The blockchain components are not started by this script.
 
-Note the members' IP addresses need to be exported into env variables before invoking `generate`: they will end up in 
-config files:
+*Note: It's not completely necessary to generate crypto-material for all organizations to start. 
+You may add organizations one by one. See section **Adding new organization** then.* 
 
-- IP1 nsd
-- IP2 megafon
-- IP3 raiffeisen
+After that the main org (NSD) starts the blockchain network, adds the members one by one and creates *common*, *depository* and bilateral and trilateral channels:
 
-### NSD
 
-```bash
-export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
+3.	Nsd:  
+	`cd nsd-commercial-paper`  
+	`source ./env-org-nsd`  
+	`./main-start-org.sh`  
+	`./main-register-new-org.sh $ORG2 $IP2`  
+	`./main-register-new-org.sh $ORG3 $IP3`  
 
-./network.sh -m generate-peer -o nsd
-```
+*Note, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
+This list is used to automatically create tri-lateral channels with the new organization which is being added.   
+This list may be adjusted manually in the file to control trilateral channels creation.*
 
-### Megafon
+If you are going to modify\adjust the list of existing organizations make sure you created a backup copy of the file 
+while all organizations are still in list. This file is also used during the smart-contract version upgrade process and this process 
+should preferably be perfromed for all organizations, so smart-contract for all bi-lateral and tri-lateral channels are upgraded.
+In the other case the rest smart-contracts will have to be upgraded manually, which might be time-consuming process.       
 
-```bash
-export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
+The first script `./main-start-org.sh` does several things. It's intended to be run ob a main node so it generates crypto material 
+for the main organization as well as for the orderer. Then starts orderer and the main organization's blockchain components.
+It also creates the `common`, and `depository` channels and installs\instantiates the `security` and `book` chaincodes correspondingly. 
 
-./network.sh -m generate-peer -o megafon
-```
+The subsequent two scripts register new organizations in the blockchain, create bilateral channels `nsd-<org>` 
+and install\instantiate the `position` chaincode there.  
 
-### Raiffeisen
+As it was mentioned the list of registered organizations is also adjusted. 
+It's stored in file `env-external-orgs-list` and new organizations are automatically added to the list by this script. 
+If the list contains one or more organizations (except `nsd`) 
+the tri-lateral channels with newly registered organization will be automatically created.
 
-```bash
-export IP1=184.73.79.165 IP2=54.167.225.4 IP3=54.152.106.253
+*Note: Before register new org adjust the file `instruction_init.json` and add requisites of new org there*
 
-./network.sh -m generate-peer -o raiffeisen
-```
+On next step the members start the network on their nodes:
+  
+4.	Sberbank:  
+	`./org-start-node.sh`
 
-Each member has generated their crypto material and is now serving their cert files to be gathered during the orderer's
-generation process on depository host nsd.
+5.	Mts (after Sberbank's run is finished):  
+	`./org-start-node.sh`
 
-Depository creates ledger and channel config files:
 
-### NSD
+The `./org-start-node.sh` script is intended to be ran on member organizations nodes; 
+it starts blockchain components (again based on the environment loaded on the previous steps) and join the organization 
+to the `common` channel as well as bilateral channel with nsd `nsd-<this_org>`   
 
-```bash
-./network.sh -m generate-orderer && sleep 7m
+Now newly started members need to join each other:
 
-#hotfix
-docker exec peer0.nsd.nsd.ru bash -c "cat /etc/hosts |grep -v orderer >/etc/hosts"
-docker exec peer1.nsd.nsd.ru bash -c "cat /etc/hosts |grep -v orderer >/etc/hosts"
-```
-## Each member starts their nodes
+6.	Sberbank:  
+	`./org-join-org.sh $ORG3 $IP3`
 
-After all generation is done and over you can start the orderer and the depository peers on depository host nsd. 
-This command creates and joins channels, installs and instantiates chaincodes on nsd peers.
+7.	Mts (after Sberbank's joining is finished):  
+	`./ org-join-org.sh $ORG2 $IP2`
 
-Initialization values for accounts, balances and securities are passed by nsd as env variables before starting 
-the depository node:  
+This script join an organization to another organization which parameters (name and IP address) are specified. 
+then it joins the org to the tri-lateral channel with the `nsd` and the specified org. 
+Finally it adds the ip address and network configuration information to the connectivity components     
 
-### NSD
 
-```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
-export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
-export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
+# Adding new organization
 
-./network.sh -m up-depository
+To add new organization into the network the following steps need to performed:  
+
+1) Download NSD Commercial source package(s) to new org's server. See prerequisites section.
+
+2) Environment file is created on new org with environment variables adjusted:  
+    edit `env-org-<neworgname>`:
+    ```
+    ...  
+    THIS_ORG=neworgname
+    ```
+
+3) New organization generates crypto-material:  
+    New org:  
+    `source ./env-org-<neworgname>`  
+    `./org-generate-crypto.sh`
+
+4) On NSD server configure the initialization configuration for *instruction* chaincode:  
+    edit `instruction_init.json` (add new organization account information)
+    
+5) Register new organization in blockchain. Note bi-lateral and tri-lateral 
+channels will be automatically created using the list of existing organizations (in the file `env-external-orgs-list`). 
+This list can be modified accordingly if no all tri-lateral channels need to be created. But make sure to have a backup 
+of the file with the complete list (see notes to the item 3 in the *Deployment* section).  
+
+    Nsd:  
+    `./main-register-new-org.sh neworgname <neworg_ip>`
+
+6) Start blockchain on new org:  
+    New org:  
+    `./org-start-node.sh`
+    
+7) Mutually join new org to each existing organization (except NSD) and vice-versa:  
+   - Sberbank:  
+        New org:  
+        `./org-join-org.sh sberbank <sberbank_ip>`  
+        Sberbank:
+        `./org-join-org.sh neworgname <neworg_ip>`
+    
+   - Mts:  
+        New org:  
+        `./org-join-org.sh mts <mts_ip>`  
+        Mts:
+        `./org-join-org.sh neworgname <neworg_ip>`
+
+   - Other org (if any):  
+        New org:  
+        `./org-join-org.sh <otherorg_name> <otherorg_ip>`  
+        Other Org:
+        `./org-join-org.sh neworgname <neworg_ip>`
+
+    ...  
+    Repeat for all necessary organizations
+
+
+## Upgrade smart-contracts to new versions
+
 ``` 
-
-Now the orderer has created channels, nsd peers instantiated chaincodes and other members can join channels by 
-downloading channel `.block` files.
-
-Each member starts the ca server, peers and api servers:
-
-### Megafon
-
-```bash
-export INSTRUCTION_INIT='...exactly the same as for nsd...'
-./network.sh -m up-2
-``` 
-
-Which is equivalent to starting with an explicit organization name and all possible bilateral channels with other 
-members:
-
-```bash
-export INSTRUCTION_INIT='...exactly the same as for nsd...'
-./network.sh -m up -o megafon -k "megafon-raiffeisen"
+    Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
+    List if channels is based on the organizations attached to the network. So before performing the upgrade it's highly 
+    recommended to restore from a backup the file `env-external-orgs-list` with the full list of organizations.      
 ```
+Developer of blockchain (Altoros) pushes updated smart-contracts code into the repository and puts the git tag of form
+`2018_03-PRE_RELEASE_XX` where `XX` is a numbering sequence to keep a history of smart-contract which were deployed.
 
-### Raiffeisen
-
-```bash
-export INSTRUCTION_INIT='...exactly the same as for nsd...'
-./network.sh -m up-3
-``` 
-
-You can tail the logs by passing your organization with `-o`:
-
-```bash
-./network.sh -m logs -o raiffeisen
+e.g.:
 ```
-## Users of each member can now access their web app and transact
-
-Note these are test nodes on AWS and API and web ports 4000 are to be open within each member's intranet only.
-
-1. [depository nsd](http://54.173.221.247:4000)
-1. [issuer megafon](http://54.161.190.237:4000)
-1. [investor raiffeisen](http://54.166.77.150:4000)
-
-## Restart and preserve ledger data
-
-Stop dockers on any or each node; or power down or reboot servers. The order is not important.
-
-### NSD
-```bash
-docker-compose -f ledger/docker-compose-nsd.ru.yaml stop
-docker-compose -f ledger/docker-compose-nsd.yaml stop
+git tag --force 2018_03-PRE_RELEASE_02
+git push --force origin 2018_03-PRE_RELEASE_02
 ```
-### Megafon
-```bash
-docker-compose -f ledger/docker-compose-megafon.yaml stop
-```
-### Raiffeisen
-```bash
-docker-compose -f ledger/docker-compose-raiffeisen.yaml stop
-```
+Here XX equals 02.
 
-The dockers are stopped and nodes are not running but their instances remain on the host and data are preserved 
-in their volumes.
-
-Now can start the dockers on each host. Note that you need to have INSTRUCTION_INIT string set as env variable. 
-Make sure the depository starts first.
-
-### NSD
-```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
-
-docker-compose -f ledger/docker-compose-nsd.ru.yaml up -d
-docker-compose -f ledger/docker-compose-nsd.yaml up -d
-```
-### Megafon
-```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
-
-docker-compose -f ledger/docker-compose-megafon.yaml up -d
-```
-### Raiffeisen
-```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MZ130605006C\",\"division\":\"19000000000000000\"},{\"account\":\"MZ130605006C\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"MS980129006C\",\"division\":\"00000000000000000\"}]}]"]}'
-
-docker-compose -f ledger/docker-compose-raiffeisen.yaml up -d
-```
-
-## Restart with changed initialization arguments
-
-Bring down all three nodes: at NSD, Megafon, Raiffeisen do:
-
-```bash
-./network.sh -m down
-```
-
-Start NSD node with init args exported as env variables:
-- INSTRUCTION_INIT accounts/divisions of member organizations
-- BOOK_INIT initial balances
-- SECURITY_INIT security id and account/division where amounts move to at redemption
-
-### NSD
-```bash
-export INSTRUCTION_INIT='{"Args":["init","[{\"organization\":\"megafon.nsd.ru\",\"deponent\":\"CA9861913023\",\"balances\":[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\"},{\"account\":\"MFONISSUEACC\",\"division\":\"22000000000000000\"}]},{\"organization\":\"raiffeisen.nsd.ru\",\"deponent\":\"DE000DB7HWY7\",\"balances\":[{\"account\":\"RBIOWNER0ACC\",\"division\":\"00000000000000000\"}]}]"]}'
-export BOOK_INIT='{"Args":["init","[{\"account\":\"MFONISSUEACC\",\"division\":\"19000000000000000\",\"security\":\"RU0DLTMFONCB\",\"quantity\":\"7000000\"}]"]}'
-export SECURITY_INIT='{"Args":["init","RU0DLTMFONCB","active","MFONISSUEACC","22000000000000000"]}'
-
-./network.sh -m up-depository
-``` 
-
-After NSD node is up start other nodes in sequence:
-
-### Megafon
-```bash
-export INSTRUCTION_INIT='...exactly the same as for nsd...'
-./network.sh -m up-2
-``` 
-
-### Raiffeisen
-```bash
-export INSTRUCTION_INIT='...exactly the same as for nsd...'
-./network.sh -m up-3
-``` 
-
-# Chaincode development
-
-Use docker instances to support chaincode development and debugging in an IDE.
-
-Chaincode name, path and version are currently hardcoded in [network.sh](network.sh) to `book`, `chaincode/go/book`, `0`.
-Feel free to improve the script to accept parameters or simply edit it locally with your own chaincode parameters.   
-
-Start dev network of orderer, peer and cli with pre-generated [genesis block](ledger/dev-genesis.block), 
-channel config transaction and identities in [dev-msp](ledger/dev-msp):
-
-`./network.sh -m devup` 
-
-Start chaincode in your IDE's debugger with env variables
 
 ```
-CORE_CHAINCODE_ID_NAME=book:0
-CORE_CHAINCODE_LOGGING_LEVEL=debug
-CORE_PEER_ADDRESS=0.0.0.0:7051
+After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.  
+To perform the upgrade network administrators select a unique label for the next version which should be identical on each 
+organization for current upgrade. It is usually versioning numbers sequence in a form of "1.0", "2.0", "3.0", but it might be 
+any label.
+```   
+
+The following step has to be done on all nodes:
+```
+cd nsd-commercial-paper
+./blockchain-upgrade.sh Y.Z XX
+```
+Here `Y.Z` defines the version label with which new smart-contracts will be installed. 
+(Initial network deployment installs chaincodes with version 1.0).  
+`XX` - is the tag suffix  
+ 
+For example to upgrade network with new smart-contracts tagged with `2018_03-PRE_RELEASE_02` in github repository 
+as chaincode version 2.0 the following command have to be executed:
+   
+  - NSD:  
+       `cd nsd-commercial-paper`  
+       `source env-org-nsd` 
+       `./blockchain-upgrade.sh 2.0 02`  
+ - Sberbank:  
+       `cd nsd-commercial-paper`  
+       `source env-org-sberbank` 
+       `./blockchain-upgrade.sh 2.0 02`  
+ - MTS:  
+       `cd nsd-commercial-paper`  
+       `source env-org-mts` 
+       `./blockchain-upgrade.sh 2.0 02`  
+
+
+## Add new organization to network after smart-contracts were upgraded
+
+The starting organization script by default set the version of chaincodes to 1.0. If the whole network 
+was already upgraded to another version new organization should be upgraded to the the corresponded version either.
+
+So after starting the organization node, and joining organization-partners the same blockchain-upgrade procedure need to be executed.
+
+
+# Backup and failure recovery  
+
+## Backup 
+In order to prevent loosing the network all organizations have to backup corresponded data on their nodes. These are:
+
+- modified smart-contracts parameters files (if any), full list of organizations `env-external-orgs-list`
+- generated artifacts such as Cryptographic Certification Authority's (CA) and Membership Service Provider's (MSP) keys and certificates
+- `www/artifacts` folder with copy of certificates
+- `dockercompose` folder with generated configuration files
+- Ledger directory
+
+Commands:  
+
+To copy artifacts and configuration:  
+  
+```    
+    cd nsd-commercial-paper  
+    mkdir -p backup/www
+    cp book_init.json instruction_init.json security_init.json env-external-orgs-list       backup/  
+    cp -r artifacts         backup/  
+    cp -r www/artifacts     backup/www/  
+    cp -r dockercompose     backup/  
 ```
 
-You should see your chaincode connect to the dev peer. 
+To backup ledgers directories:
 
-Now install and instantiate the chaincode on your dev peer:
-
-`./network.sh -m devinit`
-
-Invoke and query the chaincode with payload hardcoded in [network.sh](network.sh):
-
-`./network.sh -m devinvoke`
-
-Watch the logs and shutdown:
-
+- NSD:
 ```
-./network.sh -m devlogs
-./network.sh -m devdown
+    mkdir -p backup/ledger_nsd
+    mkdir -p backup/ledger_orderer
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/.     backup/ledger_nsd
+    sudo cp -r /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/.       backup/ledger_orderer
 ```
-
-# Local deployment with all dockers run from the same folder
-
-Use docker instances to support four members on a local host.
-
-Generate crypto material, genesis block, config transactions and start a network for a consortium of four organizations:
-
-1. depository nsd
-1. member a issuer
-1. member b investor
-1. member c investor
-
-Each organization starts several docker instances:
-
-- certificate authority [fabric-ca](https://github.com/hyperledger/fabric-ca)
-- peer 0
-- peer 1
-- api server [fabric-rest](https://github.com/Altoros/fabric-rest)
-
-Following channels are created, peers join them and chaincodes are installed and instantiated:
-
-1. common (*members*: nsd, a, b, c; *chaincodes*: [security](chaincode/go/security))
-1. depository (*members*: nsd; *chaincodes*: [book](chaincode/go/book))
-1. a-b (*members*: nsd, a, b; *chaincodes*: [instruction](chaincode/go/instruction))
-1. a-c (*members*: nsd, a, c; *chaincodes*: [instruction](chaincode/go/instruction))
-1. b-c (*members*: nsd, b, c; *chaincodes*: [instruction](chaincode/go/instruction))
-1. nsd-a (*members*: nsd, a; *chaincodes*: [position](chaincode/go/position))
-1. nsd-b (*members*: nsd, b; *chaincodes*: [position](chaincode/go/position))
-1. nsd-c (*members*: nsd, c; *chaincodes*: [position](chaincode/go/position))
-
-Generate artifacts for the network and network-config file for the API server:
-
-`./network.sh -m generate`
-
-**Note** you'll need to wait about 7 minutes until the timing of the generated certs lines up. 
-Needed temporarily until the issue is resolved. This may come handy if you need to regenerate frequently:
-
-`./network.sh -m generate && sleep 7m && beep && ./network.sh -m up`
-
-Start the network, watch the logs, shutdown.
-
+- Sberbank:
 ```
-./network.sh -m up
-./network.sh -m logs -o nsd
-./network.sh -m logs -o a
-./network.sh -m logs -o b
-./network.sh -m down
+    mkdir -p backup/ledger_sberbank  
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/.     backup/ledger_sberbank
+```
+- Mts:
+```
+    mkdir -p backup/ledger_mts  
+    sudo cp -r /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/.         backup/ledger_mts
 ```
 
-Navigate to web interfaces of respective organizations at ports 4000-4003:
 
-1. [depository nsd](http://localhost:4000)
-1. [issuer a](http://localhost:4001)
-1. [investor b](http://localhost:4002)
-1. [investor c](http://localhost:4003)
+## Recovery
 
-# Local deployment with dockers run from separate folders
-
-Use to test artifacts generation and certificate exchange. Clone repo into separate directories imitating separate
-host servers. Docker instances still operate within `ledger_default` network on the developer's host machine.
-
-Clone repo and copy into 4 folders representing host machines for orderer and depository and for each member:
-
-```bash
-mkdir tmp
-cd tmp
-git clone https://github.com/olegabu/nsd-commercial-paper
-mv nsd-commercial-paper nsd
-cp -r nsd a
-cp -r nsd b
-cp -r nsd c
+- Clean environment:  
+    - If new server is used - install environment as described in the `Install prerequisites` section  
+    - If old server is used - make sure to stop and remove old docker containers:
+```
+    network.sh -m down
+    docker rm -f $(docker ps -aq)
 ```
 
-Generate artifacts for the depository and each member.
 
-```bash
-cd nsd
-./network.sh -m generate-1
-cd ../a
-./network.sh -m generate-2
-cd ../b
-./network.sh -m generate-3
-cd ../c
-./network.sh -m generate-4
+- Copy backed up artifacts back to their original locations: 
+
+```    
+    cd nsd-commercial-paper  
+    cp backup/book_init.json backup/instruction_init.json backup/security_init.json backup/env-external-orgs-list   ./ 
+    cp -r backup/artifacts          ./  
+    cp -r backup/www/artifacts      www/  
+    cp -r backup/dockercompose      ./  
 ```
 
-These will create docker-compose files for four orgs nsd, a, b, c with sets of mapped ports that don't conflict 
-with each other on one host:
+- Copy backed up ledgers back to their original locations:
+    - NSD:  
+    `sudo cp -r backup/ledger_nsd/.           /var/lib/docker/volumes/dockercompose_peer0.nsd.nsd.ru/`     
+    `sudo cp -r backup/ledger_orderer/.       /var/lib/docker/volumes/dockercompose_orderer.nsd.ru/`
 
-1. 4000 8080 7054 7051 7053 7056 7058
-2. 4001 8081 8054 8051 8053 8056 8058
-3. 4002 8082 9054 9051 9053 9056 9058
-4. 4003 8083 10054 10051 10053 10056 10058
+    - Sberbank:   
+    `sudo mkdir -p /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru`  
+    `sudo cp -r backup/ledger_sberbank/.      /var/lib/docker/volumes/dockercompose_peer0.sberbank.nsd.ru/`  
 
-Also each member has generated their crypto material. The orderer can gather member certificates and use them to generate
-genesis block files `artifacts/*.block` and channel config transaction files `artifacts/channel/*.tx`. The script will
-download cert files from members `a`, `b`, `c` www servers into the folder `nsd` shared by depository nsd
-and the orderer.
+    - Mts:
+    `sudo mkdir -p /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru`  
+    `sudo cp -r backup/ledger_mts/.           /var/lib/docker/volumes/dockercompose_peer0.mts.nsd.ru/`
 
-```bash
-cd ../nsd
-./network.sh -m generate-orderer && sleep 7m
-```
 
-Note the `sleep` above: generated certificates have their start time off so we need to wait at least 7 minutes before
-starting up.
+- Start nodes:
 
-Start the orderer and the depository peers: nsd. Will create and join channels, install and instantiate chaincodes
-on nsd peers:
+   - NSD:  
+        `source env-org-nsd`  
+        `network.sh -m up-orderer`  
+        `network.sh -m up-one-org -o $THIS_ORG -M $THIS_ORG`  
+        
+   - Sberbank:  
+        `source env-org-sberbank`   
+        `./org-start-node`  
+   
+   - Mts:  
+         `source env-org-mts`  
+        `./org-start-node`  
 
-```bash
-./network.sh -m up-depository
-``` 
-Ignore `WARNING: Found orphan containers`.
+- Re-join to channels:
+   - NSD:  
+        ` network.sh -m  join-channel $THIS_ORG $MAIN_ORG common`  
+        ` network.sh -m  join-channel $THIS_ORG $MAIN_ORG depository`
+          
+   - Sberbank:  
+        `./org-join-org.sh $ORG3 $IP3`  
+   
+   - Mts:  
+        `./org-join-org.sh $ORG2 $IP2`  
+        
+        
+- Install latest version of smart-contracts on all three nodes (if they were upgraded):
 
-Open terminal windows and start member instances. The script will download cert files from each member, 
-channel block files received at creation of channels in the previous step and network-config from nsd www server 
-into its own `artifacts`. 
-Will start the ca server, peers and api server and tail their logs.
-
-```bash
-cd tmp/a
-./network.sh -m up-2
-``` 
-```bash
-cd tmp/b
-./network.sh -m up-3
-``` 
-```bash
-cd tmp/c
-./network.sh -m up-4
-```
+    `./blockchain-upgrade.sh 2.0 02`  
+    
+The parameters for script should be set according to the `Upgrade smart-contracts to new versions` section 
