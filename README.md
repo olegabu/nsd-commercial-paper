@@ -48,9 +48,9 @@ For initial deployment the following organizations are used:
 - `ORG3` – mts
 
 and the corresponded IP addresses:
-- `IP1=91.208.232.164` - NSD node's IP
-- `IP2=193.232.123.109` - Sberbank node's IP
-- `IP3=213.87.44.178` - MTS node's IP
+- `IP1=XX.XX.XX.XX` - NSD node's IP
+- `IP2=YY.YY.YY.YY` - Sberbank node's IP
+- `IP3=ZZ.ZZ.ZZ.ZZ` - MTS node's IP
  
 
 In Commercial Paper v2 installation NSD serves as `MAIN_NODE` which is configured as environment variable exported in files *env-common*.

@@ -5,9 +5,9 @@ export ORG1=nsd
 export ORG2=sberbank
 export ORG3=mts
 
-export IP1=91.208.232.164
-export IP2=193.232.123.109
-export IP3=213.87.44.178
+export IP1=XX.XX.XX.XX
+export IP2=YY.YY.YY.YY
+export IP3=ZZ.ZZ.ZZ.ZZ
 
 
 : ${FABRIC_STARTER_HOME:=../fabric-starter}

@@ -1,6 +1,6 @@
 source ./env-common
 
-export IP_ORDERER=91.208.232.164
+export IP_ORDERER=XX.XX.XX.XX
 export THIS_ORG=sberbank
 
 echo -e "This org:$THIS_ORG\nOrderer IP:$IP_ORDERER"
