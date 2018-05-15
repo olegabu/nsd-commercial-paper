@@ -7,7 +7,7 @@ Decentralized application manages instructions to transfer securities between me
 
 ## Install prerequisites
 
-- Clone Nsd Commercial Paper delivery packages from github:  
+- Clone Nsd Commercial Paper delivery packages from github and execute the prerequisites script:  
 ```bash
 git clone https://github.com/Altoros/nsd-commercial-paper
 cd nsd-commercial-paper
@@ -16,7 +16,7 @@ cd ..
 ```
 
 
-On other Linux distros make sure these versions or higher are installed:  
+For manual installation or unsupported Linux distros make sure the following components of these versions or higher are installed:  
 
 * Docker version 17.12.1
 * docker-compose version 1.8.0
