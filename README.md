@@ -101,7 +101,7 @@ Finally this script starts a web-server (container) mapped to port 8080 which pr
 thus allowing nodes securely communicate with each other.    
 The blockchain components are not started by this script.
 
-*Note: It's not completely necessary to generate crypto-material for all organizations to start. 
+*__Note__: It's not completely necessary to generate crypto-material for all organizations to start. 
 You may add organizations one by one. See section [Adding new organization](#adding-new-organization) then.* 
 
 After that the main org (NSD) starts the blockchain network, adds the members one by one and creates *common*, *depository* and bilateral and trilateral channels:
@@ -116,7 +116,7 @@ After that the main org (NSD) starts the blockchain network, adds the members on
 	./main-register-new-org.sh $ORG3 $IP3
 ```
 
-*Note, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
+*__Note__, when new organization is registered it's added to the list of existing organizations `env-external-orgs-list`. 
 This list is used to automatically create tri-lateral channels with the new organization which is being added.   
 This list may be adjusted manually in the file to control trilateral channels creation.*
 
@@ -137,7 +137,7 @@ It's stored in file `env-external-orgs-list` and new organizations are automatic
 If the list contains one or more organizations (except `nsd`) 
 the tri-lateral channels with newly registered organization will be automatically created.
 
-*Note: Before register new org adjust the file `instruction_init.json` and add requisites of new org there*
+*__Note__: Before register new org adjust the file `instruction_init.json` and add requisites of new org there*
 
 On next step the members start the network on their nodes:
   
@@ -186,7 +186,7 @@ To add new organization into the network the following steps need to performed:
 4) On NSD server configure the initialization configuration for *instruction* chaincode:  
     edit `instruction_init.json` (add new organization account information)
     
-5) Register new organization in blockchain. Note bi-lateral and tri-lateral 
+5) Register new organization in blockchain. *Note* bi-lateral and tri-lateral 
 channels will be automatically created using the list of existing organizations (in the file `env-external-orgs-list`). 
 This list can be modified accordingly if no all tri-lateral channels need to be created. But make sure to have a backup 
 of the file with the complete list (see notes to the item 3 in the *Deployment* section).  
@@ -224,7 +224,7 @@ of the file with the complete list (see notes to the item 3 in the *Deployment* 
 ## Upgrade smart-contracts to new versions
 
  
-*Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
+*__Note__: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
 List if channels is based on the organizations attached to the network. So before performing the upgrade it's highly 
 recommended to restore from a backup the file `env-external-orgs-list` with the full list of organizations.*
 
@@ -392,4 +392,4 @@ To backup ledgers directories:
 
     `./blockchain-upgrade.sh 2.0 02`  
     
-The parameters for script should be set according to the `Upgrade smart-contracts to new versions` section 
+The parameters for script should be set according to the [Upgrade smart-contracts to new versions](#upgrade-smart-contracts-to-new-versions) section 
