@@ -9,7 +9,7 @@ Decentralized application manages instructions to transfer securities between me
 
 - Clone Nsd Commercial Paper delivery packages from github:  
 ```bash
-git clone https://github.com/Altoros/nsd nsd-commercial-paper
+git clone https://github.com/Altoros/nsd-commercial-paper
 cd nsd-commercial-paper
 ./prerequisites-deployment.sh
 cd ..

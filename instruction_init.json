@@ -1,45 +1,45 @@
 [
   {
     "organization": "sberbank.nsd.ru",
-    "deponent": "MC0005500000",
+    "deponent": "AA1000000000",
     "balances": [
       {
-        "account": "ML9404120506",
-        "division": "00000000000000000"
+        "account": "XXX000000000",
+        "division": "00000000000000011"
       },
       {
-        "account": "ML9404120506",
-        "division": "19000000000000000"
+        "account": "XXX000000000",
+        "division": "00000000000000022"
       },
       {
-        "account": "ML9404120506",
-        "division": "22000000000000000"
+        "account": "XXX000000000",
+        "division": "00000000000000033"
       },
       {
-        "account": "40701810800001000033",
-        "division": "044583505"
+        "account": "90000000000000000011",
+        "division": "111111111"
       }
     ]
   },
   {
     "organization": "mts.nsd.ru",
-    "deponent": "MS0241300000",
+    "deponent": "BB2000000000",
     "balances": [
       {
-        "account": "MS1712180049",
-        "division": "00000000000000000"
+        "account": "YYY000000000",
+        "division": "00000000000000011"
       },
       {
-        "account": "MS1712180049",
-        "division": "19000000000000000"
+        "account": "YYY000000000",
+        "division": "00000000000000022"
       },
       {
-        "account": "MS1712180049",
-        "division": "22000000000000000"
+        "account": "YYY000000000",
+        "division": "00000000000000033"
       },
       {
-        "account": "30109810200000000000",
-        "division": "044525505"
+        "account": "90000000000000000022",
+        "division": "222222222"
       }
     ]
   }

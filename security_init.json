@@ -1,13 +1,5 @@
 [
   {
-    "security":"RU000A0JVVB5",
-    "status":"active",
-    "redeem": {
-      "account":  "MS1712180049",
-      "division": "22000000000000000"
-    }
-  },
-  {
     "security":"RUB",
     "status":"active",
     "redeem": {
