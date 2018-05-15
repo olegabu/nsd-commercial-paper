@@ -53,8 +53,8 @@ and the corresponded IP addresses:
 - `IP3=213.87.44.178` - MTS node's IP
  
 
-In Commercial Paper v2 installation NSD serves as MAIN_NODE which is configured as environment variable exported in files *env-common*.
-Other memebers are defined as THIS_ORG variable set correspondingly in *env-org-<org-name>* files.
+In Commercial Paper v2 installation NSD serves as `MAIN_NODE` which is configured as environment variable exported in files *env-common*.
+Other memebers are defined as `THIS_ORG` variable set correspondingly in *env-org-<org-name>* files.
 
 Check initial configuration or reconfigure organization names, and IP-addresses in configuration files: 
 
@@ -75,7 +75,7 @@ as well as initialization arguments for blockhains :
 ## Deployment:
 
 At first each member has to generate their crypto material; 
-it then will be exposed by http interface on port 8080 to be accessible by the other organizations: 
+it then will be exposed by http interface on port `8080` to be accessible by the other organizations: 
 
 
 1.	Sberbank:  
@@ -102,7 +102,7 @@ thus allowing nodes securely communicate with each other.
 The blockchain components are not started by this script.
 
 *Note: It's not completely necessary to generate crypto-material for all organizations to start. 
-You may add organizations one by one. See section **Adding new organization** then.* 
+You may add organizations one by one. See section [Adding new organization](#adding-new-organization) then.* 
 
 After that the main org (NSD) starts the blockchain network, adds the members one by one and creates *common*, *depository* and bilateral and trilateral channels:
 
@@ -191,8 +191,8 @@ channels will be automatically created using the list of existing organizations 
 This list can be modified accordingly if no all tri-lateral channels need to be created. But make sure to have a backup 
 of the file with the complete list (see notes to the item 3 in the *Deployment* section).  
 
-    Nsd:  
-    `./main-register-new-org.sh neworgname <neworg_ip>`
+   Nsd:  
+   `./main-register-new-org.sh neworgname <neworg_ip>`
 
 6) Start blockchain on new org:  
     New org:  
@@ -224,9 +224,9 @@ of the file with the complete list (see notes to the item 3 in the *Deployment* 
 ## Upgrade smart-contracts to new versions
 
  
-    Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
-    List if channels is based on the organizations attached to the network. So before performing the upgrade it's highly 
-    recommended to restore from a backup the file `env-external-orgs-list` with the full list of organizations.      
+*Note: When you upgrade chaincodes to new versions they have to be re-instantitated at each channel it's used. 
+List if channels is based on the organizations attached to the network. So before performing the upgrade it's highly 
+recommended to restore from a backup the file `env-external-orgs-list` with the full list of organizations.*
 
 
 Developer of blockchain (Altoros) pushes updated smart-contracts code into the repository and puts the git tag of form
@@ -240,12 +240,12 @@ git push --force origin 2018_03-PRE_RELEASE_02
 Here XX equals 02.
 
 
-```bash
-After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.  
-To perform the upgrade network administrators select a unique label for the next version which should be identical on each 
-organization for current upgrade. It is usually versioning numbers sequence in a form of "1.0", "2.0", "3.0", but it might be 
-any label.
-```
+
+    After that the NSD blockchain network may be upgraded with new smart-contracts without re-deploying the whole network.  
+    To perform the upgrade network administrators select a unique label for the next version which should be identical on each 
+    organization for current upgrade. It is usually versioning numbers sequence in a form of "1.0", "2.0", "3.0", but it might be 
+    any label.
+
 
 The following step has to be done on all nodes:
 ```bash
@@ -260,17 +260,17 @@ For example to upgrade network with new smart-contracts tagged with `2018_03-PRE
 as chaincode version 2.0 the following command have to be executed:
    
   - NSD:  
-       `cd nsd-commercial-paper`  
-       `source env-org-nsd` 
-       `./blockchain-upgrade.sh 2.0 02`  
+     `cd nsd-commercial-paper`
+     `source env-org-nsd` 
+     `./blockchain-upgrade.sh 2.0 02`
  - Sberbank:  
-       `cd nsd-commercial-paper`  
-       `source env-org-sberbank` 
-       `./blockchain-upgrade.sh 2.0 02`  
+     `cd nsd-commercial-paper`
+     `source env-org-sberbank` 
+     `./blockchain-upgrade.sh 2.0 02`
  - MTS:  
-       `cd nsd-commercial-paper`  
-       `source env-org-mts` 
-       `./blockchain-upgrade.sh 2.0 02`  
+     `cd nsd-commercial-paper`
+     `source env-org-mts` 
+     `./blockchain-upgrade.sh 2.0 02`
 
 
 ## Add new organization to network after smart-contracts were upgraded
