@@ -1,26 +1,26 @@
 # Commercial Paper on Blockchain for NSD v2 
 
 Decentralized application manages instructions to transfer securities between members of NSD.
-See [Functional Specification Google Doc](https://docs.google.com/document/d/1N2PjBoSN_M2hXXtBFyUv9HACu0Q-6WWqCv_TRcdIS8Y/edit?usp=sharing).
 
 # Deployment with dockers run on separate hosts
 
 
 ## Install prerequisites
 
--   Clone Nsd Commercial Paper delivery packages from github:  
+- Clone Nsd Commercial Paper delivery packages from github:  
 ```bash
-git clone -b 2018_03-PRE_RELEASE_02 https://github.com/Altoros/nsd-commercial-paper
+git clone https://github.com/Altoros/nsd nsd-commercial-paper
 cd nsd-commercial-paper
 ./prerequisites-deployment.sh
+cd ..
 ```
 
 
 On other Linux distros make sure these versions or higher are installed:  
 
-*Docker version 17.12.1*  
-*docker-compose version 1.8.0*  
-*jq*  
+* Docker version 17.12.1
+* docker-compose version 1.8.0
+* jq
 
 To install them on Ubuntu 16.04 you nay use the following commands:  
 

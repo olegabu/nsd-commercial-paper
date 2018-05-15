@@ -3,7 +3,7 @@
 ###############################
 # git clone\update NSD related packages
 ###############################
-./git-update.sh
+# ./git-update.sh
 
 pushd ../fabric-starter
 
